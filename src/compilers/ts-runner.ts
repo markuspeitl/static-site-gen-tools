@@ -1,6 +1,6 @@
-import { DataExtractor, DocumentData } from "./data-extract";
-import { FalsyAble, DataParsedDocument, DocumentCompiler } from "./document-compile";
-import { calcHash } from "./fragement-cache";
+import { DataExtractor, DocumentData } from "../data-extract";
+import { FalsyAble, DataParsedDocument, DocumentCompiler } from "../document-compile";
+import { calcHash } from "../fragement-cache";
 
 export function getValueFromFnOrVar(fnOrVar: any, ...fnPassArgs: any[]): any {
 

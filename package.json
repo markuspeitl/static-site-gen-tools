@@ -11,10 +11,12 @@
   "dependencies": {
     "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.11.20",
+    "@types/nunjucks": "^3.2.6",
     "argparse": "^2.0.1",
     "chokidar": "^3.6.0",
     "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.0",
+    "nunjucks": "^3.2.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

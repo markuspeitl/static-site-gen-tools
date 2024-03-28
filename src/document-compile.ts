@@ -5,6 +5,7 @@ import { setDefaults, cleanUpExt } from './compile';
 import { DocumentData, extractData } from './data-extract';
 import { defaultDocCompilers, setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from './fragement-cache';
+import { SsgConfig } from './config';
 
 export interface DataParsedDocument {
     content?: string | null;
@@ -15,7 +16,7 @@ export interface DocumentCompileData extends DataParsedDocument {
 }
 
 export interface DocumentCompiler {
-    compile: (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => Promise<FalsyAble<DataParsedDocument>>;
+    compile: (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<FalsyAble<DataParsedDocument>>;
 }
 
 export type DocCompilers = Record<string, DocumentCompiler>;
@@ -30,10 +31,10 @@ export function getDataExtractedDocOfContent(documentContents: string | DataPars
     return documentContents;
 }
 
-export async function alternativeProcessCompileDocument(inputsAndDocToCompile: DocumentCompileData, config: any): Promise<DocumentCompileData | null> {
+export async function alternativeProcessCompileDocument(inputsAndDocToCompile: DocumentCompileData, config?: SsgConfig): Promise<DocumentCompileData | null> {
 
 
-    const fragmentCache: FragmentCache = config.fragmentCache;
+    const fragmentCache: FragmentCache | undefined = config?.fragmentCache;
     let cachedFragment: DocumentCompileData | null = null;
     /*const compileInputs: CompileInputs = {
         contents: inputsAndDocToCompile.content,
@@ -46,8 +47,8 @@ export async function alternativeProcessCompileDocument(inputsAndDocToCompile: D
     return cachedFragment;
 }
 
-export async function postProcessCompiledDocument(input: DocumentCompileData, output: DocumentCompileData, config: any): Promise<DocumentCompileData> {
-    const fragmentCache: FragmentCache = config.fragmentCache;
+export async function postProcessCompiledDocument(input: DocumentCompileData, output: DocumentCompileData, config?: SsgConfig): Promise<DocumentCompileData> {
+    const fragmentCache: FragmentCache | undefined = config?.fragmentCache;
     if (fragmentCache && fragmentCache.storeUpdatedCompiledFragment) {
         /*const compileOutputs: CompileOutputs = {
             contents: output.content,
@@ -76,7 +77,7 @@ export function mergeLocalAndParamData(localDocData: FalsyAble<DocumentData>, pa
     return mergedCtxData;
 }
 
-export async function compileDocument(inputData: DocumentCompileData, compiler: DocumentCompiler, config: any): Promise<DocumentCompileData | null> {
+export async function compileDocument(inputData: DocumentCompileData, compiler: DocumentCompiler, config?: SsgConfig): Promise<DocumentCompileData | null> {
     if (!compiler) {
         throw new Error(`No compiler was passed for compiling the document data`);
     }
@@ -110,9 +111,12 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
     return output;
 }
 
-export async function compileDocumentWithExt(inputData: DocumentCompileData, documentTypeExt: string, docCompilers: DocCompilers, config: any): Promise<DocumentCompileData | null> {
+export async function compileDocumentWithExt(inputData: DocumentCompileData, documentTypeExt: string, docCompilers?: DocCompilers, config?: SsgConfig): Promise<DocumentCompileData | null> {
     docCompilers = setDefaults(docCompilers, defaultDocCompilers);
-    const selectedCompiler: DocumentCompiler = config.compilers[ documentTypeExt ];
+    if (!config?.compilers) {
+        return null;
+    }
+    const selectedCompiler: DocumentCompiler = config?.compilers[ documentTypeExt ];
 
     setDefaultFragmentCache(config);
 
@@ -128,7 +132,7 @@ export async function compileDocumentWithExt(inputData: DocumentCompileData, doc
 }
 
 //Helper fn for calling from external (internally compileDocumentWithExt should be mainly used)
-export async function compileDocumentString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, documentTypeExt: string, config: any): Promise<DocumentCompileData | null> {
+export async function compileDocumentString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, documentTypeExt: string, config?: SsgConfig): Promise<DocumentCompileData | null> {
     const document: DataParsedDocument = getDataExtractedDocOfContent(documentContents, null);
 
     if (!document.content) {
@@ -137,10 +141,10 @@ export async function compileDocumentString(documentContents: string | DataParse
 
     const compileInputData: DocumentCompileData = Object.assign({}, document, { dataCtx });
 
-    return compileDocumentWithExt(compileInputData, documentTypeExt, config.compilers, config);
+    return compileDocumentWithExt(compileInputData, documentTypeExt, config?.compilers, config);
 }
 
-export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config: any): Promise<FalsyAble<string>> {
+export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<string>> {
 
     if (!fs.existsSync(srcFilePath)) {
         //return null;
@@ -160,7 +164,7 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
         //return null;
     }
 
-    let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, documentTypeExt, config.dataExtractors, config);
+    let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, documentTypeExt, config?.dataExtractors, config);
 
 
     if (!dataExtractedDocument.data) {
@@ -180,7 +184,7 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
     return compiledDocument?.content;
 }
 
-export async function compileFileTo(srcFilePath: string, targetFilePath: string, data: FalsyAble<DocumentData>, config: any): Promise<FalsyAble<string>> {
+export async function compileFileTo(srcFilePath: string, targetFilePath: string, data: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<string>> {
     const compiledDocumentContents: FalsyAble<string> = await compileFile(srcFilePath, data, config);
 
     if (compiledDocumentContents) {

@@ -3,6 +3,7 @@ import matter from 'gray-matter';
 import { setDefaults, cleanUpExt } from './compile';
 import { DataParsedDocument, DocCompilers, FalsyAble } from './document-compile';
 import { defaultDataExtractors } from './defaults';
+import { SsgConfig } from './config';
 
 export type DocumentData = Record<string, any>;
 
@@ -23,8 +24,13 @@ export function getDataExtractedDocOfData(documentData: DocumentData | DataParse
     };
 }
 
-export async function extractData(documentContents: string, documentTypeExt: string, dataExtractors: DataExtractors, config: any): Promise<DataParsedDocument> {
+export async function extractData(documentContents: string, documentTypeExt: string, dataExtractors?: DataExtractors, config?: SsgConfig): Promise<DataParsedDocument> {
+    if (!dataExtractors) {
+        dataExtractors = {};
+    }
+
     dataExtractors = setDefaults(dataExtractors, defaultDataExtractors);
+
 
     const resultDataParsedDoc: DataParsedDocument = {
         content: documentContents,
@@ -37,6 +43,10 @@ export async function extractData(documentContents: string, documentTypeExt: str
     }
 
     documentTypeExt = cleanUpExt(documentTypeExt);
+
+    if (!dataExtractors) {
+        return resultDataParsedDoc;
+    }
 
     const selectedDataExtractor: DataExtractor | undefined = dataExtractors[ documentTypeExt ];
 
