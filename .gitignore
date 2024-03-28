@@ -1,3 +1,7 @@
 node_modules
 node_modules/**
 **/node_modules/**
+_site
+node_modules
+_exclude/assets
+db/
