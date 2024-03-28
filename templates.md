@@ -323,3 +323,31 @@ detect exactly which data affects which views and update only these parts.
 - Components are a chance to define data scope and when they update.
 - Components are updated/rerendered fully if the associated data changes. (Most granular change/recompile/update level)
 to optimize performance -> create more components for cohesive units
+
+
+# What to store in fragment cache and what not:
+- When the input path changes --> recompile ( we can add the input path into the `dataCtx` or maybe making it an automatic
+property of the document frontmatter data)
+
+- When the output path changes we still want to cache to be effective (output path should not be stored in fragment cache,
+do we even need it during compilation??)
+
+# Dependency loops
+There might be loops in dependencies that need to be iterated looped through until they are resolved.
+example:
+1. collect all leaf documents in a dir without subdependencies
+2. walk the layout up rendering the base layout head and header and navigation
+3. Write each compiled document to output path
+4. The navigation items might depend on those output paths
+
+
+# In place development server:
+As our tool can do dynamic html creation, we can always use local
+relative paths in the SRC directory.
+Then we can dynamically create pages based on those src paths, while
+in development mode, without writing the actual target pages.
+
+- Then in the production build we can copy the file to the target directory.
+- Another option for production would be to dynamically build on demand and keep everything in memory
+(compiled pages, reduced and pre processed assets)
+- A cache dir would also be possible in order to reduce memory footprint and delay

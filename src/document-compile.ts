@@ -15,7 +15,7 @@ export interface DocumentCompileData extends DataParsedDocument {
 }
 
 export interface DocumentCompiler {
-    compile: (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => Promise<DataParsedDocument | null>;
+    compile: (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => Promise<FalsyAble<DataParsedDocument>>;
 }
 
 export type DocCompilers = Record<string, DocumentCompiler>;
@@ -89,7 +89,7 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
 
     const inputCtxData: DocumentData = mergeLocalAndParamData(inputData.data, inputData.dataCtx);
 
-    const parsedOutputDoc: DataParsedDocument | null = await compiler.compile(inputData.content, inputCtxData, config);
+    const parsedOutputDoc: FalsyAble<DataParsedDocument> = await compiler.compile(inputData.content, inputCtxData, config);
     if (!parsedOutputDoc) {
         return null;
     }
@@ -103,6 +103,9 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
         },
         config
     );
+
+    //const layouts = output.data.layout || output.dataCtx.layout
+    //When defined compile the layouts
 
     return output;
 }
@@ -158,6 +161,17 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
     }
 
     let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, documentTypeExt, config.dataExtractors, config);
+
+
+    if (!dataExtractedDocument.data) {
+        dataExtractedDocument.data = {};
+    }
+    if (!data) {
+        data = {};
+    }
+    //dataExtractedDocument.data.inputPath = srcFilePath;
+    data.inputPath = srcFilePath;
+
 
     const docToCompile = dataExtractedDocument || docFileContent;
 

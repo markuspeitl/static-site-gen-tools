@@ -1,13 +1,13 @@
 
 import matter from 'gray-matter';
 import { setDefaults, cleanUpExt } from './compile';
-import { DataParsedDocument, DocCompilers } from './document-compile';
+import { DataParsedDocument, DocCompilers, FalsyAble } from './document-compile';
 import { defaultDataExtractors } from './defaults';
 
 export type DocumentData = Record<string, any>;
 
 export interface DataExtractor {
-    extractData: (fileContent: string, config?: any) => Promise<DataParsedDocument | DocumentData>;
+    extractData: (fileContent: string, config?: any) => Promise<DataParsedDocument | FalsyAble<DocumentData>>;
 }
 
 export type DataExtractors = Record<string, DataExtractor>;
