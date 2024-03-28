@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
+import { DataParsedDocument } from './document-compile';
+import { DocumentData } from './data-extract';
 
 export function calcHash(content: any): string {
 
@@ -8,34 +10,45 @@ export function calcHash(content: any): string {
     return crypto.createHash('sha256').update(serializedContent, 'utf-8').digest('base64');
 }
 
-export interface DocumentState {
-    contents: string;
+/*export interface DataParsedDocument {
+    content: string;
     data: any;
+}*/
+
+/*export interface DocumentCompileInput extends DataParsedDocument {
+    dataCtx: DocumentData;
 }
 
-export interface CompileInputs extends DocumentState {
-    passedData: any;
-}
+export interface DocumentCompileOutput extends DataParsedDocument {
+    passedData: DocumentData;
+}*/
 
-export interface CompileOutputs extends DocumentState {
-}
+export type HashesDict = Record<string, any> & { hash: string | null; };
 
 export interface CompiledFragment {
-    inputs: CompileInputs,
-    output: CompileOutputs,
+    inputData: DocumentCompileData,
+    outputData: DocumentCompileData,
 }
+export interface CompiledFragmentHashes {
+    inputData: HashesDict,
+    outputData: HashesDict,
+}
+/*export interface FragmentHashes {
+    input: HashesDict;
+    output: HashesDict;
+}*/
 
-export interface CompileHashes {
+/*export interface CompileHashes {
     document: string;
     documentData: string;
     passedData: string;
     hash: string;
-}
+}*/
 
-export type HashesDict = Record<string, any>;
 
-export function calcPropHashes(dict: Record<string, any>, addFullHash: boolean = true): Record<string, string> {
-    const hashes: Record<string, string> = {};
+
+export function calcPropHashes(dict: Record<string, any>, addFullHash: boolean = true): HashesDict {
+    const hashes: any = {};
 
     const subKeyHashes: string[] = [];
     for (const key in dict) {
@@ -43,14 +56,14 @@ export function calcPropHashes(dict: Record<string, any>, addFullHash: boolean =
         hashes[ key ] = calcHash(currentValue);
     }
 
-    if (addFullHash) {
-        hashes.hash = calcHash(subKeyHashes.join(''));
-    }
+    //if (addFullHash) {
+    hashes.hash = calcHash(subKeyHashes.join(''));
+    //}
 
-    return hashes;
+    return hashes as HashesDict;
 }
 
-export function calcCompileDocInputHashes(compileInputs: CompileInputs): any {
+export function calcCompileDataHashes(compileData: DocumentCompileData): HashesDict {
     /*const documentHashes: any = {
         document: calcHash(compileInputs.contents),
         documentData: calcHash(compileInputs.data),
@@ -60,7 +73,7 @@ export function calcCompileDocInputHashes(compileInputs: CompileInputs): any {
     const subHashes = [ documentHashes.document, documentHashes.documentData, documentHashes.passedData ];
     documentHashes.state = calcHash(subHashes);*/
 
-    return calcPropHashes(compileInputs);
+    return calcPropHashes(compileData);
 }
 
 export function hasChanged(previousHashes: HashesDict, currentHashes: HashesDict): boolean {
@@ -78,25 +91,22 @@ export function getFragmentContentsPath(): string {
     return '';
 }
 
-export interface FragmentHashes {
-    input: HashesDict;
-    output: HashesDict;
-}
 
-export async function readStoredFragmentHashes(fragmentHashesPath: string): Promise<FragmentHashes> {
+
+export async function readStoredFragmentHashes(fragmentHashesPath: string): Promise<CompiledFragmentHashes> {
     return {
-        input: {
+        inputData: {
             hash: 'sdgoins'
         },
-        output: {
+        outputData: {
             hash: 'asfaipgs'
         }
     };
 }
 
 
-export function checkUpdatedCompileInputs(previousHashes: CompileHashes, currentInputs: CompileInputs): CompileHashes | null {
-    const updatedCompileHashes: CompileHashes = calcCompileDocInputHashes(currentInputs);
+export function checkUpdatedCompileInputs(previousHashes: HashesDict, currentInputData: DocumentCompileData): HashesDict | null {
+    const updatedCompileHashes: HashesDict = calcCompileDataHashes(currentInputData);
 
     if (hasChanged(previousHashes as HashesDict, updatedCompileHashes as HashesDict)) {
         return updatedCompileHashes;
@@ -106,11 +116,11 @@ export function checkUpdatedCompileInputs(previousHashes: CompileHashes, current
 
 //export function fragmentNeedsRecompilation(inputs: CompileInputs): Promise<boolean> {
 
-export async function getExistingFragmentFromCache(inputs: CompileInputs): Promise<null | CompileOutputs> {
+export async function getExistingFragmentFromCache(inputData: DocumentCompileData): Promise<null | DocumentCompileData> {
     const fragmentHashesPath: string = getFragmentHashesPath();
-    const storedFragmentHashes: FragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
+    const storedFragmentHashes: CompiledFragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
 
-    const updatedHashes: CompileHashes | null = checkUpdatedCompileInputs(storedFragmentHashes.input as CompileHashes, inputs);
+    const updatedHashes: HashesDict | null = checkUpdatedCompileInputs(storedFragmentHashes.inputData, inputData);
 
     if (updatedHashes) {
         return null;
@@ -123,40 +133,39 @@ export async function getExistingFragmentFromCache(inputs: CompileInputs): Promi
 }
 
 //Check if fragment context has changed and only write if it is different (no unnecessary writes)
-export async function storeUpdatedCompiledFragment(inputs: CompileInputs, outputs: CompileOutputs): Promise<void> {
+export async function storeUpdatedCompiledFragment(inputData: DocumentCompileData, outputData: DocumentCompileData): Promise<void> {
 
     const fragmentHashesPath: string = getFragmentHashesPath();
-    const storedFragmentHashes: FragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
+    const storedFragmentHashes: CompiledFragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
 
-    const outputHashes: HashesDict = calcPropHashes(outputs);
+    const outputHashes: HashesDict = calcPropHashes(outputData);
 
-    if (!hasChanged(storedFragmentHashes.output, outputHashes)) {
+    if (!hasChanged(storedFragmentHashes.outputData, outputHashes)) {
         return;
     }
-    const inputHashes: HashesDict = calcPropHashes(inputs);
+    const inputHashes: HashesDict = calcPropHashes(inputData);
 
     /*if (!hasChanged(storedFragmentHashes.input, inputHashes)) {
         console.log("Fragment hashes have changed -> updating fragment");
         console.log("Input hashes of fragment have changed");
     }*/
 
-    const updatedHashes: any = {
-        input: inputHashes,
-        output: outputHashes
+    const updatedHashes: CompiledFragmentHashes = {
+        inputData: inputHashes,
+        outputData: outputHashes
     };
-
-    await fs.promises.writeFile(fragmentHashesPath, updatedHashes);
+    const serializedUpdatedHashes: string = JSON.stringify(updatedHashes);
+    await fs.promises.writeFile(fragmentHashesPath, serializedUpdatedHashes);
 
     const fragmentContentsPath: string = getFragmentContentsPath();
 
-    const serializedOutputs: string = JSON.stringify(outputs);
-
+    const serializedOutputs: string = JSON.stringify(outputData);
     await fs.promises.writeFile(fragmentContentsPath, serializedOutputs);
 }
 
 export interface FragmentCache {
-    getExistingFragmentFromCache(inputs: CompileInputs): Promise<null | CompileOutputs>;
-    storeUpdatedCompiledFragment(inputs: CompileInputs, outputs: CompileOutputs): Promise<void>;
+    getExistingFragmentFromCache(inputData: DocumentCompileData): Promise<null | DocumentCompileData>;
+    storeUpdatedCompiledFragment(inputData: DocumentCompileData, outputData: DocumentCompileData): Promise<void>;
 }
 
 export const defaultFragmentCache: FragmentCache = {

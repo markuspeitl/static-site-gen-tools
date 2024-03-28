@@ -1,13 +1,27 @@
 import matter from "gray-matter";
 import markdownit from "markdown-it/lib";
-import { DataExtractor, DataExtractors } from "./data-extract";
-import { DocCompilers, DocumentCompiler } from "./document-compile";
+import { DataExtractor, DataExtractors, DocumentData } from "./data-extract";
+import { DataParsedDocument, DocCompilers, DocumentCompiler } from "./document-compile";
+import { defaultFragmentCache } from "./fragement-cache";
 
 const mdItInstance = markdownit();
 export const defaultMarkdownDocumentCompiler: DocumentCompiler = {
-    compile: async (fileContent: string, config?: any) => {
+    compile: async (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => {
+
+        if (!fileContent) {
+            return null;
+        }
         //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
-        return mdItInstance.render(fileContent);
+
+        const compiledOutput: DataParsedDocument = {
+            content: mdItInstance.render(fileContent),
+
+            //If any from outside accessible data properties or functions get defined within the component evaluated from 
+            //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
+            data: dataCtx
+        };
+
+        return compiledOutput;
     }
 };
 
@@ -36,3 +50,9 @@ export function getDefaultDocCompilers(): DocCompilers {
     return docCompilers;
 }
 export const defaultDocCompilers: DocCompilers = getDefaultDocCompilers();
+
+export function setDefaultFragmentCache(config: any): void {
+    if (!config.fragmentCache) {
+        config.fragmentCache = defaultFragmentCache;
+    }
+}
