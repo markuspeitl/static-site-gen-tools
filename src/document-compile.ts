@@ -46,7 +46,7 @@ export async function compileDocument(documentContents: string | DataParsedDocum
     return compiledDocumentContents;
 }
 
-export async function compileFile(srcFilePath: string, targetFilePath: string, config: any): Promise<string> {
+export async function compileFile(srcFilePath: string, config: any): Promise<string> {
 
     if (!fs.existsSync(srcFilePath)) {
         //return null;
@@ -76,7 +76,7 @@ export async function compileFile(srcFilePath: string, targetFilePath: string, c
 }
 
 export async function compileFileTo(srcFilePath: string, targetFilePath: string, config: any): Promise<string> {
-    const compiledDocumentContents: string = await compileFile(srcFilePath, targetFilePath, config);
+    const compiledDocumentContents: string = await compileFile(srcFilePath, config);
     await fs.promises.writeFile(targetFilePath, compiledDocumentContents);
     return compiledDocumentContents;
 }

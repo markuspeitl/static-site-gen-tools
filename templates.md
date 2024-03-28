@@ -225,3 +225,101 @@ There also is insufficient state management in 11ty that would determine when an
 
 Layout:
 Going up and down the dep tree
+
+
+
+## Content centric authoring:
+1. Create a file
+2. Start writing text straight away
+3. Add meta data and context on where on the page the content should be inserted and how it should be prepared/compiled
+
+Advantages:
+- Minimal time from idea to writing content
+- More "natural" - free thought flow
+- Meta and context data in terms of the page (layout, context) can be added later and does not have to be considered straight away
+
+Disadvantages:
+- Can get a bit tricky:
+Example: Navigation can depend on many pages and when dynamically generating the navigation based on the created pieces of content/pages
+and the navigation is inserted on all pages -> then we need to recompile all pages once the navigation changes
+(performance can be mitigated with a fragement cache and proper data encapsulation though -> only navigation needs to be recompiled and the
+pages need to be reassembled from existing fragments)
+- Data flow annoying to deal with in programming context. (data defined in content is sent through the layout chain and ends back in the content piece,
+while data is collected with too big scope -> problem with optimizing and automatizing steps)
+
+## Layout centric authoring
+1. Create a document
+2. Create the structure of the component
+3. Add text while also creating structure and controlling/specifically passing data flow through the layout/component chain
+
+Advantages:
+- Data is passed from parent to child -> content pieces can be as lean as possible, the parent is responsible for controlling the
+data flow and deciding when to update the child (and when to reuse the fragment cache)
+- Easier to optimize, as it follows the abstract and hierarchical nature how code is usually structured
+
+Disadvantages:
+- Takes longer until you can start writing text
+- Data always flows from the top level layout to deepest child component (where a lot of semi global data would accumulate if not properly filtered and scoped
+and encapsulated)
+
+### Conculsion
+To properly encapsulate functionality into small units you need a layout centric approach, and the
+content based approach becomes insufficient.
+(When looping over compiled elements and inserting them into a page, this needs to be able to reference the compiled components as an element in the layout
+document)
+
+11ty hacks around this by using collections -> these collections are available globally in all layouts and documents and hold compiled
+elements based on content tags.
+Therefore abusing global data to simulate a layout like content iterative inflation.
+However this is not done properly as in the way it is implemented there is not way to wait for the correct inflation of the content.
+Example: you can not reference the 'template' in the collection in a certain stage/state which causes many problems.
+You see the layouts are not treated separately from the deepest content piece from which it originated from.
+Therefore you can not make sure that the last layout of the layout chain was inflated before inserting
+the component in another layout -> therefore you can not encapsulate properly.
+The data and content of a document is treated to same as the data and content of the layouts, there is not seperation,
+instead the data and content is simply merged or overwritten when the layout inflates.
+(a gift of the so called data cascade -> which is a trendy term for saying -> global state that collects everything on the way and provides it everywhere)
+
+
+### The question
+is how to reference and insert fragments, and how to make sure that each of the fragments exists and was compiled to the correct state before inserting.
+
+#### Angular
+- Make inserting content components easy by using a `<router-outlet></router-outlet>` tag to hold dynamic sub components
+- Each component provides a custom tag `<app-navigation></app-navigation>` that represents specific sub components,
+the data for which is either passed through the html document or through the associated code (after getting a reference to the view component)
+- Multiple sub components are created using the `*ngFor=` directive or through component code, iterating over the data needed for
+rendering and handling the component and passing it to the respective specific component, through html.
+As `ngFor` iterates over a collection, the data passed to the component is very specific.
+- Styles and other assets may be component encapsulated and bundled after compilation (11ty is anti bundling, preventing it from accessing any of the
+possible optimizations and ssg conveniences of such functionality)
+
+The resulting software should not be as extensive as angular and not provide a way of doing things that is *that* generic, SSG
+is a specific solution domain after all, in which using angular would result in way too much bloat and boilerplate
+(it is a generic dynamic web application framework after all, which is not static compilation and needs to implement complex
+bindings and change detection/handling only updating the components that change and nothing else.
+In SSG we do not need to same granularity and extensive feature set)
+
+#### Angular features for SSG
+- Router outlets are a great idea (not need to string concatenate the passed content) = shorthand for concatenation
+- Specific custom components are a must
+- Some kind of `for` loop is necessary: maybe refer to a collection of items in the fragment cache 
+and filter by compilation state/stage level and filter by certain data properties and
+just insert all the fragements that fit the criteria
+(Each compiled fragment should have data associated with it that can be accessed from a parent)
+- `if` statements are easy to do, evaluate based on local state, or based on state of the sub fragment
+
+
+# Properties:
+- All content pieces have a path ( = fragment cache )
+- Some pieces have a specific public facing path (those with routes that are supposed to be accessed)
+- Content first approach (each content leaf document defines how it is assembled from itself and from other layouts/components)
+- Each layout defines how it is assembled from itself and from other layouts/components
+- Content docs naturally inherit dependencies from its layout and can add more or change assembling information
+- Layouts and Components are the same -> the only difference is that the layout uses its content, so if we do not use
+the content -> it is a component -> if we would pass content this content would be swallowed (treated exactly the same)
+- Contained change/updates: Only affected fragments should be updated and already fully compiled parts should be reused,
+detect exactly which data affects which views and update only these parts.
+- Components are a chance to define data scope and when they update.
+- Components are updated/rerendered fully if the associated data changes. (Most granular change/recompile/update level)
+to optimize performance -> create more components for cohesive units
