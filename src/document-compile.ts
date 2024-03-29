@@ -6,6 +6,8 @@ import { DocumentData, extractData } from './data-extract';
 import { defaultDocCompilers, setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from './fragement-cache';
 import { SsgConfig } from './config';
+import { arrayify, arrayifyFilter } from './utils/util';
+import { SingleOrArray } from './utils/util2';
 
 export interface DataParsedDocument {
     content?: string | null;
@@ -20,6 +22,61 @@ export interface DocumentCompiler {
 }
 
 export type DocCompilers = Record<string, DocumentCompiler>;
+
+export function findExistingPathFromRelative(resolvePathRoots: SingleOrArray<FalsyAble<string>>, relPath: string): string | null {
+    const passedResolveRoots: string[] = arrayifyFilter(resolvePathRoots) as string[];
+
+    for (const resolvePathRoot of passedResolveRoots) {
+
+        const documentRunnerPath: string = path.join(resolvePathRoot, relPath);
+        if (fs.existsSync(documentRunnerPath)) {
+            return documentRunnerPath;
+        }
+    }
+    return null;
+}
+
+export async function getDocumentCompiler(idString: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, compilersCache: FalsyAble<DocCompilers>, config?: SsgConfig): Promise<FalsyAble<DocumentCompiler>> {
+
+    if (!config) {
+        config = {};
+    }
+
+    if (!config.compilers) {
+        config.compilers = {};
+    }
+
+    if (!compilersCache) {
+        compilersCache = config.compilers;
+    }
+
+    if (!resolvePathRoots) {
+        resolvePathRoots = [];
+    }
+
+    if (config.compilerResolvePaths) {
+        resolvePathRoots = (arrayifyFilter(resolvePathRoots) as string[]).concat(config.compilerResolvePaths);
+    }
+
+    const absDocCompilerPath: string | null = findExistingPathFromRelative(resolvePathRoots, idString);
+
+    if (absDocCompilerPath) {
+
+        const existingCompiler: DocumentCompiler | undefined = compilersCache[ absDocCompilerPath ];
+
+        if (!existingCompiler) {
+
+            //TODO: these are not really DocumentCompilers (need to define a module interface)
+            const loadedModule = await import(absDocCompilerPath);
+            compilersCache[ absDocCompilerPath ] = loadedModule;
+        }
+
+        idString = absDocCompilerPath;
+    }
+
+    const selectedCompiler: DocumentCompiler | null = compilersCache[ idString ];
+    return selectedCompiler;
+}
 
 export function getDataExtractedDocOfContent(documentContents: string | DataParsedDocument, docData?: DocumentData | null): DataParsedDocument {
     if (typeof documentContents === 'string') {
@@ -95,13 +152,15 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
         return null;
     }
 
-    const output: DocumentCompileData = await postProcessCompiledDocument(
+    let output: DocumentCompileData = {
+        content: parsedOutputDoc.content,
+        data: inputData.data,
+        dataCtx: parsedOutputDoc.data || {},
+    };
+
+    output = await postProcessCompiledDocument(
         inputData,
-        {
-            content: parsedOutputDoc.content,
-            data: inputData.data,
-            dataCtx: parsedOutputDoc.data || {},
-        },
+        output,
         config
     );
 
@@ -113,12 +172,10 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
 
 export async function compileDocumentWithExt(inputData: DocumentCompileData, documentTypeExt: string, docCompilers?: DocCompilers, config?: SsgConfig): Promise<DocumentCompileData | null> {
     docCompilers = setDefaults(docCompilers, defaultDocCompilers);
-    if (!config?.compilers) {
-        return null;
-    }
-    const selectedCompiler: DocumentCompiler = config?.compilers[ documentTypeExt ];
-
     setDefaultFragmentCache(config);
+
+    const inputPath: string | undefined = inputData.dataCtx?.inputPath;
+    const selectedCompiler: FalsyAble<DocumentCompiler> = await getDocumentCompiler(documentTypeExt, [ inputPath ], docCompilers, config);
 
     if (!selectedCompiler) {
         throw new Error(`No compiler found for extension ${documentTypeExt}`);
@@ -175,7 +232,6 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
     }
     //dataExtractedDocument.data.inputPath = srcFilePath;
     data.inputPath = srcFilePath;
-
 
     const docToCompile = dataExtractedDocument || docFileContent;
 

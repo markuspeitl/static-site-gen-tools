@@ -1,0 +1,77 @@
+import { SsgConfig } from "./config";
+import { DocumentData } from "./data-extract";
+import { compileDocument, DocumentCompileData, FalsyAble } from "./document-compile";
+import { arrayify } from "./utils/util";
+import * as shlex from 'shlex';
+
+export function getCompileDataProp(doc: DocumentCompileData, key: string, ctxPriority: boolean = false): any {
+
+    let lowPriorityData: FalsyAble<DocumentData> = doc.dataCtx;
+    let highPriorityData: FalsyAble<DocumentData> = doc.data;
+
+    if (ctxPriority) {
+        lowPriorityData = doc.data;
+        lowPriorityData = doc.dataCtx;
+    }
+
+    if (!lowPriorityData) {
+        lowPriorityData = {};
+    }
+    if (!highPriorityData) {
+        highPriorityData = {};
+    }
+
+    return lowPriorityData[ key ] || highPriorityData[ key ];
+}
+
+export async function walkLayoutCompileChain(content: DocumentCompileData, layoutStack: DocumentCompileData[], config: SsgConfig): DocumentCompileData {
+
+    layoutStack.push(content);
+
+    //In order to treat the current data output context (after compilation) with higher priority as the
+    //input document data
+    const ctxDataPriority: boolean = Boolean(config.ctxDataPriority);
+
+    const layoutProp: string = getCompileDataProp(content, 'layout', ctxDataPriority);
+    const layoutsProp: string[] = getCompileDataProp(content, 'layouts', ctxDataPriority);
+
+    const layouts: string[] = arrayify(layoutProp).concat(arrayify(layoutsProp));
+
+    const reversedLayouts: string[] = layouts.reverse();
+
+    let layoutRenderCmd: string | undefined = reversedLayouts.pop();
+    let lastRenderedDoc: DocumentCompileData | null = content;
+    while (layoutRenderCmd) {
+
+        const compiledLayoutDoc: DocumentCompileData | null = await compileLayout(layoutRenderCmd, content, config);
+        if (compiledLayoutDoc) {
+            layoutStack.push(compiledLayoutDoc);
+            lastRenderedDoc = compiledLayoutDoc;
+        }
+
+        layoutRenderCmd = reversedLayouts.pop();
+    }
+
+    //Layouts that fail to render are skipped, and only the last valid one is returned
+    return lastRenderedDoc;
+}
+
+export async function compileLayout(layoutRenderCmd: string, childDocCompiled: DocumentCompileData, config?: SsgConfig): Promise<DocumentCompileData | null> {
+    const layoutRenderCmdParts: string[] = shlex.split(layoutRenderCmd);
+
+    if (layoutRenderCmdParts.length <= 0) {
+        return null;
+    }
+
+    let selectedLayoutFile: string | null = null;
+    let layoutRunnner: string | null = null;
+    if (layoutRenderCmdParts.length <= 1) {
+        selectedLayoutFile = layoutRenderCmdParts[ 0 ];
+    } else {
+
+    }
+
+    const childDocPath: string = childDocCompiled.dataCtx?.inputPath;
+
+
+}

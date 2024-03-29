@@ -17,6 +17,7 @@
     "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.0",
     "nunjucks": "^3.2.4",
+    "shlex": "^2.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

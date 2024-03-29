@@ -351,3 +351,94 @@ in development mode, without writing the actual target pages.
 - Another option for production would be to dynamically build on demand and keep everything in memory
 (compiled pages, reduced and pre processed assets)
 - A cache dir would also be possible in order to reduce memory footprint and delay
+
+
+# Data flow:
+From where does the data flow to what destination and in what order.
+
+Idea: treating the content file as something like the data portal where all data
+for rendering this fragment comes from.
+
+Question: in which direction should the data flow first?
+1. Option: flow to layouts first and then continue at sub components:
+if any important additional data is created fetched or otherwise in the
+content file's layout, which would be relevant for the 
+content file itself or its sub components.
+(for a simulated top -> down approach injecting the data first at the top element letting it bubble down to the content file and sub components)
+-> when the layouts are rendered, the content does not exist yet
+    - pending content
+    - data flow needs to work just the same even if nothing was rendered (no dependency on sub components data and on rendering is necessary)
+
+2. flow to sub components first
+data defined in the content piece is used to render sub components.
+This can become an issue if sub components depend on any state of the layout in the same chain.
+
+3. Option: portal
+the content document explicitly defines what data it needs and where it comes from and there are not
+other data fetches or pulls or injections into the data in the layouts or other components that
+affect the state of data, or the rendering.
+Through that definition we can select the input data in a way that it is encapsulated to that
+single page itself.
+
+# Data pre parsing:
+parse data recursively before doing any amount of rendering.
+This way rendering decisions can be made before rendering.
+(pages that have a disable flag are not rendered, dynamic navigation data can be created
+from the source content files, before rendering all the pages with such data/ a navigation on each page)
+
+In order for this to work, data manipulation and rendering have to be strictly
+seperated.
+compiling -> is readonly
+data -> read and write
+
+(data is not allowed to be changed while rendering in this case)
+
+
+# Race conditions:
+in some cases it would be possible that on aspects of a component depends on a partial state of itself.
+Then document compilation can not be resolved as there is a cyclic dependence resulting in no document being able to be compiled.
+Example:
+A piece of content, has the page as a layout, which has a navigation subcomponent.
+We only add pages to the navigation that have been successfully created/rendered, but as this navigation
+is inserted one every 'page' even on the current one to be created from the component,
+this creates a cyclic condition.
+
+# Dynamic static hybrid:
+1. Prerender all fragments/component unit, but no pages
+2. Render the semi dynamic components flagged as last and in the order in which they are flagged (navigation, sidebar)
+3. When there is a request for a site -> assemble the parts to a page
+4. Save the assembled page
+
+
+# Content piece IDs:
+for inserting the content piece in another page and
+making a dependency to that content piece explicit (A depends on B to be rendered).
+
++ Add way to reference different stages/layouts of the render (reference the fragments)
+
+
+
+
+# Ehtml, Ecss, component-manifest, edata and ts controllers
+
+Clear seperation of concern (server rendering):
+- ehtml: Providing view and markup and being generally read only on the data
+- edata: providers for models and source data from various locations (local files, apis, databases)
+- ts controllers: translate data to a viewable format and apply data transformations/merging/etc
+- component-manifest: assets sources and meta data
+(maybe where an asset will be stored and where it is acquired from -> like which url the associated component resolves the
+asset to on the output site)
+
+ecomponents: Combine all these concepts the view dom is written in ehtml, which
+get the data to be displayes from the ts controller which transforms the data into a
+viewable or evaluateable format.
+The controller can define ehtml, ecss and data dependencies.
+
+
+# Data types:
+- objects: serializable and encapsulated data units containing data for a complex element or complex operations
+- assets: images, video, audio and other media - usually binary files that however are displayed:
+eg. anything that can not be serialized or deserialized in *readable* format by nature.
+(the associated view depends on them)
+Assets often require additional meta information in order to be displayed in html as a unit:
+alternative text, style, resolutions
