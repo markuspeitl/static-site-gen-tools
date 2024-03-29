@@ -3,11 +3,12 @@ import path from 'path';
 import markdownit from 'markdown-it';
 import { setDefaults, cleanUpExt } from './compile';
 import { DocumentData, extractData } from './data-extract';
-import { defaultDocCompilers, setDefaultFragmentCache } from './defaults';
+import { CompilerModule, getDefaultDocCompilers, setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from './fragement-cache';
 import { SsgConfig } from './config';
 import { arrayify, arrayifyFilter } from './utils/util';
 import { SingleOrArray } from './utils/util2';
+import { loadTsModule } from './module-loading/util';
 
 export interface DataParsedDocument {
     content?: string | null;
@@ -58,20 +59,21 @@ export async function getDocumentCompiler(idString: string, resolvePathRoots: Si
         resolvePathRoots = (arrayifyFilter(resolvePathRoots) as string[]).concat(config.compilerResolvePaths);
     }
 
-    const absDocCompilerPath: string | null = findExistingPathFromRelative(resolvePathRoots, idString);
+    const absTargetRunnerPath: string | null = findExistingPathFromRelative(resolvePathRoots, idString);
 
-    if (absDocCompilerPath) {
+    if (absTargetRunnerPath) {
 
-        const existingCompiler: DocumentCompiler | undefined = compilersCache[ absDocCompilerPath ];
+        const existingCompiler: DocumentCompiler | undefined = compilersCache[ absTargetRunnerPath ];
 
         if (!existingCompiler) {
 
             //TODO: these are not really DocumentCompilers (need to define a module interface)
-            const loadedModule = await import(absDocCompilerPath);
-            compilersCache[ absDocCompilerPath ] = loadedModule;
+            const loadedModule: CompilerModule = await import(absTargetRunnerPath);
+            //loadTsModule(absTargetRunnerPath, compilersCache);
+            compilersCache[ absTargetRunnerPath ] = loadedModule.getCompiler();
         }
 
-        idString = absDocCompilerPath;
+        idString = absTargetRunnerPath;
     }
 
     const selectedCompiler: DocumentCompiler | null = compilersCache[ idString ];
@@ -171,6 +173,7 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
 }
 
 export async function compileDocumentWithExt(inputData: DocumentCompileData, documentTypeExt: string, docCompilers?: DocCompilers, config?: SsgConfig): Promise<DocumentCompileData | null> {
+    const defaultDocCompilers: DocCompilers = await getDefaultDocCompilers();
     docCompilers = setDefaults(docCompilers, defaultDocCompilers);
     setDefaultFragmentCache(config);
 

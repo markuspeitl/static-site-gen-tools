@@ -1,4 +1,4 @@
-import { NullableString } from './util';
+import { NullableString } from './util2';
 import * as path from 'path';
 import * as fs from 'fs';
 

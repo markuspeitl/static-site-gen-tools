@@ -2,7 +2,7 @@
 import matter from 'gray-matter';
 import { setDefaults, cleanUpExt } from './compile';
 import { DataParsedDocument, DocCompilers, FalsyAble } from './document-compile';
-import { defaultDataExtractors } from './defaults';
+import { getDefaultDataExtractors } from './defaults';
 import { SsgConfig } from './config';
 
 export type DocumentData = Record<string, any>;
@@ -29,6 +29,7 @@ export async function extractData(documentContents: string, documentTypeExt: str
         dataExtractors = {};
     }
 
+    const defaultDataExtractors: DataExtractors = await getDefaultDataExtractors();
     dataExtractors = setDefaults(dataExtractors, defaultDataExtractors);
 
 

@@ -1,24 +1,32 @@
 import { DataExtractor, DocumentData } from "../data-extract";
 import { DataParsedDocument, DocumentCompiler, FalsyAble } from "../document-compile";
 
-export const defaultHtmlDocumentCompiler: DocumentCompiler = {
-    compile: async (fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: any) => {
+export function getCompiler(): DocumentCompiler {
+    const defaultHtmlDocumentCompiler: DocumentCompiler = {
+        compile: async (fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: any) => {
 
-        if (!fileContent) {
-            return null;
+            if (!fileContent) {
+                return null;
+            }
+
+            const compiledOutput: DataParsedDocument = {
+                content: fileContent,
+                data: dataCtx
+            };
+
+            return compiledOutput;
         }
+    };
 
-        const compiledOutput: DataParsedDocument = {
-            content: fileContent,
-            data: dataCtx
-        };
+    return defaultHtmlDocumentCompiler;
+}
 
-        return compiledOutput;
-    }
-};
+export function getExtractor(): DataExtractor {
+    const defaultHtmlDataExtractor: DataExtractor = {
+        extractData: async (fileContent: string, config?: any) => {
+            return {};
+        }
+    };
 
-export const defaultHtmlDataExtractor: DataExtractor = {
-    extractData: async (fileContent: string, config?: any) => {
-        return {};
-    }
-};
+    return defaultHtmlDataExtractor;
+}

@@ -1,72 +1,10 @@
 import { DataExtractor, DocumentData } from "../data-extract";
 import { FalsyAble, DataParsedDocument, DocumentCompiler } from "../document-compile";
 import { calcHash } from "../fragement-cache";
+import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
 
-export function getValueFromFnOrVar(fnOrVar: any, ...fnPassArgs: any[]): any {
 
-    if (!fnOrVar) {
-        return null;
-    }
-    if (typeof fnOrVar === 'function') {
-        return fnOrVar(...fnPassArgs);
-    }
-    return fnOrVar;
-}
-
-export function getCallDefModuleValOrFn(module: any, propKeys: string[], ...fnPassArgs: any[]): any {
-    for (const key of propKeys) {
-        if (module[ key ]) {
-            return getValueFromFnOrVar(module[ key ], ...fnPassArgs);
-        }
-    }
-    return null;
-}
-
-export function getFnFromParam(paramItem: any): (...args: any[]) => any {
-    if (!paramItem) {
-        return () => null;
-    }
-    if (typeof paramItem === 'function') {
-        return paramItem;
-    }
-    return () => paramItem;
-}
-
-export function getFirstDefPropAsFn(obj: Object, propKeys: string[]): any {
-    for (const key of propKeys) {
-        if (obj[ key ]) {
-            return getFnFromParam(obj[ key ]);
-        }
-    }
-    return null;
-}
-
-const tsComponentModulesCache: Record<string, any> = {};
-
-export async function getTsModule(content?: string | null, modulePath?: string): Promise<any> {
-    if (!modulePath && !content) {
-        return null;
-    }
-
-    if (modulePath) {
-        if (tsComponentModulesCache[ modulePath ]) {
-            return tsComponentModulesCache[ modulePath ];
-        }
-    }
-    if (!content) {
-        return null;
-    }
-    let moduleKey: string | null | undefined = modulePath;
-    if (!moduleKey) {
-        moduleKey = calcHash(content);
-    }
-
-    tsComponentModulesCache[ moduleKey ] = eval(content);
-
-    return tsComponentModulesCache[ moduleKey ];
-}
-
-export async function getTsCompilerData(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DocumentData>> {
+export async function getTsModuleCompilerData(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DocumentData>> {
 
     if (!dataCtx) {
         dataCtx = {};
@@ -92,7 +30,7 @@ export async function getTsCompilerData(fileContent: string | null | undefined, 
     return dataCtx;
 }
 
-export async function callTsCompile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DataParsedDocument>> {
+export async function callTsModuleCompile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DataParsedDocument>> {
     if (!dataCtx) {
         dataCtx = {};
     }
@@ -115,23 +53,32 @@ export async function callTsCompile(fileContent: string | null | undefined, data
     return compiledContent;
 }
 
-export const defaultTsDocumentCompiler: DocumentCompiler = {
-    compile: async (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => {
 
-        if (!fileContent) {
-            return null;
+export function getCompiler(): DocumentCompiler {
+    const defaultTsDocumentCompiler: DocumentCompiler = {
+        compile: async (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => {
+
+            if (!fileContent) {
+                return null;
+            }
+            if (!dataCtx) {
+                dataCtx = {};
+            }
+
+            dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
+            return callTsModuleCompile(fileContent, dataCtx, config);
         }
-        if (!dataCtx) {
-            dataCtx = {};
+    };
+
+    return defaultTsDocumentCompiler;
+}
+
+export function getExtractor(): DataExtractor {
+    const defaultTsDataExtractor: DataExtractor = {
+        extractData: async (fileContent: string, config?: any) => {
+            return getTsModuleCompilerData(fileContent, null, config);
         }
+    };
 
-        dataCtx = getTsCompilerData(fileContent, dataCtx, config);
-        return callTsCompile(fileContent, dataCtx, config);
-    }
-};
-
-export const defaultTsDataExtractor: DataExtractor = {
-    extractData: async (fileContent: string, config?: any) => {
-        return getTsCompilerData(fileContent, null, config);
-    }
-};
+    return defaultTsDataExtractor;
+}
