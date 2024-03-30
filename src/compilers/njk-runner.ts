@@ -1,8 +1,11 @@
 import { DataExtractor, DocumentData } from "../data-extract";
+import { getLibInstance } from "../dependencies/module-instances";
 import { DataParsedDocument, DocumentCompiler, FalsyAble } from "../document-compile";
-import { getOverrideOrLocal } from "./libs-cache-override";
+//import { getOverrideOrLocal } from "./libs-cache-override";
 import { getExtractor as getMarkdownExtractor } from "./md-runner";
 //import * as nunjucks from 'nunjucks';
+import type { Environment } from 'nunjucks';
+//import type nunjucks from 'nunjucks';
 
 export function getCompiler(): DocumentCompiler {
     const defaultNjkDocumentCompiler: DocumentCompiler = {
@@ -11,7 +14,7 @@ export function getCompiler(): DocumentCompiler {
                 return null;
             }
 
-            const nunjucks = getOverrideOrLocal('nunjucks', config);
+            const nunjucks: Environment = await getLibInstance('nunjucks', config);
 
             if (!dataCtx) {
                 dataCtx = {};

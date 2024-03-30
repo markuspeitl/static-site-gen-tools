@@ -24,18 +24,7 @@ export interface DocumentCompiler {
 
 export type DocCompilers = Record<string, DocumentCompiler>;
 
-export function findExistingPathFromRelative(resolvePathRoots: SingleOrArray<FalsyAble<string>>, relPath: string): string | null {
-    const passedResolveRoots: string[] = arrayifyFilter(resolvePathRoots) as string[];
 
-    for (const resolvePathRoot of passedResolveRoots) {
-
-        const documentRunnerPath: string = path.join(resolvePathRoot, relPath);
-        if (fs.existsSync(documentRunnerPath)) {
-            return documentRunnerPath;
-        }
-    }
-    return null;
-}
 
 export async function getDocumentCompiler(idString: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, compilersCache: FalsyAble<DocCompilers>, config?: SsgConfig): Promise<FalsyAble<DocumentCompiler>> {
 

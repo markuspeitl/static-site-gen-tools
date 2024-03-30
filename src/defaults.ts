@@ -15,6 +15,7 @@ export interface CompilerModule extends Module {
     getCompiler(): DocumentCompiler;
     getTargetExtension(): string;
 }
+export interface CompilerFns extends DocumentCompiler, DataExtractor { }
 
 
 export async function loadCompilers(srcDirPath: string, extension: string = 'ts'): Promise<Module[] | null> {
@@ -63,6 +64,13 @@ async function getDefaultCompilers(): Promise<CompilerModule[] | null> {
     defaultCompilerModules = (await loadCompilers(compilersDirPath)) as CompilerModule[];
     return defaultCompilerModules;
 }
+
+const defaultCompilerAssociations: Record<string, string> = {
+    '*.html': "html-runner.ts",
+    '*.md': "md-runner.ts",
+    '*.njk': "njk-runner.ts",
+    '*.ts': "ts-runner.ts"
+};
 
 export async function getDefaultDataExtractors(): Promise<DataExtractors> {
     const extractors: DataExtractors = {};

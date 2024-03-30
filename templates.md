@@ -442,3 +442,11 @@ eg. anything that can not be serialized or deserialized in *readable* format by 
 (the associated view depends on them)
 Assets often require additional meta information in order to be displayed in html as a unit:
 alternative text, style, resolutions
+
+
+# TODO:
+- On demand loading of modules, layouts, runners:
+they should only be loaded into the cache the very first time they are needed.
+Also only load the defaults the first time they are needed.
+In order for this to work we need to hardcode the default associations between
+a runner activate condition and the location of the associated default runner for files matching this condition

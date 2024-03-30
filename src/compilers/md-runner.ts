@@ -1,8 +1,11 @@
-import markdownit from "markdown-it/lib";
+
 import { DataExtractor, DocumentData } from "../data-extract";
+import { getLibInstance } from "../dependencies/module-instances";
 import { DataParsedDocument, DocumentCompiler } from "../document-compile";
-import matter from "gray-matter";
-import { getOverrideOrLocal } from "./libs-cache-override";
+//import matter from "gray-matter";
+import type markdownit from "markdown-it/lib";
+import type * as matter from "gray-matter";
+type MatterType = typeof matter;
 
 export function getCompiler(): DocumentCompiler {
     const defaultMarkdownDocumentCompiler: DocumentCompiler = {
@@ -13,7 +16,8 @@ export function getCompiler(): DocumentCompiler {
             }
             //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
 
-            const markdownRendererInstance: markdownit = getOverrideOrLocal('markdown', config);
+            //const markdownRendererInstance: markdownit = getOverrideOrLocal('markdown', config);
+            const markdownRendererInstance: markdownit = await getLibInstance('markdown', config);
 
             const compiledOutput: DataParsedDocument = {
                 content: markdownRendererInstance.render(fileContent),
@@ -30,13 +34,15 @@ export function getCompiler(): DocumentCompiler {
     return defaultMarkdownDocumentCompiler;
 }
 
+
 export function getExtractor(): DataExtractor {
     const defaultMarkdownDataExtractor: DataExtractor = {
         extractData: async (fileContent: string, config?: any) => {
 
-            const matter = getOverrideOrLocal('matter', config);
+            const matterInstance: any = await getLibInstance('matter', config);
+            //const matter = getOverrideOrLocal('matter', config);
 
-            const dataParsedMdFile: matter.GrayMatterFile<string> = matter(fileContent);
+            const dataParsedMdFile: matter.GrayMatterFile<string> = matterInstance(fileContent);
             //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
             //mdItInstance.render(fileContent);
 

@@ -9,16 +9,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/htmlparser2": "^3.10.7",
     "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.11.20",
     "@types/nunjucks": "^3.2.6",
+    "@types/xml2js": "^0.4.14",
     "argparse": "^2.0.1",
+    "cheerio": "^1.0.0-rc.12",
     "chokidar": "^3.6.0",
     "gray-matter": "^4.0.3",
+    "htmlparser2": "^9.1.0",
     "markdown-it": "^14.1.0",
     "nunjucks": "^3.2.4",
     "shlex": "^2.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "xml2js": "^0.6.2"
   }
 }

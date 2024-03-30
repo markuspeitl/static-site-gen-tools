@@ -2,6 +2,10 @@ import Module from 'module';
 import { calcHash } from '../fragement-cache';
 import * as fs from 'fs';
 import { FalsyAble } from '../document-compile';
+import path from 'path';
+import { arrayifyFilter } from '../utils/util';
+import { SingleOrArray } from '../utils/util2';
+import { SsgConfig } from '../config';
 
 export function getValueFromFnOrVar(fnOrVar: any, ...fnPassArgs: any[]): any {
 
@@ -44,7 +48,7 @@ export function getFirstDefPropAsFn(obj: Object, propKeys: string[]): any {
 
 const defaultTsModulesCache: Record<string, Module> = {};
 
-export async function loadTsModule(modulePath: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<Module | null> {
+export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
     if (!modulePath) {
         return null;
     }
@@ -52,7 +56,7 @@ export async function loadTsModule(modulePath: FalsyAble<string>, tsModulesCache
         tsModulesCache = defaultTsModulesCache;
     }
     if (tsModulesCache[ modulePath ]) {
-        return tsModulesCache[ modulePath ];
+        return tsModulesCache[ modulePath ] as ModuleInterface | null;
     }
     if (!fs.existsSync(modulePath)) {
         return null;
@@ -64,12 +68,12 @@ export async function loadTsModule(modulePath: FalsyAble<string>, tsModulesCache
     }
     const moduleId: string = calcHash(moduleContent);
     if (tsModulesCache[ moduleId ]) {
-        return tsModulesCache[ moduleId ];
+        return tsModulesCache[ moduleId ] as ModuleInterface | null;
     }
 
     //tsModulesCache[ moduleId ] = eval(moduleContent);
     tsModulesCache[ moduleId ] = await import(modulePath);
-    return tsModulesCache[ moduleId ];
+    return tsModulesCache[ moduleId ] as ModuleInterface | null;
 
 }
 
@@ -89,4 +93,78 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
     }
 
     return loadedModule;
+}
+
+export function findExistingPathFromRelative(relPath: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>): string | null {
+    const passedResolveRoots: string[] = arrayifyFilter(resolvePathRoots) as string[];
+
+    for (const resolvePathRoot of passedResolveRoots) {
+
+        const documentRunnerPath: string = path.join(resolvePathRoot, relPath);
+        if (fs.existsSync(documentRunnerPath)) {
+            return documentRunnerPath;
+        }
+    }
+    return null;
+}
+
+export function findExistingPath(relOrAbsPath: string, relResolvePathRoots: SingleOrArray<FalsyAble<string>>): string | null {
+    if (!relOrAbsPath) {
+        return null;
+    }
+
+    if (path.isAbsolute(relOrAbsPath) && fs.existsSync(relOrAbsPath)) {
+        return relOrAbsPath;
+    }
+    const absTargetModulePath: string | null = findExistingPathFromRelative(relOrAbsPath, relResolvePathRoots);
+    return absTargetModulePath;
+}
+
+export async function getResolveTsModule<ModuleInterface>(moduleIdOrPath: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, tsModulesCache?: Record<string, Module>, config?: SsgConfig): Promise<ModuleInterface | null> {
+    if (!config) {
+        config = {};
+    }
+    if (!tsModulesCache) {
+        tsModulesCache = config.tsModulesCache;
+    }
+    if (!resolvePathRoots) {
+        resolvePathRoots = [];
+    }
+    if (!tsModulesCache) {
+        tsModulesCache = defaultTsModulesCache;
+    }
+    if (tsModulesCache[ moduleIdOrPath ]) {
+        return tsModulesCache[ moduleIdOrPath ] as ModuleInterface;
+    }
+
+    let moduleAbsPath: string | null = findExistingPath(moduleIdOrPath, resolvePathRoots);
+
+    const loadedModule: ModuleInterface | null = await loadTsModule<ModuleInterface>(moduleAbsPath, tsModulesCache);
+
+    return loadedModule;
+}
+
+export async function getResolveTsModuleWithConfig<ModuleInterface>(
+    moduleIdOrPath: string,
+    resolvePathRoots: SingleOrArray<FalsyAble<string>>,
+    tsModulesCache?: Record<string, Module>,
+    config?: SsgConfig,
+    configResolvePathsKey?: string,
+): Promise<ModuleInterface | null> {
+
+    if (!config) {
+        return null;
+    }
+    if (!tsModulesCache) {
+        tsModulesCache = config.tsModulesCache;
+    }
+    let configResolvePaths: string[] = [];
+    if (configResolvePathsKey) {
+        configResolvePaths = config[ configResolvePathsKey ];
+    }
+
+    let filteredResolvePaths: string[] = arrayifyFilter(resolvePathRoots) as string[];
+    filteredResolvePaths = filteredResolvePaths.concat(configResolvePaths);
+
+    return getResolveTsModule<ModuleInterface>(moduleIdOrPath, filteredResolvePaths, tsModulesCache, config);
 }
