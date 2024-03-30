@@ -4,10 +4,13 @@ import { SsgConfig } from "../config";
 
 const defaultLibConstructors = {
     'markdown': async () => {
-        const markdownit = await import('markdown-it/lib');
+        const markdownit = await import('markdown-it');
         return markdownit.default();
     },
-    'matter': async () => await import('gray-matter'),
+    'matter': async () => {
+        const module = await import('gray-matter');
+        return module;
+    },
     'nunjucks': async () => {
         const nunjucksModule = await import('nunjucks');
         const nunjucks = nunjucksModule.default;
@@ -17,7 +20,10 @@ const defaultLibConstructors = {
         //const njkEnvironment: nunjucks.Environment = nunjucks.configure({ autoescape: true });
         //return nunjucks;
     },
-    'cheerio': async () => await import('cheerio'),
+    'cheerio': async () => {
+        const module = import('cheerio');
+        return module;
+    }
 };
 
 const initializedLibsCache: Record<string, any> = {};
@@ -44,15 +50,20 @@ export async function initializeLib(libConstructor: ConstructorFnOrStatic, confi
 
     if (typeof libConstructor === 'function') {
         const initializedLib: any = await libConstructor(config);
+        return initializedLib;
     }
 
     return libConstructor;
 }
 
-export async function getLibInstance(libName: string, config?: any): Promise<any> {
+export async function getLibInstance(libName: string, config?: SsgConfig): Promise<any> {
 
     if (initializedLibsCache[ libName ]) {
         return initializedLibsCache[ libName ];
+    }
+
+    if (!config) {
+        return null;
     }
 
     if (!config.libConstructors) {

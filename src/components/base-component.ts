@@ -5,10 +5,10 @@ import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/uti
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
 
-export type DataToParsedDocumentFn = (dataCtx?: DocumentData | null, config?: any) => DataParsedDocument | string;
+export type DataToParsedDocumentFn = (dataCtx?: DocumentData | null, config?: SsgConfig) => DataParsedDocument | string;
 export type DataToParsedDocumentOrString = DataToParsedDocumentFn | DataParsedDocument | string;
 
-export type DataFunction = (dataCtx?: DocumentData | null, config?: any) => DataParsedDocument | DocumentData;
+export type DataFunction = (dataCtx?: DocumentData | null, config?: SsgConfig) => DataParsedDocument | DocumentData;
 //export type RenderFunction = DataToParsedDocumentFn;
 
 export interface BaseComponent {
@@ -18,7 +18,7 @@ export interface BaseComponent {
     render: DataToParsedDocumentOrString;
 
     //control data -> for manipulating the data and or layout chain / components flow settings dynamically
-    //controlData?(dataCtx?: DocumentData | null, config?: any): any;
+    //controlData?(dataCtx?: DocumentData | null, config?: SsgConfig): any;
 }
 
 //export type StyleFunction = DataToParsedDocumentFn;
@@ -34,7 +34,7 @@ const dataPackResultKeys: string[] = [
     'clientCode'
 ];
 
-export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config: any): Promise<DataParsedDocument> {
+export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument> {
 
     if (!dataCtx) {
         dataCtx = {};
@@ -67,7 +67,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
     };
 }
 
-export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: any): Promise<DataParsedDocument | null> {
+export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | null> {
 
     if (config && !config.tsComponentsCache) {
         config.tsComponentsCache = {};

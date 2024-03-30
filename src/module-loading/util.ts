@@ -1,9 +1,8 @@
 import Module from 'module';
 import { calcHash } from '../fragement-cache';
 import * as fs from 'fs';
-import { FalsyAble } from '../document-compile';
 import path from 'path';
-import { arrayifyFilter } from '../utils/util';
+import { arrayifyFilter, FalsyAble } from '../utils/util';
 import { SingleOrArray } from '../utils/util2';
 import { SsgConfig } from '../config';
 
@@ -145,12 +144,16 @@ export async function getResolveTsModule<ModuleInterface>(moduleIdOrPath: string
 }
 
 export async function getResolveTsModuleWithConfig<ModuleInterface>(
-    moduleIdOrPath: string,
+    moduleIdOrPath: string | null,
     resolvePathRoots: SingleOrArray<FalsyAble<string>>,
     tsModulesCache?: Record<string, Module>,
     config?: SsgConfig,
     configResolvePathsKey?: string,
 ): Promise<ModuleInterface | null> {
+
+    if (!moduleIdOrPath) {
+        return null;
+    }
 
     if (!config) {
         return null;
@@ -167,4 +170,39 @@ export async function getResolveTsModuleWithConfig<ModuleInterface>(
     filteredResolvePaths = filteredResolvePaths.concat(configResolvePaths);
 
     return getResolveTsModule<ModuleInterface>(moduleIdOrPath, filteredResolvePaths, tsModulesCache, config);
+}
+
+
+export async function loadModulesFrom(srcDirPath: string, extension: string = 'ts'): Promise<Module[] | null> {
+    //const compilersDirRel = './compilers';
+    //let compilersDirPath = path.join(__dirname, compilersDirRel);
+
+    if (!path.isAbsolute(srcDirPath)) {
+        srcDirPath = path.join(process.cwd(), srcDirPath);
+    }
+
+    if (!fs.existsSync(srcDirPath)) {
+        return null;
+    }
+
+    const srcDirFiles: string[] = await fs.promises.readdir(srcDirPath);
+
+    const loadedModules: Module[] = [];
+
+    for (const dirFile of srcDirFiles) {
+        const dirFileAbs = path.join(srcDirPath, dirFile);
+        const dirFileParsed: path.ParsedPath = path.parse(dirFileAbs);
+        //const dirFileName = dirFileParsed.name;
+        const dirFileExt = dirFileParsed.ext;
+
+        if (dirFileExt === extension) {
+            const loadedTsModule: Module | null = await loadTsModule(dirFileAbs);
+            if (loadedTsModule) {
+                loadedModules.push(loadedTsModule);
+            }
+
+        }
+
+    }
+    return loadedModules;
 }

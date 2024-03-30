@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import { DataParsedDocument, DocumentCompileData } from './document-compile';
-import { DocumentData } from './data-extract';
+import { DocumentCompileData } from './compilers/runners';
 
 export function calcHash(content: any): string {
 

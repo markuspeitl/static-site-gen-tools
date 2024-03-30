@@ -1,32 +1,17 @@
 import * as fs from 'fs';
 import path from 'path';
 import markdownit from 'markdown-it';
-import { setDefaults, cleanUpExt } from './compile';
-import { DocumentData, extractData } from './data-extract';
-import { CompilerModule, getDefaultDocCompilers, setDefaultFragmentCache } from './defaults';
+import { extractData } from './data-extract';
+import { setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from './fragement-cache';
 import { SsgConfig } from './config';
-import { arrayify, arrayifyFilter } from './utils/util';
+import { arrayify, arrayifyFilter, cleanUpExt, FalsyAble } from './utils/util';
 import { SingleOrArray } from './utils/util2';
 import { loadTsModule } from './module-loading/util';
-
-export interface DataParsedDocument {
-    content?: string | null;
-    data?: DocumentData | null;
-}
-export interface DocumentCompileData extends DataParsedDocument {
-    dataCtx?: DocumentData;
-}
-
-export interface DocumentCompiler {
-    compile: (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<FalsyAble<DataParsedDocument>>;
-}
-
-export type DocCompilers = Record<string, DocumentCompiler>;
+import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, findRunnerInstanceFor, getRunnerInstance, setDefaultRunnerInstantiatorsFromFiles } from './compilers/runners';
 
 
-
-export async function getDocumentCompiler(idString: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, compilersCache: FalsyAble<DocCompilers>, config?: SsgConfig): Promise<FalsyAble<DocumentCompiler>> {
+/*export async function getDocumentCompiler(idString: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, compilersCache: FalsyAble<DocCompilers>, config?: SsgConfig): Promise<FalsyAble<DocumentCompiler>> {
 
     if (!config) {
         config = {};
@@ -67,7 +52,7 @@ export async function getDocumentCompiler(idString: string, resolvePathRoots: Si
 
     const selectedCompiler: DocumentCompiler | null = compilersCache[ idString ];
     return selectedCompiler;
-}
+}*/
 
 export function getDataExtractedDocOfContent(documentContents: string | DataParsedDocument, docData?: DocumentData | null): DataParsedDocument {
     if (typeof documentContents === 'string') {
@@ -81,6 +66,9 @@ export function getDataExtractedDocOfContent(documentContents: string | DataPars
 
 export async function alternativeProcessCompileDocument(inputsAndDocToCompile: DocumentCompileData, config?: SsgConfig): Promise<DocumentCompileData | null> {
 
+    if (config?.fragmentCacheDisabled) {
+        return null;
+    }
 
     const fragmentCache: FragmentCache | undefined = config?.fragmentCache;
     let cachedFragment: DocumentCompileData | null = null;
@@ -96,6 +84,10 @@ export async function alternativeProcessCompileDocument(inputsAndDocToCompile: D
 }
 
 export async function postProcessCompiledDocument(input: DocumentCompileData, output: DocumentCompileData, config?: SsgConfig): Promise<DocumentCompileData> {
+    if (config?.fragmentCacheDisabled) {
+        return output;
+    }
+
     const fragmentCache: FragmentCache | undefined = config?.fragmentCache;
     if (fragmentCache && fragmentCache.storeUpdatedCompiledFragment) {
         /*const compileOutputs: CompileOutputs = {
@@ -106,8 +98,6 @@ export async function postProcessCompiledDocument(input: DocumentCompileData, ou
     }
     return output;
 }
-
-export type FalsyAble<ItemType> = ItemType | null | undefined;
 
 export function mergeLocalAndParamData(localDocData: FalsyAble<DocumentData>, paramData: FalsyAble<DocumentData>): DocumentData {
 
@@ -161,27 +151,38 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
     return output;
 }
 
-export async function compileDocumentWithExt(inputData: DocumentCompileData, documentTypeExt: string, docCompilers?: DocCompilers, config?: SsgConfig): Promise<DocumentCompileData | null> {
-    const defaultDocCompilers: DocCompilers = await getDefaultDocCompilers();
-    docCompilers = setDefaults(docCompilers, defaultDocCompilers);
+export async function compileDocumentAt(inputData: DocumentCompileData, fsNodePath: string, config: SsgConfig = {}): Promise<DocumentCompileData | null> {
+
     setDefaultFragmentCache(config);
+    //Load template defaults
+    await setDefaultRunnerInstantiatorsFromFiles(config);
+    //documentTypeExt = cleanUpExt(documentTypeExt);
 
-    const inputPath: string | undefined = inputData.dataCtx?.inputPath;
-    const selectedCompiler: FalsyAble<DocumentCompiler> = await getDocumentCompiler(documentTypeExt, [ inputPath ], docCompilers, config);
+    const docCompilerInstance: FalsyAble<DocumentCompiler> = await findRunnerInstanceFor(fsNodePath, config);
 
-    if (!selectedCompiler) {
+    const resultDataParsedDoc: DataParsedDocument = {
+        content: null,
+        data: inputData
+    };
+
+    if (!docCompilerInstance) {
+        return resultDataParsedDoc;
+    }
+
+    return compileDocument(inputData, docCompilerInstance, config);
+
+
+    /*if (!selectedCompiler) {
         throw new Error(`No compiler found for extension ${documentTypeExt}`);
     }
 
     if (!inputData.content) {
         throw new Error(`Document has not contents to compile ${inputData.content}`);
-    }
-
-    return compileDocument(inputData, selectedCompiler, config);
+    }*/
 }
 
 //Helper fn for calling from external (internally compileDocumentWithExt should be mainly used)
-export async function compileDocumentString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, documentTypeExt: string, config?: SsgConfig): Promise<DocumentCompileData | null> {
+export async function compileDocumentString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, srcFilePath: string, config?: SsgConfig): Promise<DocumentCompileData | null> {
     const document: DataParsedDocument = getDataExtractedDocOfContent(documentContents, null);
 
     if (!document.content) {
@@ -190,30 +191,33 @@ export async function compileDocumentString(documentContents: string | DataParse
 
     const compileInputData: DocumentCompileData = Object.assign({}, document, { dataCtx });
 
-    return compileDocumentWithExt(compileInputData, documentTypeExt, config?.compilers, config);
+    return compileDocumentAt(compileInputData, srcFilePath, config);
 }
 
-export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<string>> {
+export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<FalsyAble<string>> {
 
     if (!fs.existsSync(srcFilePath)) {
         //return null;
         throw new Error(`Src file at ${srcFilePath} does not exist`);
     }
 
+    //Load template defaults
+    //setDefaultRunnerInstantiatorsFromFiles(config);
+
     const srcFilePathParsed: path.ParsedPath = path.parse(srcFilePath);
     const srcFilePathName = srcFilePathParsed.name;
     let documentTypeExt = srcFilePathParsed.ext;
     documentTypeExt = cleanUpExt(documentTypeExt);
 
-
-    let docFileContent = await fs.promises.readFile(srcFilePath).toString();
+    const docFileBuffer: Buffer = await fs.promises.readFile(srcFilePath);
+    let docFileContent = docFileBuffer.toString();
 
     if (!docFileContent || docFileContent.length <= 0) {
         throw new Error(`File ${srcFilePath} is empty -> nothing to compile`);
         //return null;
     }
 
-    let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, documentTypeExt, config?.dataExtractors, config);
+    let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, srcFilePath, config);
 
 
     if (!dataExtractedDocument.data) {
@@ -227,15 +231,18 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
 
     const docToCompile = dataExtractedDocument || docFileContent;
 
-    const compiledDocument: DocumentCompileData | null = await compileDocumentString(docToCompile, data, documentTypeExt, config);
+    const compiledDocument: DocumentCompileData | null = await compileDocumentString(docToCompile, data, srcFilePath, config);
 
     return compiledDocument?.content;
 }
 
-export async function compileFileTo(srcFilePath: string, targetFilePath: string, data: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<string>> {
+export async function compileFileTo(srcFilePath: string, targetFilePath: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<FalsyAble<string>> {
+
     const compiledDocumentContents: FalsyAble<string> = await compileFile(srcFilePath, data, config);
 
     if (compiledDocumentContents) {
+        const targetDir: string = path.dirname(targetFilePath);
+        await fs.promises.mkdir(targetDir, { recursive: true });
         await fs.promises.writeFile(targetFilePath, compiledDocumentContents);
     }
     return compiledDocumentContents;

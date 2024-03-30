@@ -16,7 +16,7 @@
 };
 const libCache: Record<string, any> = {};
 
-export async function getOverrideOrLocal(libName: string, config?: any): Promise<any> {
+export async function getOverrideOrLocal(libName: string, config?: SsgConfig): Promise<any> {
 
     if (config.libOverrides[ libName ]) {
         return config.libOverrides[ libName ];

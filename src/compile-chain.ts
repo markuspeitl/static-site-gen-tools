@@ -1,6 +1,8 @@
 import { SsgConfig } from "./config";
 import { DocumentData } from "./data-extract";
+import { CompilerModule } from "./defaults";
 import { compileDocument, DocumentCompileData, FalsyAble } from "./document-compile";
+import { getResolveTsModuleWithConfig } from "./module-loading/util";
 import { arrayify } from "./utils/util";
 import * as shlex from 'shlex';
 
@@ -68,10 +70,20 @@ export async function compileLayout(layoutRenderCmd: string, childDocCompiled: D
     if (layoutRenderCmdParts.length <= 1) {
         selectedLayoutFile = layoutRenderCmdParts[ 0 ];
     } else {
-
+        layoutRunnner = layoutRenderCmdParts[ 0 ];
+        selectedLayoutFile = layoutRenderCmdParts[ 1 ];
     }
 
     const childDocPath: string = childDocCompiled.dataCtx?.inputPath;
+
+    const resolvedLayoutRunner: CompilerModule = getResolveTsModuleWithConfig<CompilerModule>(layoutRunnner, [ childDocPath ], config?.tsModulesCache, config, 'compilerResolvePaths');
+    //const resolvedComponentModule = getResolveTsModuleWithConfig(selectedLayoutFile, [ childDocPath ], config?.tsModulesCache, config, 'componentResolvePaths');
+
+    //1. path to layout runner -> use layout runner without fileContent (in theory can be used to render custom code alternatively)
+    //2. path to layout or id of layout -> auto detect runner and use runner to compile layout content
+    //3. layout runner + layout -> use the selected layout runner to run the selected layout
+
+
 
 
 }

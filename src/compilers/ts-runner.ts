@@ -1,10 +1,10 @@
-import { DataExtractor, DocumentData } from "../data-extract";
-import { FalsyAble, DataParsedDocument, DocumentCompiler } from "../document-compile";
-import { calcHash } from "../fragement-cache";
+import { SsgConfig } from "../config";
 import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
+import { FalsyAble } from "../utils/util";
+import { CompileRunner, DataParsedDocument, DocumentData } from "./runners";
 
 
-export async function getTsModuleCompilerData(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DocumentData>> {
+export async function getTsModuleCompilerData(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DocumentData>> {
 
     if (!dataCtx) {
         dataCtx = {};
@@ -30,7 +30,7 @@ export async function getTsModuleCompilerData(fileContent: string | null | undef
     return dataCtx;
 }
 
-export async function callTsModuleCompile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any): Promise<FalsyAble<DataParsedDocument>> {
+export async function callTsModuleCompile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
     if (!dataCtx) {
         dataCtx = {};
     }
@@ -54,9 +54,9 @@ export async function callTsModuleCompile(fileContent: string | null | undefined
 }
 
 
-export function getCompiler(): DocumentCompiler {
+/*export function getCompiler(): DocumentCompiler {
     const defaultTsDocumentCompiler: DocumentCompiler = {
-        compile: async (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: any) => {
+        compile: async (fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig) => {
 
             if (!fileContent) {
                 return null;
@@ -75,10 +75,39 @@ export function getCompiler(): DocumentCompiler {
 
 export function getExtractor(): DataExtractor {
     const defaultTsDataExtractor: DataExtractor = {
-        extractData: async (fileContent: string, config?: any) => {
+        extractData: async (fileContent: string, config?: SsgConfig) => {
             return getTsModuleCompilerData(fileContent, null, config);
         }
     };
 
     return defaultTsDataExtractor;
+}*/
+
+
+export class TsRunner implements CompileRunner {
+    constructor () { }
+
+
+    public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+
+        return getTsModuleCompilerData(fileContent, null, config) as Promise<DocumentData | null>;
+    }
+
+    public async compile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+
+        if (!fileContent) {
+            return null;
+        }
+        if (!dataCtx) {
+            dataCtx = {};
+        }
+
+        dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
+        return callTsModuleCompile(fileContent, dataCtx, config);
+    }
+
+}
+
+export function getInstance(): CompileRunner {
+    return new TsRunner();
 }
