@@ -7,13 +7,13 @@ import { getLibInstance } from "../dependencies/module-instances";
 import { SsgConfig } from "../config";
 import { FalsyAble } from '../utils/util';
 import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
+import { FileRunner } from './file-runner';
 
 
-export class HtmlRunner implements CompileRunner {
+export class HtmlRunner extends FileRunner {
 
     protected matcherExpression: string | null = null;
     protected defaultMatcherExpression: string = ".+.html";
-    constructor () { }
 
     public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 

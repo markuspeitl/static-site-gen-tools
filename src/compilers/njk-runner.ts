@@ -8,6 +8,7 @@ import type { Environment } from 'nunjucks';
 import { SsgConfig } from "../config";
 //import type nunjucks from 'nunjucks';
 import { getInstance as getMarkdownRunnerInstance } from './md-runner';
+import { FileRunner } from "./file-runner";
 
 /*export function getCompiler(): DocumentCompiler {
     const defaultNjkDocumentCompiler: DocumentCompiler = {
@@ -51,9 +52,7 @@ export function getExtractor(): DataExtractor {
     return defaultNjkDataExtractor;
 }*/
 
-export class NunjucksRunner implements CompileRunner {
-    constructor () { }
-
+export class NunjucksRunner extends FileRunner {
 
     public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 

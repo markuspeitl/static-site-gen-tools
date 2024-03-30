@@ -3,6 +3,7 @@ index: 59
 image: /assets/img/logo.svg
 sectionclass: centertext
 permalink: false
+layout: ./frame.njk
 ---
 
 # Lorem Ipsum

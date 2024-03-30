@@ -6,6 +6,7 @@ import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
 import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 import { SsgConfig } from "../config";
+import { FileRunner } from "./file-runner";
 type MatterType = typeof matter;
 
 /*export function getCompiler(): DocumentCompiler {
@@ -54,9 +55,7 @@ export function getExtractor(): DataExtractor {
     return defaultMarkdownDataExtractor;
 }*/
 
-export class MarkdownRunner implements CompileRunner {
-    constructor () { }
-
+export class MarkdownRunner extends FileRunner {
 
     public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
@@ -80,7 +79,16 @@ export class MarkdownRunner implements CompileRunner {
         if (!fileContent) {
             return null;
         }
+
+        if (typeof fileContent === 'object') {
+            fileContent = (fileContent as any).content;
+        }
+
         //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
+
+        if (!fileContent) {
+            return null;
+        }
 
         //const markdownRendererInstance: markdownit = getOverrideOrLocal('markdown', config);
         const markdownRendererInstance: markdownit = await getLibInstance('markdown', config);

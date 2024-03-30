@@ -2,6 +2,7 @@ import { ArgumentParser } from 'argparse';
 import { compileFileTo } from './src/document-compile';
 import { SsgConfig } from './src/config';
 import path from 'path';
+import { compileResourceTo } from './src/generic-compile';
 
 function main() {
     const parser = new ArgumentParser({
@@ -58,7 +59,8 @@ function main() {
         componentResolvePaths: args.componentResolvePaths,
         fragmentCacheDisabled: true,
     };
-    return compileFileTo(args.sourceFilePath, args.targetFilePath, data, config);
+    //return compileFileTo(args.sourceFilePath, args.targetFilePath, data, config);
+    return compileResourceTo(args.sourceFilePath, args.targetFilePath, data, config);
 }
 
 if (require.main?.filename === __filename) {

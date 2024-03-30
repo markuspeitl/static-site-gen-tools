@@ -1,6 +1,7 @@
 import { SsgConfig } from "../config";
 import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
 import { FalsyAble } from "../utils/util";
+import { FileRunner } from "./file-runner";
 import { CompileRunner, DataParsedDocument, DocumentData } from "./runners";
 
 
@@ -84,9 +85,7 @@ export function getExtractor(): DataExtractor {
 }*/
 
 
-export class TsRunner implements CompileRunner {
-    constructor () { }
-
+export class TsRunner extends FileRunner {
 
     public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 

@@ -20,12 +20,16 @@ export function getDataExtractedDocOfData(documentData: DocumentData | DataParse
     };
 }
 
-export async function extractData(documentContents: string, fsNodePath: string, config: SsgConfig = {}): Promise<DataParsedDocument> {
+export async function extractData(documentContents: FalsyAble<string>, fsNodePath: FalsyAble<string>, config: SsgConfig = {}): Promise<DataParsedDocument> {
 
     //dataExtractors?: DataExtractors
     /*if (!dataExtractors) {
         dataExtractors = {};
     }*/
+
+    if (!documentContents || !fsNodePath) {
+        return {};
+    }
 
     //Load template defaults
     await setDefaultRunnerInstantiatorsFromFiles(config);

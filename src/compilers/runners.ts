@@ -1,6 +1,7 @@
 import { SsgConfig } from "../config";
+import { defaultCompileRunnersFileMap } from "../defaults";
 import { getResolveTsModule, loadTsModule } from "../module-loading/util";
-import { FalsyAble, setDefaults } from "../utils/util";
+import { FalsyAble, FalsyString, getKeyMatches, MatchedAndExpression, setDefaults } from "../utils/util";
 
 export type DocumentData = Record<string, any>;
 
@@ -9,7 +10,7 @@ export interface DataParsedDocument {
     data?: DocumentData | null;
 }
 export interface DocumentCompileData extends DataParsedDocument {
-    dataCtx?: DocumentData;
+    dataCtx?: DocumentData | null;
 }
 
 export interface DataExtractor {
@@ -31,6 +32,19 @@ export type DataExtractors = Record<string, DataExtractor>;
 export interface CompileRunnerInstantiator {
     getInstance(): CompileRunner;
 }
+
+export interface ResourceWriter {
+    writeResource(compiledResource: any, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void>;
+}
+
+export interface ResourceReader {
+    readResource(resourceId: string, targetId: string, config: SsgConfig): Promise<any>;
+}
+
+export interface ResourceRunner extends CompileRunner, ResourceReader, ResourceWriter {
+
+}
+
 
 
 /*export function getExistingRunner(typeString: string, config?: SsgConfig): CompileRunner | null {
@@ -117,42 +131,6 @@ export async function getRunnerInstance(nameFilterOrPath: string, config?: SsgCo
     return getRunnerInstanceFromModule(nameFilterOrPath, instantiator, config);
 }
 
-export interface MatchedAndExpression {
-    match: any,
-    expression: string,
-}
-
-export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapDict?: Record<string, ValueType>): MatchedAndExpression[] | null {
-    if (!toMatchString) {
-        return null;
-    }
-    if (!matchMapDict) {
-        return null;
-    }
-
-    const matchesValues: MatchedAndExpression[] = [];
-    for (const key in matchMapDict) {
-        const currentMatchMapValue: ValueType = matchMapDict[ key ];
-
-        let expression: RegExp;
-        if (typeof key === 'string') {
-            expression = new RegExp(key, 'gi');
-        }
-        else {
-            expression = key;
-        }
-
-        if (toMatchString.match(expression)) {
-            matchesValues.push({
-                expression: key.toString(),
-                match: currentMatchMapValue,
-            });
-        }
-    }
-
-    return matchesValues;
-}
-
 export async function findRunnerInstanceFor(fsNodePath: string, config: SsgConfig = {}): Promise<CompileRunner | null | undefined> {
     const directMatchRunnerInstance: CompileRunner | null = await getRunnerInstance(fsNodePath);
     if (directMatchRunnerInstance) {
@@ -176,14 +154,6 @@ export async function findRunnerInstanceFor(fsNodePath: string, config: SsgConfi
 
     return null;
 }
-
-//These should modifyable through config
-const defaultCompileRunnersFileMap: Record<string, string> = {
-    '.+.html': "html-runner.ts",
-    '.+.md': "md-runner.ts",
-    '.+.njk': "njk-runner.ts",
-    '.+.ts': "ts-runner.ts"
-};
 
 export async function loadNewInstantiatorsFromFilesMap(config: SsgConfig): Promise<void> {
     const runnerInstantiators: Record<string, CompileRunnerInstantiator> = initGetConfigDict(config, 'compileRunnerInstatiators');

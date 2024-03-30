@@ -5,10 +5,11 @@ import { extractData } from './data-extract';
 import { setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from './fragement-cache';
 import { SsgConfig } from './config';
-import { arrayify, arrayifyFilter, cleanUpExt, FalsyAble } from './utils/util';
+import { arrayify, arrayifyFilter, cleanUpExt, FalsyAble, FalsyString, FalsyStringPromise } from './utils/util';
 import { SingleOrArray } from './utils/util2';
 import { loadTsModule } from './module-loading/util';
 import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, findRunnerInstanceFor, getRunnerInstance, setDefaultRunnerInstantiatorsFromFiles } from './compilers/runners';
+import { readFileAsString } from './compilers/file-runner';
 
 
 /*export async function getDocumentCompiler(idString: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, compilersCache: FalsyAble<DocCompilers>, config?: SsgConfig): Promise<FalsyAble<DocumentCompiler>> {
@@ -153,6 +154,14 @@ export async function compileDocument(inputData: DocumentCompileData, compiler: 
 
 export async function compileDocumentAt(inputData: DocumentCompileData, fsNodePath: string, config: SsgConfig = {}): Promise<DocumentCompileData | null> {
 
+    if (!inputData) {
+        inputData = {};
+    }
+    if (!inputData.content) {
+        const docFileContent: FalsyString = await readFileAsString(fsNodePath);
+        inputData.content = docFileContent;
+    }
+
     setDefaultFragmentCache(config);
     //Load template defaults
     await setDefaultRunnerInstantiatorsFromFiles(config);
@@ -182,7 +191,7 @@ export async function compileDocumentAt(inputData: DocumentCompileData, fsNodePa
 }
 
 //Helper fn for calling from external (internally compileDocumentWithExt should be mainly used)
-export async function compileDocumentString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, srcFilePath: string, config?: SsgConfig): Promise<DocumentCompileData | null> {
+export async function compileDocumentOrString(documentContents: string | DataParsedDocument, dataCtx: any | null | undefined, srcFilePath: string, config?: SsgConfig): Promise<DocumentCompileData | null> {
     const document: DataParsedDocument = getDataExtractedDocOfContent(documentContents, null);
 
     if (!document.content) {
@@ -194,7 +203,7 @@ export async function compileDocumentString(documentContents: string | DataParse
     return compileDocumentAt(compileInputData, srcFilePath, config);
 }
 
-export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<FalsyAble<string>> {
+export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): FalsyStringPromise {
 
     if (!fs.existsSync(srcFilePath)) {
         //return null;
@@ -204,20 +213,26 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
     //Load template defaults
     //setDefaultRunnerInstantiatorsFromFiles(config);
 
-    const srcFilePathParsed: path.ParsedPath = path.parse(srcFilePath);
+    /*const srcFilePathParsed: path.ParsedPath = path.parse(srcFilePath);
     const srcFilePathName = srcFilePathParsed.name;
     let documentTypeExt = srcFilePathParsed.ext;
-    documentTypeExt = cleanUpExt(documentTypeExt);
+    documentTypeExt = cleanUpExt(documentTypeExt);*/
 
-    const docFileBuffer: Buffer = await fs.promises.readFile(srcFilePath);
-    let docFileContent = docFileBuffer.toString();
+    const docFileContent: FalsyString = await readFileAsString(srcFilePath);
 
     if (!docFileContent || docFileContent.length <= 0) {
         throw new Error(`File ${srcFilePath} is empty -> nothing to compile`);
         //return null;
     }
 
-    let dataExtractedDocument: DataParsedDocument = await extractData(docFileContent, srcFilePath, config);
+    const dataInputDocument: DocumentCompileData = {
+        content: docFileContent,
+        data: null,
+        dataCtx: null,
+    };
+
+
+    let dataExtractedDocument: DataParsedDocument = await extractData(dataInputDocument.content, srcFilePath, config);
 
 
     if (!dataExtractedDocument.data) {
@@ -229,11 +244,15 @@ export async function compileFile(srcFilePath: string, data: FalsyAble<DocumentD
     //dataExtractedDocument.data.inputPath = srcFilePath;
     data.inputPath = srcFilePath;
 
-    const docToCompile = dataExtractedDocument || docFileContent;
+    const compileInputDocument: DocumentCompileData = dataExtractedDocument || dataInputDocument;
+    compileInputDocument.dataCtx = data;
+    //const compileInputDocumentWithCtx: DocumentCompileData = Object.assign({}, compileInputDocument, { dataCtx: data });
 
-    const compiledDocument: DocumentCompileData | null = await compileDocumentString(docToCompile, data, srcFilePath, config);
-
+    const compiledDocument: DocumentCompileData | null = await compileDocumentAt(compileInputDocument, srcFilePath, config);
     return compiledDocument?.content;
+
+    /*const compiledDocument: DocumentCompileData | null = await compileDocumentOrString(docToCompile, data, srcFilePath, config);
+    return compiledDocument?.content;*/
 }
 
 export async function compileFileTo(srcFilePath: string, targetFilePath: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<FalsyAble<string>> {
