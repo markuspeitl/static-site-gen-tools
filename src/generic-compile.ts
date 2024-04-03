@@ -5,49 +5,86 @@ import { FalsyAble, FalsyStringPromise } from "./utils/util";
 import * as fs from 'fs';
 import { getDataExtractedDocOfData } from "./data-extract";
 
+export function packIntoDataOpt(data: any, packIfMissingObj: any): Record<string, any> {
+    if (!data) {
+        return {};
+    }
 
+    for (const key in packIfMissingObj) {
+        const currentElement = packIfMissingObj[ key ];
+        if (!data[ key ]) {
+            data[ key ] = packIfMissingObj[ key ];
+        }
+    }
+
+    return data;
+}
+export function unpackDataProps(data: any, dataToResultKeys: any): any {
+    const result = {};
+    for (const key in dataToResultKeys) {
+        const targetKey = dataToResultKeys[ key ];
+        const srcValue = data[ key ];
+        result[ targetKey ] = srcValue;
+    }
+    return result;
+}
 
 export async function readResource(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
+    data = packIntoDataOpt(data, {
+        target: targetId,
+        src: resourceId
+    });
 
-    if (!data) {
-        data = {};
-    }
     //let resourceId: string | null = null;
-    if (data.src) {
-        resourceId = data.src;
-    }
+    /*if (!resourceId) {
+        if (data.src) {
+            resourceId = data.src;
+        }
+        if (data.target) {
+            targetId = data.target;
+        }    
+    }*/
 
-    if (data.target) {
-        targetId = data.target;
-    }
+    /*const { resourceId, targetId } = unpackDataProps(data, {
+        'src': 'resourceId',
+        'target': 'targetId'
+    });*/
 
-    const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resourceId, config);
+    const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(data.src, config);
 
     if (compileRunner && (compileRunner as ResourceRunner).readResource) {
-        return (compileRunner as ResourceRunner).readResource(resourceId, targetId, config);
+        return (compileRunner as ResourceRunner).readResource(data.src, targetId, config);
     }
 }
 
-export async function writeResource(compiledResult: any, resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
+export async function writeResource(compiledResult: FalsyAble<DataParsedDocument>, resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
+    data = packIntoDataOpt(data, {
+        target: targetId,
+        src: resourceId
+    });
 
-    const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resourceId, config);
+    const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(data.src, config);
 
     if (compiledResult && compileRunner && (compileRunner as ResourceRunner).writeResource) {
         //return (compileRunner as ResourceRunner).readResource(resourceId, targetId, config);
 
-        if (!data) {
-            data = {};
-        }
         //let resourceId: string | null = null;
-        if (compiledResult.src || data.src) {
+        /*if (compiledResult.src || data.src) {
             resourceId = compiledResult.src || data.src;
         }
 
         if (compiledResult.target || data.target) {
             targetId = compiledResult.target || data.target;
+        }*/
+
+        if (!compiledResult.data) {
+            compiledResult.data = {};
         }
 
-        (compileRunner as ResourceRunner).writeResource(compiledResult, resourceId, targetId, config);
+        const afterCompileData: DocumentData = compiledResult.data;
+        const mergedAfterCompile: DocumentData = Object.assign(data, afterCompileData);
+
+        (compileRunner as ResourceRunner).writeResource(compiledResult, mergedAfterCompile.src, mergedAfterCompile.target, config);
     }
 
     return compiledResult;
@@ -61,13 +98,19 @@ export function mergeDataDoc(input: DataParsedDocument | string, dataDoc: DataPa
 }
 
 export async function compileResource(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
+
+    packIntoDataOpt(data, {
+        target: targetId,
+        src: resourceId
+    });
+
     await setDefaultRunnerInstantiatorsFromFiles(config);
 
     let toCompileResourceContents: any = await readResource(resourceId, targetId, data, config);
 
     const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resourceId, config);
 
-    const contentAndData: DocumentData | DataParsedDocument | null | undefined = await compileRunner?.extractData(toCompileResourceContents, config);
+    const contentAndData: DocumentData | DataParsedDocument | null | undefined = await compileRunner?.extractData(toCompileResourceContents, data, config);
 
     toCompileResourceContents = mergeDataDoc(toCompileResourceContents, contentAndData);
 
@@ -84,15 +127,8 @@ export async function compileResource(resourceId: string, targetId: string, data
 }*/
 
 export async function compileResourceTo(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
-
     if (!data) {
         data = {};
-    }
-    if (!data.target) {
-        data.target = targetId;
-    }
-    if (!data.src) {
-        data.src = resourceId;
     }
 
     const compiledResource: any = await compileResource(resourceId, targetId, data, config);

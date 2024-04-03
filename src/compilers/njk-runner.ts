@@ -54,7 +54,7 @@ export function getExtractor(): DataExtractor {
 
 export class NunjucksRunner extends FileRunner {
 
-    public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
 
         let markdownRunner: CompileRunner | null = await getRunnerInstance('markdown', config);

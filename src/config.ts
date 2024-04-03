@@ -29,6 +29,7 @@ export interface SsgConfig {
     ctxDataPriority?: boolean;
 
     tsModulesCache?: Record<string, Module>;
+    tsComponentsCache?: Record<string, Module>;
 
     //Default paths from which to scan for a relative notated runner ts file, holding a document compiler
     runnerResolvePaths?: string[];

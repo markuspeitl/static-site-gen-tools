@@ -1,3 +1,4 @@
+import { BaseComponent } from "../components/base-component";
 import { SsgConfig } from "../config";
 import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
 import { FalsyAble } from "../utils/util";
@@ -5,18 +6,35 @@ import { FileRunner } from "./file-runner";
 import { CompileRunner, DataParsedDocument, DocumentData } from "./runners";
 
 
-export async function getTsModuleCompilerData(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DocumentData>> {
+export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): string | null {
+    if (!dataCtx) {
+        return null;
+    }
+    const componentModulePath: string = dataCtx?.inputPath || dataCtx?.path || dataCtx?.src;
+    return componentModulePath;
+}
+
+export async function getComponent(dataCtx?: DocumentData | null, moduleContent?: FalsyAble<string>): Promise<BaseComponent | null> {
+    let loadedModule: any = await getTsModule(moduleContent, getTargetModulePath(dataCtx));
+    if (!loadedModule) {
+        return null;
+    }
+    const componentInstance: BaseComponent = loadedModule.default;
+    return componentInstance;
+}
+
+export async function getTsModuleCompilerData(fileContent: FalsyAble<string>, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DocumentData>> {
 
     if (!dataCtx) {
         dataCtx = {};
     }
+    const componentInstance: BaseComponent | null = await getComponent(dataCtx, fileContent);
 
-    let loadedModule: any = await getTsModule(fileContent, dataCtx?.inputPath || dataCtx?.path);
-    if (!loadedModule) {
+    const getDataFn = getFirstDefPropAsFn(componentInstance, [ 'data', 'getData', 'frontMatterData', 'getFrontMatterData' ]);
+    if (!getDataFn) {
+        console.log(`Could not find (data, getData, frontMatterData, getFrontMatterData) function or property in component in module of:\n${fileContent}`);
         return null;
     }
-
-    const getDataFn = getFirstDefPropAsFn(loadedModule, [ 'data', 'getData', 'frontMatterData', 'getFrontMatterData' ]);
 
     let moduleData = await getDataFn(dataCtx, config);
     if (!moduleData) {
@@ -36,12 +54,15 @@ export async function callTsModuleCompile(fileContent: string | null | undefined
         dataCtx = {};
     }
 
-    let loadedModule: any = await getTsModule(fileContent, dataCtx?.inputPath || dataCtx?.path);
-    if (!loadedModule) {
+    const componentInstance: BaseComponent | null = await getComponent(dataCtx, fileContent);
+
+    const compileDocFn = getFirstDefPropAsFn(componentInstance, [ 'render', 'compile', 'parse' ]);
+    if (!compileDocFn) {
+        console.log(`Could not (compile, render, parse) fn or property in component in module of:\n${fileContent}`);
         return null;
     }
-    const compileDocFn = getFirstDefPropAsFn(loadedModule, [ 'render', 'compile', 'parse' ]);
-    const compiledContent: DataParsedDocument | string = compileDocFn(dataCtx, config);
+
+    const compiledContent: DataParsedDocument | string = await compileDocFn(dataCtx, config);
 
     if (typeof compiledContent === 'string') {
         const compiledOutput: DataParsedDocument = {
@@ -87,9 +108,9 @@ export function getExtractor(): DataExtractor {
 
 export class TsRunner extends FileRunner {
 
-    public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
-        return getTsModuleCompilerData(fileContent, null, config) as Promise<DocumentData | null>;
+        return getTsModuleCompilerData(fileContent, dataCtx, config) as Promise<DocumentData | null>;
     }
 
     public async compile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
@@ -99,9 +120,10 @@ export class TsRunner extends FileRunner {
         }
         if (!dataCtx) {
             dataCtx = {};
+            dataCtx = await getTsModuleCompilerData(fileContent, dataCtx, config);
         }
 
-        dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
+        //dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
         return callTsModuleCompile(fileContent, dataCtx, config);
     }
 

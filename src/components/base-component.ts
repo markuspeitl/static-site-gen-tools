@@ -1,14 +1,14 @@
-import { DocumentData } from "../data-extract";
-import { DataParsedDocument } from "../document-compile";
+import { DocumentData, DataParsedDocument } from "../compilers/runners";
+import { SsgConfig } from "../config";
 import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/util";
 
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
 
-export type DataToParsedDocumentFn = (dataCtx?: DocumentData | null, config?: SsgConfig) => DataParsedDocument | string;
+export type DataToParsedDocumentFn = (dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<DataParsedDocument | string>;
 export type DataToParsedDocumentOrString = DataToParsedDocumentFn | DataParsedDocument | string;
 
-export type DataFunction = (dataCtx?: DocumentData | null, config?: SsgConfig) => DataParsedDocument | DocumentData;
+export type DataFunction = (dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<DataParsedDocument | DocumentData>;
 //export type RenderFunction = DataToParsedDocumentFn;
 
 export interface BaseComponent {
@@ -67,7 +67,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
     };
 }
 
-export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | null> {
+export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | null> {
 
     if (config && !config.tsComponentsCache) {
         config.tsComponentsCache = {};

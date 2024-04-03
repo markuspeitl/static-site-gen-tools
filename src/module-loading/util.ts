@@ -36,7 +36,11 @@ export function getFnFromParam(paramItem: any): (...args: any[]) => any {
     return () => paramItem;
 }
 
-export function getFirstDefPropAsFn(obj: Object, propKeys: string[]): any {
+export function getFirstDefPropAsFn(obj: Object | null | undefined, propKeys: string[]): any {
+    if (!obj) {
+        return null;
+    }
+
     for (const key of propKeys) {
         if (obj[ key ]) {
             return getFnFromParam(obj[ key ]);
@@ -76,19 +80,40 @@ export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string
 
 }
 
+export async function loadTsModuleFromString<ModuleInterface>(moduleContent: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
+    if (!moduleContent) {
+        return null;
+    }
+    if (!tsModulesCache) {
+        tsModulesCache = defaultTsModulesCache;
+    }
+
+    const moduleId: string = calcHash(moduleContent);
+
+    //https://stackoverflow.com/questions/57121467/import-a-module-from-string-variable
+    const base64EncodedModule = `data:text/javascript;base64,${btoa(moduleContent)}`;
+
+    //loadedModule = eval(moduleContent);
+    const loadedModule: Module | null = await import(base64EncodedModule);
+    if (loadedModule) {
+        tsModulesCache[ moduleId ] = loadedModule;
+    }
+    return loadedModule as ModuleInterface;
+}
+
 export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<Module | null> {
 
     if (!tsModulesCache) {
         tsModulesCache = defaultTsModulesCache;
     }
+
+    if (modulePath && !path.isAbsolute(modulePath)) {
+        modulePath = path.join(process.cwd(), modulePath);
+    }
+
     let loadedModule: Module | null = await loadTsModule(modulePath, tsModulesCache);
     if (!loadedModule && moduleContent) {
-        const moduleId: string = calcHash(moduleContent);
-
-        loadedModule = eval(moduleContent);
-        if (loadedModule) {
-            tsModulesCache[ moduleId ] = loadedModule;
-        }
+        return loadTsModuleFromString(moduleContent, tsModulesCache);
     }
 
     return loadedModule;

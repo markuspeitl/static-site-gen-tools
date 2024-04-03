@@ -2,8 +2,8 @@
 export const meta = {
 
     layoutStatic: "../example/generate-site.ts",
-    layoutModule: await import("../example/generate-site.ts"),
-    layoutModule: async () => await import("../example/generate-site.ts"),
+    layoutModule: await import("../example/generate-site.js"),
+    layoutModule: async () => await import("../example/generate-site.js"),
     layoutModule: async () => {
         render: () => 'hello';
         data: () => { mydata: 'hellodata'; };

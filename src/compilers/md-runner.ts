@@ -57,7 +57,7 @@ export function getExtractor(): DataExtractor {
 
 export class MarkdownRunner extends FileRunner {
 
-    public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
         const matterInstance: any = await getLibInstance('matter', config);
         //const matter = getOverrideOrLocal('matter', config);

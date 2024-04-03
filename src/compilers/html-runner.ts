@@ -15,7 +15,7 @@ export class HtmlRunner extends FileRunner {
     protected matcherExpression: string | null = null;
     protected defaultMatcherExpression: string = ".+.html";
 
-    public async extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
         const { parseStringPromise } = await getLibInstance('xml2js', config);
 

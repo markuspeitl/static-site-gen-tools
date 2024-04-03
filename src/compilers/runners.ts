@@ -14,7 +14,7 @@ export interface DocumentCompileData extends DataParsedDocument {
 }
 
 export interface DataExtractor {
-    extractData(fileContent: string, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null>;
+    extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null>;
 }
 export interface DocumentCompiler {
     compile(fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;

@@ -62,7 +62,7 @@ export abstract class FileRunner implements ResourceRunner {
         return readFileResource(resourceId, targetId, config);
     }
 
-    abstract extractData(fileContent: string, config?: SsgConfig | undefined): Promise<DocumentData | DataParsedDocument | null>;
+    abstract extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig | undefined): Promise<DocumentData | DataParsedDocument | null>;
     abstract compile(fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig | undefined): Promise<FalsyAble<DataParsedDocument>>;
 
     public async writeResource(compiledResource: any, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void> {
