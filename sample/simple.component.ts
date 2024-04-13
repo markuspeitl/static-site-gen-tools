@@ -1,91 +1,9 @@
 import { DataParsedDocument, DocumentData } from "../src/compilers/runners";
 import { BaseComponent, DataFunction, DataToParsedDocumentOrString, ExtensiveComponent } from "../src/components/base-component";
+import { dataTemplateFn, StaticAssembledFileComponent } from "../src/components/common-components";
+import { css, curvyTemplate, html, ts } from "../src/components/pre-process";
 import { SsgConfig } from "../src/config";
 import * as fs from 'fs';
-import dedent from 'ts-dedent';
-
-function js(strings, ...values) {
-    return dedent(strings, ...values);
-}
-
-function ts(strings, ...values) {
-    //return String.raw({ raw: strings }, ...values);
-    return dedent(strings, ...values);
-}
-
-function css(strings, ...values) {
-    return dedent(strings, ...values);
-}
-
-function findFirstContentfulLine(array: string[]): number {
-    for (let i = 0; i < array.length; i++) {
-        const elem = array[ i ];
-        if (elem.trim().length > 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-
-function normalizeTabs(string: string | null | undefined, spacesPerTab: number = 4): string {
-    if (!string) {
-        return '';
-    }
-
-    const whiteSpacesString = string?.replaceAll('\t', '    ');
-    return whiteSpacesString;
-}
-
-const preWhiteSpaceRegex = /^\s+/;
-function findIdentation(string: string, spacePerTab: number = 4): string {
-    if (!string) {
-        return '';
-    }
-
-    const whiteSpace = string.match(preWhiteSpaceRegex)?.at(0);
-    const whiteSpacesString = normalizeTabs(whiteSpace);
-    return whiteSpacesString;
-}
-
-function removeIdentation(string: string,) {
-
-}
-
-//https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-function escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
-function html(strings, ...values) {
-
-    return dedent(strings, ...values);
-
-    /*const contentLineStart: number = findFirstContentfulLine(strings);
-    if (contentLineStart < 0) {
-        return;
-    }
-
-    const startIdentation: string = findIdentation(strings[ contentLineStart ]);
-
-    if (startIdentation) {
-        const startIdentationRegex: RegExp = RegExp('^' + escapeRegExp(startIdentation));
-
-        for (let i = contentLineStart; i < strings.length; i++) {
-            strings[ i ] = strings[ i ].replace(startIdentationRegex, '');
-        }
-    }
-
-    return String.raw({ raw: strings }, ...values);*/
-}
-
-function readFileFn(filePath: string): () => Promise<string> {
-    return async () => {
-        const fileContents: Buffer = await fs.promises.readFile(filePath);
-        return fileContents.toString();
-    };
-}
-
 
 export class PropStyleComponent implements ExtensiveComponent {
 
@@ -122,11 +40,14 @@ export class PropStyleComponent implements ExtensiveComponent {
     `;
 }
 
-export class StaticAssembledFileComponent implements ExtensiveComponent {
-    public data: DocumentData | DataFunction = readFileFn('./data.json');
+export class FileComponent extends StaticAssembledFileComponent {
+
+
+
+    /*public data: DocumentData | DataFunction = readFileFn('./data.json');
     public style: DataToParsedDocumentOrString = readFileFn('./style.scss');
     public clientCode: DataToParsedDocumentOrString = readFileFn('./script.js');
-    public render: DataToParsedDocumentOrString = readFileFn('./index.html');
+    public render: DataToParsedDocumentOrString = readFileFn('./index.html');*/
 }
 
 class FunctionStyleDynamicComponent implements BaseComponent {
@@ -143,13 +64,21 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             dataCtx = {};
         }
 
-        const htmlContent: string = html`
+        /*const htmlContent: string = html`
             <h1>${dataCtx.title}</h1>
             <p>${dataCtx.description}</p>
             <div>
                 ${dataCtx.content}
             </div>
-        `;
+        `;*/
+
+        const htmlContent: string = curvyTemplate(html`
+            <h1>{{title}}</h1>
+            <p>{{description}}</p>
+            <div>
+                {{content}}
+            </div>
+        `, dataCtx);
 
         return {
             content: htmlContent,
@@ -160,8 +89,32 @@ class FunctionStyleDynamicComponent implements BaseComponent {
 }
 
 const propComponent: PropStyleComponent = new PropStyleComponent();
-const fileComponent: StaticAssembledFileComponent = new StaticAssembledFileComponent();
+const fileComponent: FileComponent = new FileComponent();
 const fnComponent: FunctionStyleDynamicComponent = new FunctionStyleDynamicComponent();
 
 
+//export default fnComponent;
+
+// For defining multiple components in a single file
+/*export default {
+    'PropComponent': propComponent,
+    'FunctionComponent': fnComponent,
+    'FileComponent': fileComponent,
+};
+export default {
+    'prop-component': propComponent,
+    'function-component': fnComponent,
+    'file-component': fileComponent,
+};
+*/
+
+const verySimpleComponentExample: BaseComponent = {
+    data: {
+        title: 'test title'
+    },
+    render: dataTemplateFn(
+        `<h1>{{ title }}</h1>`
+    ),
+};
+//export default verySimpleComponentExample;
 export default fnComponent;

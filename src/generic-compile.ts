@@ -116,6 +116,26 @@ export async function compileResource(resourceId: string, targetId: string, data
 
     const compiledResult = await compileRunner?.compile(toCompileResourceContents, data, config);
 
+    //TODO: check if needs to be recompiled (possibly with another compiler)
+    //Different runner syntax nesting should be possible (maybe possible explicitly marked to reference the target runner - as it can not be detected with the file extension)
+    //So when there are still custom components in the result -> reiterat rendering until resolved
+
+    //Local or global component concepts (implementation is the runners, or here?)
+
+    //If we make the assumption that the output of the compile is HTML
+    //1. render
+    //2. check if there are unresolved components
+    //3. render sub component and pass data selected from this content and the content that the element wraps
+    //4. Repeat until there are not unresolved components left
+
+    /**
+     * But as a "CompileRunner" can also be something like a directory handler consumer that means not everything coming out of the 
+     * compile process is HTML.
+     * -> Return rendered Input and output format and runner from compile process via output data.
+     */
+
+
+
     //this await can be removed in production
     await writeResource(compiledResult, resourceId, targetId, data, config);
 

@@ -6,7 +6,7 @@ import { FalsyAble, FalsyString, getKeyMatches, MatchedAndExpression, setDefault
 export type DocumentData = Record<string, any>;
 
 export interface DataParsedDocument {
-    content?: string | null;
+    content?: any; //string | null;
     data?: DocumentData | null;
 }
 export interface DocumentCompileData extends DataParsedDocument {
