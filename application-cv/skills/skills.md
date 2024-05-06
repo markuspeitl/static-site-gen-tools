@@ -66,4 +66,6 @@ levels:
     some: 2
     minimal: 1
 
+layout: ./skills.component.ts
+
 ---

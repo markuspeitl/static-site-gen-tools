@@ -1,0 +1,6 @@
+<e-frame>
+    <e-head src="./assets/*"></e-head>
+    <body>
+        <e-ordered-sections />
+    </body>
+</e-frame>
