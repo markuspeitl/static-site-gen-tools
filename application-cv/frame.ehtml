@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <header><span>Lebenslauf</span></header>
+        <section class="business-card">
+            <img src="./assets/profile.jpg" />
+            <aside>
+                <h1>Markus Peitl, BSc.<h1>
+                <div class="card-info-grid">
+                    <span>Email:</span><span>office@markuspeitl.com</span>
+                    <span>Mobile:</span><span>+436602094318</span>
+                    <span>LinkedIn:</span><span>https://www.linkedin.com/in/markuspeitl/</span>
+                    <span>Birthday:</span><span>01.04.1995</span>
+                    <span>Address:</span><span>Rienößlgasse 16/2/1, 1040 Wien</span>
+                </div>
+            </aside>
+        </section>
+        <section>
+            <h2>Job experience</h2>
+            <ul>
+                <li>
+                    <img class="logo" src="./assets/mp.jpg">
+                    <div class="time-span">2019 March - today</div>
+                    <article>
+                        <h3>
+                            Self Employed
+                        </h3>
+                        <div class="role">
+                            FullStack Software-Engineer
+                        </div>
+                        <p>
+                            <div class="tech-items-card">
+                                <h4>Technologies:</h4>
+                                <ul>
+                                    <li>Angular</li>
+                                    <li>TypeScript</li>
+                                    <li>D3.js</li>
+                                    <li>CSS3</li>
+                                    <li>HTML5</li>
+                                    <li>JavaScript</li>
+                                    <li>Git</li>
+                                </ul>
+                            </div>
+                            <div class="job-description">
+                            </div>
+                        </p>
+                    </article>
+                </li>
+                <li>
+                    <img class="logo" src="./assets/ondewo.jpg">
+                    <div class="time-span">2020 October - 2021 November</div>
+                    <article>
+                        <h3>
+                            Ondewo GmbH - Call center AI platform
+                        </h3>
+                        <p>
+                            <div class="tech-items-card">
+                                <h4>Technologies:</h4>
+                                <ul>
+                                    <li>Jira</li>
+                                    <li>Bitbucket</li>
+                                    <li>Git</li>
+                                    <li>Docker</li>
+                                    <li>Jenkins</li>
+                                    <li>Angular</li>
+                                    <li>TypeScript</li>
+                                    <li>Slack</li>
+                                    <li>Shell scripting</li>
+                                    <li>Linux</li>
+                                    <li>Grpc - Protobuf</li>
+                                    <li>Server Admin</li>
+                                    <li>Testing: Karma, Jasmine, Protractor</li>
+                                </ul>
+                            </div>
+                            <div class="role">
+                                Full Stack Software-Engineer
+                            </div>
+                            <div class="job-description">
+                                - Integrating test cases and ensuring code quality.
+                                - Managing the releases of the AIM platform (jira, bitbucket, deployment
+                                with docker).
+                                - Coordinating with the teamlead, team and freelancers on the project,
+                                - Reviewing and merging code into the code base.
+                                - Collecting requirements and refactoring the application to make it more
+                                stable and maintainable.
+                                - Coordinating between the backend and frontend team to ensure
+                                seamless integration between the two parts.
+                            </div>
+                            <a href="/ondewo">Read more about this role ...</a>
+                        </p>
+                    </article>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h2>Education</h2>
+        </section>
+        <section>
+            <h2>Technologies</h2>
+        </section>
+        <section>
+            <h2>Languages</h2>
+        </section>
+        <section>
+            <h2>Hobbies & Interests</h2>
+        </section>
+        <section>
+            <h2>Projects</h2>
+            <ul>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </section>
+    </body>
+</html>

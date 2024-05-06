@@ -1,0 +1,32 @@
+{
+    "lang": [
+        {
+            "name": "German",
+            "level": "Native"
+        },
+        {
+            "name": "English",
+            "level": "Fluent"
+        },
+        {
+            "name": "Spanish",
+            "level": "Basic"
+        },
+        {
+            "name": "Portuguese",
+            "level": "Basic"
+        }
+    ],
+    "hobbies": [
+        "Music",
+        "Playing Instruments",
+        "Singing",
+        "Music Production",
+        "Recording",
+        "Programming",
+        "Photo and Videography",
+        "Travel",
+        "Linux System Optimization",
+        "Reading"
+    ]
+}
