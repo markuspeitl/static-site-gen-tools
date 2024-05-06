@@ -1,7 +1,10 @@
+import path from "path";
 import { SsgConfig } from "../config";
 import { defaultCompileRunnersFileMap } from "../defaults";
 import { getResolveTsModule, loadTsModule } from "../module-loading/util";
-import { FalsyAble, FalsyString, getKeyMatches, MatchedAndExpression, setDefaults } from "../utils/util";
+import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
+import { setDefaults } from "../utils/arg-util";
+import { MatchedAndExpression, getKeyMatches } from "../utils/regex-match-util";
 
 export type DocumentData = Record<string, any>;
 
@@ -178,4 +181,48 @@ export async function setDefaultRunnerInstantiatorsFromFiles(config: SsgConfig):
     }
 
     return loadNewInstantiatorsFromFilesMap(config);
+}
+
+function getRunnerAtRootPath(runnerFilePath: string, config: SsgConfig): string | null {
+    if (path.isAbsolute(runnerFilePath)) {
+        return runnerFilePath;
+    }
+
+    if (!config.defaultRunnersRoot) {
+        return null;
+    }
+    const rootRunnerPath: string = path.join(config.defaultRunnersRoot, runnerFilePath);
+    return rootRunnerPath;
+}
+
+export async function addRunnerFromFile(matchKey: string, fileName: string, config: SsgConfig): Promise<void> {
+    if (!config.runnerFilesMap) {
+        config.runnerFilesMap = {};
+    }
+    if (!fileName.endsWith('.ts')) {
+        fileName += '.ts';
+    }
+
+    config.runnerFilesMap[ matchKey ] = fileName;
+    return loadNewInstantiatorsFromFilesMap(config);
+
+    /*const runnerAtRootPath: string | null = getRunnerAtRootPath(fileName, config);
+
+    if (runnerAtRootPath) {
+        config.runnerFilesMap[ matchKey ] = runnerAtRootPath;
+        return loadNewInstantiatorsFromFilesMap(config);
+    }
+    return;*/
+}
+
+export function removeRunner(matchKey: string, config: SsgConfig): void {
+    if (config.runnerFilesMap) {
+        delete config.runnerFilesMap[ matchKey ];
+    }
+    if (config.compileRunnerInstatiators) {
+        delete config.compileRunnerInstatiators[ matchKey ];
+    }
+    if (config.compileRunners) {
+        delete config.compileRunners[ matchKey ];
+    }
 }

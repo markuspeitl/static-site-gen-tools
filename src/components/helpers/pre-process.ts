@@ -91,6 +91,39 @@ function escapeRegExp(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+
+export function joinHtml(...htmlParts: string[]): string {
+    return htmlParts.join('\n');
+}
+export function renderArray(templateString: string, dataList: any[]): string[] {
+    return dataList.map(
+
+        (arrayItem: any) => curvyTemplate(
+            templateString,
+            arrayItem
+        )
+    );
+}
+export function renderArraySelf(templateString: string, dataList: any[]): string[] {
+    return dataList.map(
+        (arrayItem: any) => {
+            const data = {
+                'content': arrayItem,
+                'self': arrayItem,
+            };
+
+            return curvyTemplate(
+                templateString,
+                data
+            );
+        }
+    );
+}
+function renderArrayHtmlList(templateString: string, dataList: any[]): string {
+    const htmlsList = renderArray(templateString, dataList);
+    return joinHtml(...htmlsList);
+}
+
 /*export function html(strings, ...values) {
 
     return dedent(strings, ...values);

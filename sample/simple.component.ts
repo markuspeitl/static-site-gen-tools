@@ -1,7 +1,7 @@
 import { DataParsedDocument, DocumentData } from "../src/compilers/runners";
 import { BaseComponent, DataFunction, DataToParsedDocumentOrString, ExtensiveComponent } from "../src/components/base-component";
 import { dataTemplateFn, StaticAssembledFileComponent } from "../src/components/common-components";
-import { css, curvyTemplate, html, ts } from "../src/components/pre-process";
+import { css, curvyTemplate, html, ts } from "../src/components/helpers/pre-process";
 import { SsgConfig } from "../src/config";
 import * as fs from 'fs';
 
