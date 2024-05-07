@@ -56,3 +56,22 @@ export function pushToProp(dict: Object, propKey: string, newElem: any) {
     }
     dict[ propKey ].push(newElem);
 }
+
+const keySeperationToken = '.';
+export function getKeyFromDict(dict: Object, key?: string): any | undefined {
+    if (!key) {
+        return dict;
+    }
+
+    const keyParts = key.split(keySeperationToken);
+    //const reversedParts = keyParts.reverse();
+
+    let currentLevelDict: Object = dict;
+    for (const key of keyParts) {
+        currentLevelDict = currentLevelDict[ key ];
+        if (currentLevelDict === undefined) {
+            return undefined;
+        }
+    }
+    return currentLevelDict;
+}

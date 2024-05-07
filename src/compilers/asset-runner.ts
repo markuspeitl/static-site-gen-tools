@@ -1,10 +1,10 @@
 import path from "path";
 import { SsgConfig } from "../config";
-import { FalsyAble, FalsyString } from "../utils/util";
 import { FileRunner } from "./file-runner";
 import { DocumentData, DataParsedDocument, CompileRunner, ResourceRunner } from "./runners";
 import { getTsModuleCompilerData, callTsModuleCompile, TsRunner } from "./ts-runner";
 import * as fs from 'fs';
+import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 
 export class AssetRunner implements ResourceRunner {
 

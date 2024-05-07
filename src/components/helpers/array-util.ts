@@ -48,3 +48,61 @@ export function concatAsArray<ItemType>(value1: ArrOrSing<ItemType>, value2: Arr
 export function mergeAsArrays(value1: ArrNullOrSing<any>, value2: ArrNullOrSing<any>): any[] {
     return arrayifyFilter(value1).concat(arrayifyFilter(value2));
 }
+
+//Call function on each item of the targetArg array, passing all options following these, for every call (common args)
+export async function multiplyFnIfArray(fn, targetArg: any | any[], ...options: any[]) {
+
+    if (!fn) {
+        return undefined;
+    }
+
+    if (Array.isArray(targetArg)) {
+        return targetArg.map((arg: any) => fn(arg, ...options));
+        //return targetArg.map(async (arg: any) => await fn(arg, ...options));
+    }
+
+    return fn(targetArg, ...options);
+    //fn.apply(null, targetArg)
+}
+
+export async function multiplyFnIfArrayAsync(fn, targetArg: any | any[], ...options: any[]) {
+
+    if (!fn) {
+        return undefined;
+    }
+
+    if (Array.isArray(targetArg)) {
+
+        const promises = targetArg.map((arg: any) => fn(arg, ...options));
+
+        return Promise.allSettled(promises);
+        //return targetArg.map(async (arg: any) => await fn(arg, ...options));
+    }
+
+    return fn(targetArg, ...options);
+    //fn.apply(null, targetArg)
+}
+
+export function getArrayFrom<ItemType>(item?: ItemType | ItemType[] | null): ItemType[] {
+    if (!item) {
+        return [];
+    }
+
+    if (!Array.isArray(item)) {
+        return [ item ];
+    }
+
+    return item;
+}
+
+export function addItemMakeArray(dict, key, item) {
+    if (!dict[ key ]) {
+        dict[ key ] = [];
+    }
+
+    if (!Array.isArray(dict[ key ])) {
+        dict[ key ] = [];
+    }
+
+    dict[ key ].push(item);
+}

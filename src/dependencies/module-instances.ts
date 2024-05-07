@@ -23,6 +23,10 @@ const defaultLibConstructors = {
     'cheerio': async () => {
         const module = import('cheerio');
         return module;
+    },
+    'xml2js': async () => {
+        const module = import('xml2js');
+        return module;
     }
 };
 
@@ -74,6 +78,10 @@ export async function getLibInstance(libName: string, config?: SsgConfig): Promi
 
     if (!selectedLibConstructor) {
         selectedLibConstructor = defaultLibConstructors[ libName ];
+    }
+
+    if (!selectedLibConstructor) {
+        throw new Error(`Library with the key '${libName}' is not defined in 'defaultLibConstructors', please add dependency costructor`);
     }
 
     const initializedLib: any = await initializeLib(selectedLibConstructor, config);

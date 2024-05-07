@@ -1,9 +1,10 @@
+import { arrayify } from "./components/helpers/array-util";
+import { FalsyAble } from "./components/helpers/generic-types";
 import { SsgConfig } from "./config";
 import { DocumentData } from "./data-extract";
 import { CompilerModule } from "./defaults";
-import { compileDocument, DocumentCompileData, FalsyAble } from "./document-compile";
+import { compileDocument, DocumentCompileData } from "./document-compile";
 import { getResolveTsModuleWithConfig } from "./module-loading/util";
-import { arrayify } from "./utils/util";
 import * as shlex from 'shlex';
 
 export function getCompileDataProp(doc: DocumentCompileData, key: string, ctxPriority: boolean = false): any {

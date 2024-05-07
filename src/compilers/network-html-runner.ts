@@ -1,5 +1,5 @@
+import { FalsyString } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { FalsyString } from "../utils/util";
 import { HtmlRunner } from "./html-runner";
 import { CompileRunner, ResourceRunner } from "./runners";
 

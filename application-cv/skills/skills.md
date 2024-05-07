@@ -1,5 +1,7 @@
 ---
 
+title: Knowledge & Skills
+
 expert:
 - Git
 - Typescript
@@ -66,6 +68,29 @@ levels:
     some: 2
     minimal: 1
 
-layout: ./skills.component.ts
-
+#layout: ./skills.component.ts
 ---
+
+<e-import>../base/tag-crumbs</e-import>
+
+# {{ title }}
+
+<tag-crumbs>
+    <title>Expert/Professional level</title>
+    <tagList>{{ expert }}</tagList>
+<tag-crumbs>
+
+<tag-crumbs>
+    <title>Extensive</title>
+    <tagList>{{ extensive }}</tagList>
+<tag-crumbs>
+
+<tag-crumbs>
+    <title>Some usage</title>
+    <tagList>{{ some }}</tagList>
+<tag-crumbs>
+
+<tag-crumbs>
+    <title>Minimal</title>
+    <tagList>{{ minimal }}</tagList>
+<tag-crumbs>

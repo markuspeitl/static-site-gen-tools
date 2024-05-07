@@ -5,15 +5,15 @@ import type { ParserOptions, parseStringPromise } from "xml2js";
 import type xml2js from "xml2js";
 import { getLibInstance } from "../dependencies/module-instances";
 import { SsgConfig } from "../config";
-import { FalsyAble } from '../utils/util';
 import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
 import { FileRunner } from './file-runner';
+import { FalsyAble } from '../components/helpers/generic-types';
 
 
 export class HtmlRunner extends FileRunner {
 
     protected matcherExpression: string | null = null;
-    protected defaultMatcherExpression: string = ".+.html";
+    protected defaultMatcherExpression: string = ".+\.html|.+\.ehtml";
 
     public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 

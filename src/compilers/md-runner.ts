@@ -1,12 +1,12 @@
 
 import { getLibInstance } from "../dependencies/module-instances";
-import { FalsyAble } from '../utils/util';
 import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
 //import matter from "gray-matter";
 import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 import { SsgConfig } from "../config";
 import { FileRunner } from "./file-runner";
+import { FalsyAble } from "../components/helpers/generic-types";
 type MatterType = typeof matter;
 
 /*export function getCompiler(): DocumentCompiler {

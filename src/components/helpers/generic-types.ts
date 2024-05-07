@@ -12,3 +12,11 @@ export type DataDict = Record<string, any>;
 export type FalsyAble<ItemType> = ItemType | null | undefined;
 export type FalsyString = FalsyAble<string>;
 export type FalsyStringPromise = Promise<FalsyString>;
+
+//export type Nullable<ItemType> = ItemType | null | undefined;
+//export type NullableString = Nullable<string>;
+export type SingleOrArray<ItemType> = Array<ItemType> | ItemType;
+export type ItemArrayOrNull<ItemType> = Nullable<Array<ItemType> | ItemType>;
+
+export type ArrayAndNull<ItemType> = Array<Nullable<ItemType>>;
+export type NullableArray<ItemType> = Nullable<Array<Nullable<ItemType>>>;

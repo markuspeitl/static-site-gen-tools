@@ -4,6 +4,7 @@ import { SsgConfig } from "./config";
 //These should modifyable through config
 export const defaultCompileRunnersFileMap: Record<string, string> = {
     '.+.html': "html-runner.ts",
+    '.+.ehtml': "html-runner.ts",
     '.+.md': "md-runner.ts",
     '.+.njk': "njk-runner.ts",
     '.+.ts': "ts-runner.ts"

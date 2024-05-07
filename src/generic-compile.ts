@@ -1,7 +1,7 @@
 import path from "path";
 import { CompileRunner, DataParsedDocument, DocumentData, findRunnerInstanceFor, ResourceRunner, ResourceWriter, setDefaultRunnerInstantiatorsFromFiles } from "./compilers/runners";
 import { SsgConfig } from "./config";
-import { FalsyAble, FalsyStringPromise } from "./utils/util";
+import { FalsyAble, FalsyString, FalsyStringPromise } from './components/helpers/generic-types';
 import * as fs from 'fs';
 import { getDataExtractedDocOfData } from "./data-extract";
 

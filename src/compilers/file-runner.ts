@@ -1,8 +1,8 @@
 import path from "path";
 import { SsgConfig } from "../config";
-import { FalsyAble, FalsyString, FalsyStringPromise } from "../utils/util";
 import { CompileRunner, ResourceWriter, ResourceReader, DataParsedDocument, DocumentData, ResourceRunner } from "./runners";
 import * as fs from 'fs';
+import { FalsyAble, FalsyString, FalsyStringPromise } from "../components/helpers/generic-types";
 
 
 export async function writeFileResource(compiledFileResource: FalsyAble<any>, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void> {

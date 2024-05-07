@@ -2,9 +2,9 @@ import Module from 'module';
 import { calcHash } from '../fragement-cache';
 import * as fs from 'fs';
 import path from 'path';
-import { arrayifyFilter, FalsyAble } from '../utils/util';
-import { SingleOrArray } from '../utils/util2';
 import { SsgConfig } from '../config';
+import { FalsyAble, SingleOrArray } from '../components/helpers/generic-types';
+import { arrayifyFilter } from '../components/helpers/array-util';
 
 export function getValueFromFnOrVar(fnOrVar: any, ...fnPassArgs: any[]): any {
 
