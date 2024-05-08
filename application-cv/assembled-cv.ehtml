@@ -1,3 +1,16 @@
+<data>
+    <title>Resume Markus Peitl</title>
+    <layout>./frame.ehtml</layout>
+    <date>08.05.2024</date>
+    <tags>
+        <i>cv</i>
+        <i>resume</i>
+        <i>skills</i>
+        <i>education</i>
+        <i>jobs</i>
+    </tags>
+</data>
+
 <e-frame>
     <e-head src="./assets/*"></e-head>
     <body>

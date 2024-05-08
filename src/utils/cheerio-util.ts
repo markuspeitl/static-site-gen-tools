@@ -7,12 +7,17 @@ export function loadHtml(html: string): cheerio.Root {
 
     //For some reasom loading the document with 'null, false' completely discards html and body elements from the 
     //resulting document
-    if (html.includes('<html')) {
-        return cheerio.load(html);
-    }
+    //if (html.includes('<html')) {
+    //    return cheerio.load(html);
+    //}
 
     // @ts-ignore
-    return cheerio.load(html, null, false);
+    //return cheerio.load(html, null, false);
+
+
+    //https://cheerio.js.org/docs/api/interfaces/HTMLParser2Options
+    //Using xmlMode prevents it from adding or removing html/body elements when parsing
+    return cheerio.load(html, { xmlMode: true }, false);
 }
 
 export function unwrapHtml(html?: string): string {

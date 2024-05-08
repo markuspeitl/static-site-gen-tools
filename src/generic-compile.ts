@@ -91,7 +91,7 @@ export async function writeResource(compiledResult: FalsyAble<DataParsedDocument
 }
 
 
-export function mergeDataDoc(input: DataParsedDocument | string, dataDoc: DataParsedDocument | any): DataParsedDocument {
+export function getAsDataParsedDocument(input: DataParsedDocument | string, dataDoc: DataParsedDocument | any): DataParsedDocument {
 
     //Todo should handle 'input' already being a DataParsedDocument as well
     return getDataExtractedDocOfData(dataDoc, input as string);
@@ -100,21 +100,28 @@ export function mergeDataDoc(input: DataParsedDocument | string, dataDoc: DataPa
 export async function compileResource(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
 
     packIntoDataOpt(data, {
+        src: resourceId,
         target: targetId,
-        src: resourceId
     });
 
     await setDefaultRunnerInstantiatorsFromFiles(config);
 
-    let toCompileResourceContents: any = await readResource(resourceId, targetId, data, config);
+    let readResourceContents: any = await readResource(resourceId, targetId, data, config);
 
     const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resourceId, config);
 
-    const contentAndData: DocumentData | DataParsedDocument | null | undefined = await compileRunner?.extractData(toCompileResourceContents, data, config);
+    const contentAndData: DocumentData | DataParsedDocument | null | undefined = await compileRunner?.extractData(readResourceContents, data, config);
 
-    toCompileResourceContents = mergeDataDoc(toCompileResourceContents, contentAndData);
+    //Make sure 'toCompileResourceContents' is a DataParsedDocument after this call
+    //readResourceContents = getAsDataParsedDocument(readResourceContents, contentAndData);
 
-    const compiledResult = await compileRunner?.compile(toCompileResourceContents, data, config);
+    if (!contentAndData) {
+        return null;
+    }
+
+    const mergedData = Object.assign(contentAndData.data, data);
+
+    const compiledResult = await compileRunner?.compile(contentAndData.content, mergedData, config);
 
     //TODO: check if needs to be recompiled (possibly with another compiler)
     //Different runner syntax nesting should be possible (maybe possible explicitly marked to reference the target runner - as it can not be detected with the file extension)

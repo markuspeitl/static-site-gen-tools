@@ -10,6 +10,11 @@ import { FileRunner } from './file-runner';
 import { FalsyAble } from '../components/helpers/generic-types';
 
 
+
+//function parsedXmlToDict(parsedXml: any): 
+
+//function xml2JsToJsDict(parsedXml: any): any {}
+
 export class HtmlRunner extends FileRunner {
 
     protected matcherExpression: string | null = null;
@@ -17,7 +22,7 @@ export class HtmlRunner extends FileRunner {
 
     public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
 
-        const { parseStringPromise } = await getLibInstance('xml2js', config);
+        const { parseStringPromise, Builder } = await getLibInstance('xml2js', config);
 
         const $: cheerio.Root = loadHtml(fileContent);
 
@@ -29,12 +34,25 @@ export class HtmlRunner extends FileRunner {
             };
         }
 
+        /*const xmlBuilder = new Builder();
+        const xmlString = xmlBuilder.buildObject({
+            root: {
+                title: "Resume Markus Peitl",
+                layout: "./frame.ehtml",
+                tags: [
+                    'cv',
+                    'resume',
+                    'skills'
+                ]
+            }
+        });*/
+
         //const opts: ParserOptions = {}
-        const parsedData: any = await parseStringPromise(contentExtraction.selected);
+        const parsedData: any = await parseStringPromise(contentExtraction.selected, { trim: true, explicitArray: false });
 
         const parsedDoc: DataParsedDocument = {
             content: contentExtraction.content,
-            data: parsedData
+            data: parsedData.data
         };
 
         return parsedDoc;
