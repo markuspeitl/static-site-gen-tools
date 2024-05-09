@@ -21,6 +21,12 @@ export interface BaseComponent {
     //controlData?(dataCtx?: DocumentData | null, config?: SsgConfig): any;
 }
 
+export interface FnBaseComponent {
+    data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData>;
+    render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string>;
+}
+
+
 //export type StyleFunction = DataToParsedDocumentFn;
 //export type ClientCodeFunction = DataToParsedDocumentFn;
 
