@@ -9,11 +9,71 @@
         <i>education</i>
         <i>jobs</i>
     </tags>
+
+
+    <!-- html comments are extremely verbose and complex compared to other formats # | // , maybe for performance reasons?? => how to improve this  -->
+    <!-- probably needs to run through a preprocessor then that removes the non xml/html compliant comments => like vscodes json comment extension -->
+    <!-- => hello -->
+    <!-- // hello -->
+    <!-- #! hello -->
+    <!-- ?? hello -->
+    <!-- ## hello -->
+    <!-- -- hello -->
+    <!-- %% hello -->
+    <!-- %-- hello --% -->
+    
+    <!--
+    %-- 
+    hello 
+    i am 
+    a multi line 
+    comment 
+    --%
+    -->
+
+    <import path="./test-components/*"></import>
+    <import path="./test-components/**"></import>
 </data>
 
 <e-frame>
     <e-head src="./assets/*"></e-head>
     <body>
         <e-ordered-sections />
+
+        <component path="./test-components/sample-md-component.md" />
+
+        <sample-md-component from="./test-components"></sample-md-component>
+
+        <md>
+            # Markdown Inline Text
+
+            Text in markdown format to be compiled to html.
+
+            - item1
+            - item2
+            - item3
+
+        </md>
+
+        <yml>
+            nav: 
+                item1:
+                    subitem1: /sub1.html
+                    subitem2: /sub2.html
+                item2: /item2nav.html
+
+            title: yaml inline format
+        </yml>
+
+        <e-for item="tag" of="tags">
+            <tag bind="tag-component"></tag>
+            <tag-component>{ tag }</tag-component>
+
+            <e-if of="item-data" is="education">
+                Condition that item tag is 'education' was met
+            </e-if>
+
+        </e-for>
+
     </body>
 </e-frame>
