@@ -37,4 +37,7 @@ export interface SsgConfig {
     layoutResolvePaths?: string[];
     //Note: the more paths -> can affect the layout and compiler resolve speed
     componentResolvePaths?: string[];
+
+    //Detected Components matching in those paths should be automatically loaded as dependencies
+    defaultComponentImportDirs?: string[];
 }

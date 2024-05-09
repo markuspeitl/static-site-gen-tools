@@ -126,7 +126,6 @@ export class TsRunner extends FileRunner {
         //dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
         return callTsModuleCompile(fileContent, dataCtx, config);
     }
-
 }
 
 export function getInstance(): CompileRunner {
