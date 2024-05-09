@@ -108,23 +108,22 @@ export function getExtractor(): DataExtractor {
 
 export class TsRunner extends FileRunner {
 
-    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-        return getTsModuleCompilerData(fileContent, dataCtx, config) as Promise<DocumentData | null>;
+        return getTsModuleCompilerData(resource.content, resource.data, config) as Promise<DocumentData | null>;
     }
 
-    public async compile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+    public async compile(resource: FalsyAble<DataParsedDocument>, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-        if (!fileContent) {
+        if (!resource || !resource.content) {
             return null;
         }
-        if (!dataCtx) {
-            dataCtx = {};
-            dataCtx = await getTsModuleCompilerData(fileContent, dataCtx, config);
+        if (!resource.data) {
+            resource.data = await getTsModuleCompilerData(resource.content, resource.data, config);;
         }
 
         //dataCtx = getTsModuleCompilerData(fileContent, dataCtx, config);
-        return callTsModuleCompile(fileContent, dataCtx, config);
+        return callTsModuleCompile(resource.content, resource.data, config);
     }
 }
 

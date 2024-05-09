@@ -57,12 +57,12 @@ export function getExtractor(): DataExtractor {
 
 export class MarkdownRunner extends FileRunner {
 
-    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
         const matterInstance: any = await getLibInstance('matter', config);
         //const matter = getOverrideOrLocal('matter', config);
 
-        const dataParsedMdFile: matter.GrayMatterFile<string> = matterInstance.default(fileContent);
+        const dataParsedMdFile: matter.GrayMatterFile<string> = matterInstance.default(resource.content);
         //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
         //mdItInstance.render(fileContent);
 
@@ -70,35 +70,30 @@ export class MarkdownRunner extends FileRunner {
 
         return {
             content: dataParsedMdFile.content,
-            data: dataParsedMdFile.data
+            data: dataParsedMdFile.data,
         };
     }
 
-    public async compile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+    public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-        if (!fileContent) {
+        if (!resource || !resource.content) {
             return null;
         }
-
-        if (typeof fileContent === 'object') {
-            fileContent = (fileContent as any).content;
+        if (!resource.data) {
+            resource.data = await this.extractData(resource.content, config);
         }
 
         //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
-
-        if (!fileContent) {
-            return null;
-        }
 
         //const markdownRendererInstance: markdownit = getOverrideOrLocal('markdown', config);
         const markdownRendererInstance: markdownit = await getLibInstance('markdown', config);
 
         const compiledOutput: DataParsedDocument = {
-            content: markdownRendererInstance.render(fileContent),
+            content: markdownRendererInstance.render(resource.content),
 
             //If any from outside accessible data properties or functions get defined within the component evaluated from 
             //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
-            data: dataCtx
+            data: resource.data
         };
 
         return compiledOutput;

@@ -5,9 +5,14 @@ import * as fs from 'fs';
 import { FalsyAble, FalsyString, FalsyStringPromise } from "../components/helpers/generic-types";
 
 
-export async function writeFileResource(compiledFileResource: FalsyAble<any>, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void> {
+export async function writeFileResource(compiledFileResource: FalsyAble<any>, config: SsgConfig): Promise<void> {
 
     if (!compiledFileResource) {
+        return;
+    }
+
+    const targetId = compiledFileResource.data.target;
+    if (!compiledFileResource.data.target) {
         return;
     }
 
@@ -52,20 +57,20 @@ export async function readFileAsString(filePath: string): FalsyStringPromise {
 }
 
 
-export async function readFileResource(resourceId: string, targetId: string, config: SsgConfig): FalsyStringPromise {
+export async function readFileResource(resourceId: string, config: SsgConfig): FalsyStringPromise {
     return readFileAsString(resourceId);
 }
 
 //CompileRunner, ResourceWriter, 
 export abstract class FileRunner implements ResourceRunner {
-    public async readResource(resourceId: string, targetId: string, config: SsgConfig): FalsyStringPromise {
-        return readFileResource(resourceId, targetId, config);
+    public async readResource(resourceId: string, config: SsgConfig): FalsyStringPromise {
+        return readFileResource(resourceId, config);
     }
 
-    abstract extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig | undefined): Promise<DocumentData | DataParsedDocument | null>;
-    abstract compile(fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig | undefined): Promise<FalsyAble<DataParsedDocument>>;
+    abstract extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
+    abstract compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
 
-    public async writeResource(compiledResource: any, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void> {
-        return writeFileResource(compiledResource, resourceId, targetId, config);
+    public async writeResource(compiledResource: any, config: SsgConfig): Promise<void> {
+        return writeFileResource(compiledResource, config);
     }
 }

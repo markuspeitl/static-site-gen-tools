@@ -54,7 +54,7 @@ export function getExtractor(): DataExtractor {
 
 export class NunjucksRunner extends FileRunner {
 
-    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
 
         let markdownRunner: CompileRunner | null = await getRunnerInstance('markdown', config);
@@ -71,26 +71,28 @@ export class NunjucksRunner extends FileRunner {
             return {};
         }
 
-        return markdownRunner.extractData(fileContent, config);
+        return markdownRunner.extractData(resource, config);
     }
 
-    public async compile(fileContent: string | null | undefined, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+    public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-        if (!fileContent) {
+        if (!resource || !resource.content) {
             return null;
+        }
+        if (!resource.data) {
+            resource.data = await this.extractData(resource.content, config);
+        }
+        if (!resource.data) {
+            resource.data = {};
         }
 
         const nunjucks: Environment = await getLibInstance('nunjucks', config);
 
-        if (!dataCtx) {
-            dataCtx = {};
-        }
-
-        const compiledString: string = nunjucks.renderString(fileContent, dataCtx);
+        const compiledString: string = nunjucks.renderString(resource.content, resource.data);
 
         const compiledOutput: DataParsedDocument = {
             content: compiledString,
-            data: dataCtx
+            data: resource.data
         };
 
         return compiledOutput;

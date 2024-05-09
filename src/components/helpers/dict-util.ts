@@ -75,3 +75,28 @@ export function getKeyFromDict(dict: Object, key?: string): any | undefined {
     }
     return currentLevelDict;
 }
+
+
+export function packIntoDataOpt(data: any, packIfMissingObj: any): Record<string, any> {
+    if (!data) {
+        return {};
+    }
+
+    for (const key in packIfMissingObj) {
+        const currentElement = packIfMissingObj[ key ];
+        if (!data[ key ]) {
+            data[ key ] = packIfMissingObj[ key ];
+        }
+    }
+
+    return data;
+}
+export function unpackDataProps(data: any, dataToResultKeys: any): any {
+    const result = {};
+    for (const key in dataToResultKeys) {
+        const targetKey = dataToResultKeys[ key ];
+        const srcValue = data[ key ];
+        result[ targetKey ] = srcValue;
+    }
+    return result;
+}

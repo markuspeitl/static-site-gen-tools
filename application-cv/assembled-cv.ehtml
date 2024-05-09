@@ -23,16 +23,19 @@
     <!-- %-- hello --% -->
     
     <!--
-    %-- 
+    %-
     hello 
     i am 
     a multi line 
     comment 
-    --%
+    -%
     -->
 
     <import path="./test-components/*"></import>
     <import path="./test-components/**"></import>
+
+    <import path="./skills/data.json" />
+    <import path="./skills/data.json" as="skills" />
 </data>
 
 <e-frame>
@@ -45,6 +48,10 @@
         <sample-md-component from="./test-components"></sample-md-component>
 
         <md>
+            ---
+            frontmatter: hello frontmatter
+            ---
+
             # Markdown Inline Text
 
             Text in markdown format to be compiled to html.
@@ -52,6 +59,7 @@
             - item1
             - item2
             - item3
+            - {{ frontmatter }}
 
         </md>
 
@@ -66,8 +74,10 @@
         </yml>
 
         <e-for item="tag" of="tags">
-            <tag bind="tag-component"></tag>
             <tag-component>{ tag }</tag-component>
+
+            <tag bind="tag-component"></tag>
+            
 
             <e-if of="item-data" is="education">
                 Condition that item tag is 'education' was met

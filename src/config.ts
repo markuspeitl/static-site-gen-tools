@@ -6,9 +6,20 @@ export interface SsgConfig {
     //compilers?: Record<string, any>;
     //dataExtractors?: Record<string, any>;
 
+    //Generic compile runner that selects a target runner from src data
+    compileRunnerCaller?: CompileRunner;
+
     //Holds instantiated compile runners
     //Can change during runtime, from runners being dynamically initialized
-    compileRunners?: Record<string, CompileRunner>;
+
+    //is a dict of id matchers by key, to values which are the runner instances
+    //compileRunners?: Record<string, CompileRunner>;
+
+
+
+    resourceMatchCompileRunnersDict?: Record<string, string>;
+    //alternative represenation that associates the compile runners by name/id
+    idCompileRunnersDict?: Record<string, CompileRunner>;
 
     //Can be used to defer compile runner instantiation when first needed
     //Assumed that these are set up at startup time and do not change

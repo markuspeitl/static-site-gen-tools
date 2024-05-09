@@ -17,10 +17,10 @@ export interface DocumentCompileData extends DataParsedDocument {
 }
 
 export interface DataExtractor {
-    extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null>;
+    extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
 }
 export interface DocumentCompiler {
-    compile(fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
+    compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
 }
 
 export interface CompileRunner extends DataExtractor, DocumentCompiler {
@@ -37,11 +37,11 @@ export interface CompileRunnerInstantiator {
 }
 
 export interface ResourceWriter {
-    writeResource(compiledResource: any, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void>;
+    writeResource(compiledResource: any, config: SsgConfig): Promise<void>;
 }
 
 export interface ResourceReader {
-    readResource(resourceId: string, targetId: string, config: SsgConfig): Promise<any>;
+    readResource(resourceId: string, config: SsgConfig): Promise<any>;
 }
 
 export interface ResourceRunner extends CompileRunner, ResourceReader, ResourceWriter {
@@ -158,6 +158,25 @@ export async function findRunnerInstanceFor(fsNodePath: string, config: SsgConfi
     return null;
 }
 
+export async function getRunnerInstanceForResource(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<CompileRunner>> {
+
+    if (!resource) {
+        return null;
+    }
+    if (!resource.data) {
+        resource.data = {};
+    }
+
+    /*if (!resource.data.compileRunner) {
+        resource.data.compileRunner = await findRunnerFor(resource.data.src);
+    }
+    const compileRunnerInstance: FalsyAble<CompileRunner> = await getRunner(resource.data.compileRunner, config);*/
+
+    const compileRunnerInstance: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resource.data.src, config) as ResourceRunner;
+
+    return compileRunnerInstance;
+}
+
 export async function loadNewInstantiatorsFromFilesMap(config: SsgConfig): Promise<void> {
     const runnerInstantiators: Record<string, CompileRunnerInstantiator> = initGetConfigDict(config, 'compileRunnerInstatiators');
 
@@ -215,6 +234,18 @@ export async function addRunnerFromFile(matchKey: string, fileName: string, conf
     return;*/
 }
 
+export function removeRunnerById(runnerId: string, config: SsgConfig): void {
+    if (config.idCompileRunnersDict) {
+        delete config.idCompileRunnersDict[ runnerId ];
+    }
+    for (const key in config.resourceMatchCompileRunnersDict) {
+        const currentRunnerId = config.resourceMatchCompileRunnersDict[ key ];
+        if (currentRunnerId === runnerId) {
+            removeRunner(key, config);
+        }
+    }
+}
+
 export function removeRunner(matchKey: string, config: SsgConfig): void {
     if (config.runnerFilesMap) {
         delete config.runnerFilesMap[ matchKey ];
@@ -222,7 +253,15 @@ export function removeRunner(matchKey: string, config: SsgConfig): void {
     if (config.compileRunnerInstatiators) {
         delete config.compileRunnerInstatiators[ matchKey ];
     }
-    if (config.compileRunners) {
-        delete config.compileRunners[ matchKey ];
+
+    if (!config.resourceMatchCompileRunnersDict) {
+        return;
     }
+
+    const compileRunnerId: string = config.resourceMatchCompileRunnersDict[ matchKey ];
+    if (config.idCompileRunnersDict) {
+        delete config.idCompileRunnersDict[ compileRunnerId ];
+    }
+
+    delete config.resourceMatchCompileRunnersDict[ matchKey ];
 }

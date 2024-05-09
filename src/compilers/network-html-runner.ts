@@ -14,13 +14,13 @@ export class NetworkHtmlRunner implements ResourceRunner {
         this.compile = this.htmlRunner.compile;
     }
 
-    async readResource(resourceId: string, targetId: string, config: SsgConfig): Promise<any> {
+    async readResource(resourceId: string, config: SsgConfig): Promise<any> {
         const fetchedResourceResult: Response = await fetch(resourceId);
         return fetchedResourceResult.json();
     }
-    async writeResource(compiledResource: any, resourceId: FalsyString, targetId: string, config: SsgConfig): Promise<void> {
+    async writeResource(compiledResource: any, config: SsgConfig): Promise<void> {
         //throw new Error("Method not implemented.");
-        this.htmlRunner.writeResource(compiledResource, resourceId, targetId, config);
+        this.htmlRunner.writeResource(compiledResource, config);
     }
 }
 

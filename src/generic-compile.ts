@@ -4,30 +4,7 @@ import { SsgConfig } from "./config";
 import { FalsyAble, FalsyString, FalsyStringPromise } from './components/helpers/generic-types';
 import * as fs from 'fs';
 import { getDataExtractedDocOfData } from "./data-extract";
-
-export function packIntoDataOpt(data: any, packIfMissingObj: any): Record<string, any> {
-    if (!data) {
-        return {};
-    }
-
-    for (const key in packIfMissingObj) {
-        const currentElement = packIfMissingObj[ key ];
-        if (!data[ key ]) {
-            data[ key ] = packIfMissingObj[ key ];
-        }
-    }
-
-    return data;
-}
-export function unpackDataProps(data: any, dataToResultKeys: any): any {
-    const result = {};
-    for (const key in dataToResultKeys) {
-        const targetKey = dataToResultKeys[ key ];
-        const srcValue = data[ key ];
-        result[ targetKey ] = srcValue;
-    }
-    return result;
-}
+import { packIntoDataOpt } from "./components/helpers/dict-util";
 
 export async function readResource(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
     data = packIntoDataOpt(data, {
@@ -53,7 +30,7 @@ export async function readResource(resourceId: string, targetId: string, data: F
     const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(data.src, config);
 
     if (compileRunner && (compileRunner as ResourceRunner).readResource) {
-        return (compileRunner as ResourceRunner).readResource(data.src, targetId, config);
+        return (compileRunner as ResourceRunner).readResource(data.src, config);
     }
 }
 

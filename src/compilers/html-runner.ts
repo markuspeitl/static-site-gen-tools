@@ -22,18 +22,19 @@ export class HtmlRunner extends FileRunner {
     protected matcherExpression: string | null = null;
     protected defaultMatcherExpression: string = ".+\.html|.+\.ehtml";
 
-    public async extractData(fileContent: string, dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData | null> {
+    public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
         const { parseStringPromise, Builder } = await getLibInstance('xml2js', config);
 
-        const $: cheerio.Root = loadHtml(fileContent);
+        //const $: cheerio.Root = loadHtml(resource.content);
 
-        const contentExtraction: ContentExtraction = extractElement(fileContent, 'data');
+        const contentExtraction: ContentExtraction = extractElement(resource.content, 'data');
 
         if (!contentExtraction || !contentExtraction.selected) {
-            return {
+            return resource;
+            /*return {
                 content: contentExtraction.content || fileContent
-            };
+            };*/
         }
 
         /*const xmlBuilder = new Builder();
@@ -52,35 +53,36 @@ export class HtmlRunner extends FileRunner {
         //const opts: ParserOptions = {}
         const parsedData: any = await parseStringPromise(contentExtraction.selected, { trim: true, explicitArray: false });
 
-        const parsedDoc: DataParsedDocument = {
+        const dataExtractedDoc: FalsyAble<DataParsedDocument> = {
             content: contentExtraction.content,
-            data: parsedData.data
+            data: parsedData.data,
         };
 
-        return parsedDoc;
+        Object.assign(dataExtractedDoc.data || {}, resource.data);
+
+        return dataExtractedDoc;
     }
 
-    public async compile(fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+    public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-        if (!fileContent) {
+        if (!resource) {
             return null;
         }
 
-        const compiledOutput: DataParsedDocument = {
-            content: fileContent,
-            data: dataCtx
+        /*const compiledOutput: DataParsedDocument = {
+            content: resource,
+            data: data
         };
 
-        const componentImportLocations: string[] = dataCtx?.import;
+        const componentImportLocations: string[] = data?.import;*/
 
-        const importedComponents: BaseComponent[] = loadComponentImports(dataCtx?.src, componentImportLocations);
-
+        //const importedComponents: BaseComponent[] = loadComponentImports(data?.src, componentImportLocations);
 
 
         //TODO: detect and load custom components
         //TODO: linking or loading in custom component definitions for usage in the document
 
-        return compiledOutput;
+        return resource;
     }
 
     public getMatcher(): string | RegExp {

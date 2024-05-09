@@ -1,3 +1,7 @@
 {
-    "skills": {}
+    "skills": [
+        "Git",
+        "Typescript",
+        "Angular"
+    ]
 }
