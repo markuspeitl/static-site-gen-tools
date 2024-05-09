@@ -1,4 +1,4 @@
-import { HtmlRunner } from "../../../compilers/html-runner";
+import { HtmlRunner } from "../../../compilers/html.runner";
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { getScopedEvalFn } from "../../../utils/fn-apply";

@@ -6,7 +6,7 @@ import type xml2js from "xml2js";
 import { getLibInstance } from "../dependencies/module-instances";
 import { SsgConfig } from "../config";
 import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
-import { FileRunner } from './file-runner';
+import { FileRunner } from './file.runner';
 import { FalsyAble } from '../components/helpers/generic-types';
 import { loadComponentImports } from './lib/component-cache';
 import { BaseComponent } from '../components/base-component';

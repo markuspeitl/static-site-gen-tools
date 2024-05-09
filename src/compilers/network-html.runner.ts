@@ -1,6 +1,6 @@
 import { FalsyString } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { HtmlRunner } from "./html-runner";
+import { HtmlRunner } from "./html.runner";
 import { CompileRunner, ResourceRunner } from "./runners";
 
 export class NetworkHtmlRunner implements ResourceRunner {

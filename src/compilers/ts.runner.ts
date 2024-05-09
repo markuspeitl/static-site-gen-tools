@@ -2,7 +2,7 @@ import { BaseComponent } from "../components/base-component";
 import { FalsyAble } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
 import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
-import { FileRunner } from "./file-runner";
+import { FileRunner } from "./file.runner";
 import { CompileRunner, DataParsedDocument, DocumentData } from "./runners";
 
 

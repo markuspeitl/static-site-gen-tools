@@ -7,7 +7,7 @@ import { defaultFragmentCache, FragmentCache } from './fragement-cache';
 import { SsgConfig } from './config';
 import { loadTsModule } from './module-loading/util';
 import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, findRunnerInstanceFor, getRunnerInstance, setDefaultRunnerInstantiatorsFromFiles } from './compilers/runners';
-import { readFileAsString } from './compilers/file-runner';
+import { readFileAsString } from './compilers/file.runner';
 import { FalsyAble, FalsyString, FalsyStringPromise } from './components/helpers/generic-types';
 
 

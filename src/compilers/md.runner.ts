@@ -5,7 +5,7 @@ import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
 import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 import { SsgConfig } from "../config";
-import { FileRunner } from "./file-runner";
+import { FileRunner } from "./file.runner";
 import { FalsyAble } from "../components/helpers/generic-types";
 type MatterType = typeof matter;
 

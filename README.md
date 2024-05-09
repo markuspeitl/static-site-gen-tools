@@ -521,3 +521,12 @@ And the specific interface between language syntax and the javascript code.
 
 
 
+## Configuration system:
+
+1. Run application
+2. Parse arguments
+3. Set up configuration defaults (not instantiation yet)
+4. Run custom config
+5. Instantiate configuration
+6. Run 2nd stage config (online Instances can be modified -> prevent monkey patching for non configurable params)
+7. Perform target operation
