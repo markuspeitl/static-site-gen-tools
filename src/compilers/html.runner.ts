@@ -11,6 +11,7 @@ import { FalsyAble } from '../components/helpers/generic-types';
 import { loadComponentImports } from './lib/component-cache';
 import { BaseComponent, IInternalComponent } from '../components/base-component';
 import { getResourceImports } from '../components/components';
+import { unescape } from 'lodash';
 
 
 
@@ -45,7 +46,7 @@ export async function compileSubComponents(html: string, componentsToCompile: Re
         const attrDict: { [ attr: string ]: string; } = $(element).attr();
 
         const subDocToCompile: DataParsedDocument = {
-            content: componentHtml,
+            content: unescape(componentHtml),
             data: Object.assign({}, componentData, dataCtx, attrDict),
         };
 
@@ -53,7 +54,7 @@ export async function compileSubComponents(html: string, componentsToCompile: Re
 
 
 
-        const subCompiledDoc: FalsyAble<DataParsedDocument> = await selectedComponentInstance.render(dataParseDoc);
+        const subCompiledDoc: FalsyAble<DataParsedDocument> = await selectedComponentInstance.render(dataParseDoc, config);
 
         //const subCompiledDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith('ts', subDocToCompile, config);
 

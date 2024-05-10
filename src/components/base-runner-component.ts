@@ -37,10 +37,10 @@ export abstract class BaseRunnerComponent implements BaseComponent, FnBaseCompon
     }
     public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
         const toCompileResource: DataParsedDocument = this.getCompileDocumentFromDataCtx(dataCtx);
-        const mdCompiledDocument: FalsyAble<DataParsedDocument> = await this.runner?.compile(toCompileResource, config || {});
+        const runnerCompiledDoc: FalsyAble<DataParsedDocument> = await this.runner?.compile(toCompileResource, config || {});
 
-        if (mdCompiledDocument) {
-            return mdCompiledDocument;
+        if (runnerCompiledDoc) {
+            return runnerCompiledDoc;
         }
         return toCompileResource;
     }

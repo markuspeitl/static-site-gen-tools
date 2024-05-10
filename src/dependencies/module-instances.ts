@@ -5,7 +5,12 @@ import { SsgConfig } from "../config";
 const defaultLibConstructors = {
     'markdown': async (config?: SsgConfig, configOptions?: any) => {
         const markdownit = await import('markdown-it');
-        return markdownit.default(configOptions);
+
+        //Initialize &
+        //Disable indented code blocks (break formatting when mixing templating syntaxes)
+
+        //info: https://github.com/11ty/eleventy/issues/2438
+        return markdownit.default(configOptions).disable('code');
     },
     'matter': async () => {
         const module = await import('gray-matter');

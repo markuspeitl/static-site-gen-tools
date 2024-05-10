@@ -111,13 +111,14 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
             'njk',
         ],
         '.+.ehtml': [
-            'njk',
             'html'
+            //'njk',
         ],
         '.+.md': [
             'md',
-            'njk',
-            'html'
+            //'njk',
+            'html',
+            'njk'
         ],
         '.+.njk': [
             'njk',

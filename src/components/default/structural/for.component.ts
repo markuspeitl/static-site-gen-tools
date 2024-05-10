@@ -24,24 +24,29 @@ export abstract class ForComponent implements BaseComponent, FnBaseComponent {
         }
         const toCompileResource: DataParsedDocument = this.getCompileDocumentFromDataCtx(dataCtx);
 
-        if (!dataCtx.cond) {
+        const data = dataCtx.data;
+
+        if (!data.it || !data.of) {
             console.log("Invalid 'for' component -> needs to have 'item' and 'of attribute");
         }
-        const iteratorItemName: string = dataCtx.item || dataCtx.it;
-        const listItemName: string = dataCtx.of;
+        const iteratorItemName: string = data.item || data.it;
+        const listItemName: string = data.of;
         const loopBody: string = dataCtx.content;
 
 
-        const selectedArray: Array<any> = getKeyFromDict(dataCtx, listItemName);
+        const selectedArray: Array<any> = getKeyFromDict(data, listItemName);
         const renderedIterations: string[] = [];
         for (const itemValue of selectedArray) {
             const subDataCtx = Object.assign(
                 {},
-                dataCtx
+                data
             );
             subDataCtx[ iteratorItemName ] = itemValue;
 
-            subDataCtx.compileRunner = 'html';
+            //subDataCtx.compileRunner = 'html';
+            const resMatchRunners = config?.resMatchCompileRunnersDict || {};
+            subDataCtx.compileRunner = resMatchRunners[ '.+.html' ] || 'html';
+
             const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(
                 {
                     content: loopBody,

@@ -24,6 +24,7 @@
     "htmlparser2": "^9.1.0",
     "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",
+    "module-from-string": "^3.3.0",
     "nunjucks": "^3.2.4",
     "shlex": "^2.1.2",
     "ts-dedent": "^2.2.0",

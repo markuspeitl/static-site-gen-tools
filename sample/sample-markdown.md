@@ -8,7 +8,15 @@ layout: ./frame.njk
 title: Sample markdown test usage compilation
 trueval: true
 
-compileRunner: md njk ehtml
+#compileRunner: md njk ehtml
+compileRunner: html
+
+tags:
+- test
+- apple
+- peach
+- markdown
+
 ---
 
 # Lorem Ipsum
@@ -52,3 +60,30 @@ hello
 <ehtml>
     Test ehtml sub component
 </ehtml>
+
+<for it="tag" of="tags">
+    <hello>{{tag}}</hello>
+
+    Anything tabbed is treated as a code block in markdown ( -> markdown it escapes the following)
+    <if cond="this.tag === 'peach'">
+        I am a fruit: PEACH
+    </if>
+
+</for>
+
+<ts>
+export default () => {
+    return `Hellor world from typescript component`;
+}
+</ts>
+
+=> code
+    console.log("test)
+<=
+
+Maybe option for parsing top level special blocks
+
+! code
+  console.log("test")  
+!
+

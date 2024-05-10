@@ -129,6 +129,12 @@ export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string
 
 }
 
+import {
+    requireFromString,
+    importFromString,
+    importFromStringSync
+} from 'module-from-string';
+
 export async function loadTsModuleFromString<ModuleInterface>(moduleContent: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
     if (!moduleContent) {
         return null;
@@ -140,10 +146,13 @@ export async function loadTsModuleFromString<ModuleInterface>(moduleContent: Fal
     const moduleId: string = calcHash(moduleContent);
 
     //https://stackoverflow.com/questions/57121467/import-a-module-from-string-variable
-    const base64EncodedModule = `data:text/javascript;base64,${btoa(moduleContent)}`;
+    //const base64EncodedModule = `data:text/javascript;base64,${btoa(moduleContent)}`;
+
+    const loadedModule = await importFromString(moduleContent);
+
 
     //loadedModule = eval(moduleContent);
-    const loadedModule: Module | null = await import(base64EncodedModule);
+    //const loadedModule: Module | null = await import(base64EncodedModule);
     if (loadedModule) {
         tsModulesCache[ moduleId ] = loadedModule;
     }
@@ -160,7 +169,13 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
         modulePath = path.join(process.cwd(), modulePath);
     }
 
-    let loadedModule: Module | null = await loadTsModule(modulePath, tsModulesCache);
+    let loadedModule: Module | null = null;
+    try {
+        loadedModule = await loadTsModule(modulePath, tsModulesCache);
+    }
+    catch (error: any) {
+        console.log(`Failed to load ts module at ${loadedModule}`);
+    }
     if (!loadedModule && moduleContent) {
         return loadTsModuleFromString(moduleContent, tsModulesCache);
     }

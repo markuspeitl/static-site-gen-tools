@@ -132,7 +132,7 @@ export class TsRunner extends FileRunner {
 
         const dataCtx: any = resource.data;
         const toRenderContent: any = resource.content;
-        const componentInstance: FalsyAble<IInternalComponent> = await getComponent(dataCtx, toRenderContent);
+        const componentInstance: FalsyAble<IInternalComponent> = await getComponent(dataCtx, toRenderContent, config);
         const dataResult: any = await componentInstance?.data(dataCtx, config);
 
         if (dataResult.content && dataResult.data) {
@@ -164,9 +164,20 @@ export class TsRunner extends FileRunner {
 
         const dataCtx: any = resource.data;
         const toRenderContent: any = resource.content;
-        const componentInstance: FalsyAble<IInternalComponent> = await getComponent(dataCtx, toRenderContent);
+        const componentInstance: FalsyAble<IInternalComponent> = await getComponent(dataCtx, toRenderContent, config);
 
-        return componentInstance?.render(dataCtx, config);
+        const renderResult = await componentInstance?.render(dataCtx, config);
+
+        if (renderResult?.content) {
+            return renderResult;
+        }
+
+        return {
+            content: renderResult,
+            data: resource.data,
+        };
+
+        //return componentInstance?.render(dataCtx, config);
 
         /*return {
             content: toRenderContent,
