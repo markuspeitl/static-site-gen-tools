@@ -1,7 +1,7 @@
 import path from "path";
 import { SsgConfig } from "../config";
 import { defaultCompileRunnersFileMap } from "../deprecated/defaults";
-import { getResolveTsModule, loadTsModule } from "../module-loading/util";
+import { getFirstInstanceTargetClass, getModuleId, getResolveTsModule, loadTsModule } from "../module-loading/util";
 import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 import { setDefaults } from "../utils/arg-util";
 import { MatchedDictKeyRes, getKeyMatches } from "../utils/regex-match-util";
@@ -251,13 +251,7 @@ export interface CompileRunnerModule extends Module {
 }
 
 export function getRunnerIdFromPath(runnerPath: string): string {
-    const parsedModulePath: path.ParsedPath = path.parse(runnerPath);
-    let parsedModuleName: string = parsedModulePath.name;
-    const postfixIndex = parsedModuleName.indexOf('.runner');
-    if (postfixIndex > -1) {
-        parsedModuleName = parsedModuleName.slice(0, postfixIndex);
-    }
-    return parsedModuleName;
+    return getModuleId(runnerPath, '.runner');
 }
 
 export async function loadRunnerInstanceFrom(modulePath: string): Promise<CompileRunner | null> {
@@ -267,15 +261,7 @@ export async function loadRunnerInstanceFrom(modulePath: string): Promise<Compil
         const runnerInstance: CompileRunner = runnerModule.getInstance();
         return runnerInstance;
     }
-
-    for (const moduleProp in runnerModule) {
-        const propValue = runnerModule[ moduleProp ];
-        const propTypeProtoType = propValue?.prototype;
-        if (propTypeProtoType && propTypeProtoType.compile && typeof propTypeProtoType.compile === 'function') {
-            return Object.create(propTypeProtoType);
-        }
-    }
-    return null;
+    return getFirstInstanceTargetClass(runnerModule, '.+Runner.*', [ 'compile' ]);
 }
 export function addRunnerInstance(runnerId: string, runnerInstance: CompileRunner, config: SsgConfig): void {
     if (!config.idCompileRunnersDict) {
@@ -299,7 +285,7 @@ export async function addRunnerInstanceFromPath(runnerPath: string, config: SsgC
     }
 }
 
-export async function loadInitializeDefaultRunners(config: SsgConfig): Promise<void> {
+export async function loadDefaultRunners(config: SsgConfig): Promise<void> {
     if (!config.idCompileRunnersDict) {
         config.idCompileRunnersDict = {};
     }

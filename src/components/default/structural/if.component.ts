@@ -24,9 +24,12 @@ export abstract class IfComponent implements BaseComponent, FnBaseComponent {
         if (!dataCtx.cond) {
             console.log("Invalid 'if' component -> needs to have a condition with the 'cond' attribute");
         }
-        const conditionExpression: string = dataCtx.cond;
 
-        const conditionFn = getScopedEvalFn(dataCtx, conditionExpression);
+        const data: any = dataCtx.data;
+
+        const conditionExpression: string = data.cond;
+
+        const conditionFn = getScopedEvalFn(data, conditionExpression);
         const truthyValue: boolean = Boolean(conditionFn());
 
         if (truthyValue) {

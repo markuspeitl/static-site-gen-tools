@@ -78,15 +78,20 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             <div>
                 {{content}}
             </div>
+
+<md>
 # Markdown test
         
 - lets
 - try
 - some
 - bulletpoints
+</md>
+
         `, dataCtx);
 
-        htmlContent = htmlContent + "\n Try njk compile: {{ description }}";
+        htmlContent = htmlContent + "\n\n Try njk compile: {{ description }}";
+        htmlContent = htmlContent + `\n\n beforenjk <njk> {{ title }} {{ description }} </njk> afternjk`;
 
         return {
             content: htmlContent,

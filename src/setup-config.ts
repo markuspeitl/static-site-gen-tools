@@ -1,11 +1,13 @@
 import path from "path";
 import { SsgConfig } from "./config";
-import { GenericRunner, getInstance } from './compilers/generic.runner';
+import { GenericRunner, getInstance, IMasterRunner } from './compilers/generic.runner';
 import { anchorAndGlob } from "./utils/globbing";
-import { CompileRunner, CompileRunnerModule, loadInitializeDefaultRunners } from "./compilers/runners";
+import { CompileRunner, CompileRunnerModule, loadDefaultRunners } from "./compilers/runners";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
 import { getFsNodeStat } from "./utils/fs-util";
+import { FalsyString } from "./components/helpers/generic-types";
+import { loadDefaultComponents } from "./components/components";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -88,7 +90,9 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     ];
     config.defaultComponentsMatchGlobs = [
         '**.component.ts',
-        '*.component.ts'
+        '*.component.ts',
+        '.component.ts',
+        '**/*.component.ts'
     ];
 
     config.defaultRunnerDirs = [
@@ -121,9 +125,9 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         ],
         '.+.ts': [
             "ts",
-            "md",
-            'njk',
-            'html'
+            //"md",
+            //'njk',
+            'html',
         ],
     };
 
@@ -171,7 +175,20 @@ export async function loadUserConfig(defaultConfig: SsgConfig, configPath?: stri
     return loadOrCallConfigFile(defaultConfig, configPath);
 }
 
+async function setUpMasterRunner(runnerPath: FalsyString, config: SsgConfig): Promise<void> {
+    if (runnerPath) {
+        const absModulePath = path.resolve(runnerPath);
+        const masterRunnerModule: CompileRunnerModule = await import(absModulePath);
+        config.masterCompileRunner = masterRunnerModule.getInstance() as IMasterRunner;
+
+        return;
+    }
+    config.masterCompileRunner = new GenericRunner();
+}
+
 export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
+
+    console.time('init');
 
     if (!config.idCompileRunnersDict) {
         config.idCompileRunnersDict = {};
@@ -179,19 +196,14 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     if (!config.resMatchCompileRunnersDict) {
         config.resMatchCompileRunnersDict = {};
     }
+    await setUpMasterRunner(config.masterCompileRunnerPath, config);
+    await loadDefaultRunners(config);
+    await loadDefaultComponents(config);
+    const initializedConfig = await loadUserRuntimeConfig(config);
 
-    if (config.masterCompileRunnerPath) {
-        const absModulePath = path.resolve(config.masterCompileRunnerPath);
-        const masterRunnerModule: CompileRunnerModule = await import(absModulePath);
-        config.masterCompileRunner = masterRunnerModule.getInstance();
-    }
-    else {
-        config.masterCompileRunner = new GenericRunner();
-    }
+    console.timeEnd('init');
 
-    await loadInitializeDefaultRunners(config);
-
-    return loadUserRuntimeConfig(config,);
+    return initializedConfig;
 }
 
 export async function loadUserRuntimeConfig(setUpConfig: SsgConfig, configPath?: string): Promise<SsgConfig> {

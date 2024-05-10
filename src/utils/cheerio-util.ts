@@ -273,6 +273,23 @@ export function performHtmlModification(html: string, modificationFn: ($: cheeri
     }
     return docHtml;
 }
+export async function performHtmlModificationAsync(html: string, modificationFn: ($: cheerio.Root) => void): Promise<string> {
+    if (!html) {
+        return '';
+    }
+    const $: cheerio.Root = loadHtml(html);
+
+    await modificationFn($);
+
+    //const docHtml: string = $.root().prop('outerHTML');
+    const rootElem = $.root();
+    const docHtml: string | null = rootElem.html();
+
+    if (!docHtml) {
+        return '';
+    }
+    return docHtml;
+}
 
 export function replaceSelected(html: string, selector: string, replacerFunction: (tag: string, element: cheerio.Element, $: cheerio.Root) => string): string {
 
@@ -290,6 +307,45 @@ export function replaceSelected(html: string, selector: string, replacerFunction
     };
 
     return performHtmlModification(html, modificationFn);
+}
+export async function replaceSelectedAsync(html: string, selector: string, replacerFunction: (tag: string, element: cheerio.Element, $: cheerio.Root) => Promise<string>): Promise<string> {
+
+    const modificationFn = async ($: cheerio.Root) => {
+        const parseAbleComponents = $(selector);
+
+        const replaceArgs: any[] = [];
+        parseAbleComponents.each((index: number, element: cheerio.Element) => {
+            const toParseElemTag = $(element).prop('tagName').toLowerCase();
+            replaceArgs.push(
+                {
+                    toParseElemTag,
+                    element,
+                    $
+                }
+            );
+        });
+
+        const renderReplacePromises: Promise<string>[] = replaceArgs.map(({ toParseElemTag, element, $ }) => replacerFunction(toParseElemTag, element, $));
+
+        const replaceValues: string[] = await Promise.all(renderReplacePromises);
+
+        for (let i = 0; i < replaceValues.length; i++) {
+            const { toParseElemTag, element, $ } = replaceArgs[ i ];
+            const replaceHtml: string = replaceValues[ i ];
+            $(element).replaceWith(replaceHtml);
+        }
+
+        /*parseAbleComponents.each(async (index: number, element: cheerio.Element) => {
+
+            const toParseElemTag = $(element).prop('tagName').toLowerCase();
+
+            const newOuterHtml = await replacerFunction(toParseElemTag, element, $);
+
+            $(element).replaceWith(newOuterHtml);
+        });*/
+    };
+
+    return performHtmlModificationAsync(html, modificationFn);
 }
 
 

@@ -1,6 +1,7 @@
 import { DocumentData, DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
 import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/util";
+import { FalsyAble } from "./helpers/generic-types";
 
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
@@ -20,6 +21,12 @@ export interface BaseComponent {
     //control data -> for manipulating the data and or layout chain / components flow settings dynamically
     //controlData?(dataCtx?: DocumentData | null, config?: SsgConfig): any;
 }
+
+export interface IInternalComponent {
+    data: (dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig) => Promise<DataParsedDocument>;
+    render: (dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig) => Promise<DataParsedDocument>;
+}
+
 
 export interface FnBaseComponent {
     data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData>;

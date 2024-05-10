@@ -6,6 +6,55 @@ import { SsgConfig } from '../config';
 import { FalsyAble, SingleOrArray } from '../components/helpers/generic-types';
 import { arrayifyFilter } from '../components/helpers/array-util';
 
+
+export function callClassConstructor(classType) {
+    const factoryFunction = classType.bind.apply(classType, arguments);
+    return new factoryFunction();
+}
+
+export function getClassInstance(className: string, classType: any, nameRegexPattern?: string, requiredClassProps?: string[]): any | null {
+
+    let classProto = classType;
+    if (classProto.prototype) {
+        classProto = classType.prototype;
+    }
+
+    if (className && nameRegexPattern) {
+        const nameRegexp = new RegExp(nameRegexPattern);
+        if (!nameRegexp.test(className)) {
+            return null;
+        }
+    }
+
+    let passFnTest: boolean = true;
+    if (requiredClassProps) {
+        passFnTest = requiredClassProps.every((classFn) => Boolean(classProto[ classFn ] && typeof classProto[ classFn ] !== 'undefined' /*&& typeof classProto[ classFn ] === 'function'*/));
+    }
+
+    if (passFnTest) {
+        const newPrototype = Object.create(classType);
+        //const constructor = classType.constructor.bind.apply(classType.contructor);
+        //const initConstructorInstance = new constructor();
+        const initConstructorInstance = callClassConstructor(classType);
+        //const initConstructorInstance = new newPrototype.constructor();
+        return initConstructorInstance;
+
+    }
+    return null;
+}
+
+export function getFirstInstanceTargetClass(module: Module, nameRegex?: string, requiredClassProps?: string[]): any {
+
+    for (const modulePropKey in module) {
+        const propValue = module[ modulePropKey ];
+        const firstMatchingInstance: any = getClassInstance(modulePropKey, propValue, nameRegex, requiredClassProps);
+        if (firstMatchingInstance) {
+            return firstMatchingInstance;
+        }
+    }
+    return null;
+}
+
 export function getValueFromFnOrVar(fnOrVar: any, ...fnPassArgs: any[]): any {
 
     if (!fnOrVar) {
@@ -230,4 +279,17 @@ export async function loadModulesFrom(srcDirPath: string, extension: string = 't
 
     }
     return loadedModules;
+}
+
+export function getModuleId(modulePath: string, excludePostFix?: string): string {
+    const parsedModulePath: path.ParsedPath = path.parse(modulePath);
+    let parsedModuleName: string = parsedModulePath.name;
+    if (!excludePostFix) {
+        return parsedModuleName;
+    }
+    const postfixIndex = parsedModuleName.indexOf(excludePostFix);
+    if (postfixIndex > -1) {
+        return parsedModuleName.slice(0, postfixIndex);
+    }
+    return parsedModuleName;
 }

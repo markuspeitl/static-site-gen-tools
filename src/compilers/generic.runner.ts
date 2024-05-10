@@ -1,7 +1,7 @@
 import { packIntoDataOpt } from "../components/helpers/dict-util";
 import { FalsyAble, FalsyStringPromise } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, getRunnerInstanceChainForResource, ResourceRunner, getRunnerInstance, parseRunnerIds, getRunnerChainInstances } from './runners';
+import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, getRunnerInstanceChainForResource, ResourceRunner, getRunnerInstance, parseRunnerIds, getRunnerChainInstances, getRunnerIdsFor } from './runners';
 
 export interface IMasterRunner extends ResourceRunner {
     extractDataWith(runnerIds: string | string[], resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
@@ -156,7 +156,7 @@ export class GenericRunner implements ResourceRunner {
             await targetCompileRunnerInstance.writeResource(compiledResource, config);
         }*/
 
-        this.writeResource(compiledResource, config);
+        await this.writeResource(compiledResource, config);
 
         /*if (compileRunnerInstance && (compileRunnerInstance as ResourceRunner).writeResource) {
             await (compileRunnerInstance as ResourceRunner).writeResource(compiledResource, config);
@@ -166,7 +166,17 @@ export class GenericRunner implements ResourceRunner {
     }
     //Main entry for the generic-runner ==> we want to compile a resource from src to target
     public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig = {}): Promise<FalsyAble<DataParsedDocument>> {
-        return this.compileWith(resource?.data?.compileRunnner, resource, config);
+        if (!resource) {
+            return null;
+        }
+        if (!resource.data) {
+            resource.data = {};
+        }
+
+        const runnerIds: string[] = await getRunnerIdsFor(resource, config);
+        resource.data.compileRunner = runnerIds;
+
+        return this.compileWith(resource.data.compileRunner, resource, config);
     }
 
     //readResource

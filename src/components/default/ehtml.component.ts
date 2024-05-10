@@ -7,4 +7,7 @@ export class EHtmlComponent extends BaseRunnerComponent {
     public getRunner(config?: SsgConfig): CompileRunner | null {
         return new HtmlRunner();
     }
+    public checkThis() {
+        console.log(this);
+    }
 }

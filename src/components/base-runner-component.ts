@@ -13,6 +13,11 @@ export abstract class BaseRunnerComponent implements BaseComponent, FnBaseCompon
             this.runner = this.getRunner();
         }
 
+        if (dataCtx?.content && dataCtx?.data) {
+            return dataCtx as DataParsedDocument;
+        }
+
+
         const toCompileResource: DataParsedDocument = {
             content: dataCtx?.content,
             data: dataCtx,
@@ -38,5 +43,9 @@ export abstract class BaseRunnerComponent implements BaseComponent, FnBaseCompon
             return mdCompiledDocument;
         }
         return toCompileResource;
+    }
+
+    public checkRunnerThis() {
+        console.log(this);
     }
 }

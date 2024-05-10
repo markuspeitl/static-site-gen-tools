@@ -2,6 +2,7 @@ import Module from "module";
 import { FragmentCache } from "./fragement-cache";
 import { CompileRunner } from "./compilers/runners";
 import { IMasterRunner } from "./compilers/generic.runner";
+import { BaseComponent, IInternalComponent } from "./components/base-component";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -16,24 +17,29 @@ export interface SsgConfig {
     masterCompileRunner?: IMasterRunner;
     resMatchCompileRunnersDict?: Record<string, string[]>;
     idCompileRunnersDict?: Record<string, CompileRunner>;
-    //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
-    //Default: [./src/compilers]
-    defaultRunnerDirs?: string[];
-    //Detected Components matching in those paths should be automatically loaded as dependencies
-    //Default: [./src/components/default]
-    defaultComponentImportDirs?: string[];
 
 
     userConfigPath?: string;
     runtimeConfigPath?: string;
 
     masterCompileRunnerPath?: string;
+
+    //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
+    //Default: [./src/compilers]
+    defaultRunnerDirs?: string[];
     defaultRunnersMatchGlobs?: string[];
+
+    //Detected Components matching in those paths should be automatically loaded as dependencies
+    //Default: [./src/components/default]
+    defaultComponentImportDirs?: string[];
     defaultComponentsMatchGlobs?: string[];
 
 
     outDir?: string;
     outFile?: string;
+
+    defaultComponentsCache?: Record<string, IInternalComponent>;
+    componentsCache?: Record<string, IInternalComponent>;
 
 
 

@@ -59,6 +59,8 @@ async function main() {
         fragmentCacheDisabled: true,
     };*/
 
+    console.time('fullstartup');
+
     let config: SsgConfig = {
         fragmentCacheDisabled: true
     };
@@ -76,6 +78,10 @@ async function main() {
         }
     };
 
+    console.timeEnd('fullstartup');
+
+    console.time('compile');
+
     const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
     if (resultDoc) {
         console.log("Compiled doc Content:");
@@ -83,6 +89,8 @@ async function main() {
         console.log("Compiled doc data:");
         console.log(resultDoc.data);
     }
+
+    console.timeEnd('compile');
 
     //return compileFileTo(args.sourceFilePath, args.targetFilePath, data, config);
     //return compileResourceTo(config.sourcePath, config.targetPath, config.data, config);
