@@ -3,9 +3,9 @@ import { SsgConfig } from "../config";
 //import { Environment } from "nunjucks";
 
 const defaultLibConstructors = {
-    'markdown': async () => {
+    'markdown': async (config?: SsgConfig, configOptions?: any) => {
         const markdownit = await import('markdown-it');
-        return markdownit.default();
+        return markdownit.default(configOptions);
     },
     'matter': async () => {
         const module = await import('gray-matter');
@@ -50,17 +50,17 @@ export function setDefaultLibConstructors(config: SsgConfig): void {
 export type ConstructorFn = (config?: SsgConfig) => Promise<any>;
 export type ConstructorFnOrStatic = ConstructorFn | any;
 
-export async function initializeLib(libConstructor: ConstructorFnOrStatic, config?: SsgConfig): Promise<any> {
+export async function initializeLib(libConstructor: ConstructorFnOrStatic, config?: SsgConfig, configOptions?: any): Promise<any> {
 
     if (typeof libConstructor === 'function') {
-        const initializedLib: any = await libConstructor(config);
+        const initializedLib: any = await libConstructor(config, configOptions);
         return initializedLib;
     }
 
     return libConstructor;
 }
 
-export async function getLibInstance(libName: string, config?: SsgConfig): Promise<any> {
+export async function getLibInstance(libName: string, config?: SsgConfig, configOptions?: any): Promise<any> {
 
     if (initializedLibsCache[ libName ]) {
         return initializedLibsCache[ libName ];
@@ -84,7 +84,7 @@ export async function getLibInstance(libName: string, config?: SsgConfig): Promi
         throw new Error(`Library with the key '${libName}' is not defined in 'defaultLibConstructors', please add dependency costructor`);
     }
 
-    const initializedLib: any = await initializeLib(selectedLibConstructor, config);
+    const initializedLib: any = await initializeLib(selectedLibConstructor, config, configOptions);
 
     if (initializedLib) {
         initializedLibsCache[ libName ] = initializedLib;

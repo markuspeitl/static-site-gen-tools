@@ -86,7 +86,11 @@ export class MarkdownRunner extends FileRunner {
         //const dataParsedMdFile: matter.GrayMatterFile<string> = matter.read(srcFilePath);
 
         //const markdownRendererInstance: markdownit = getOverrideOrLocal('markdown', config);
-        const markdownRendererInstance: markdownit = await getLibInstance('markdown', config);
+        const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
+            html: true,
+            linkify: true,
+            typographer: true
+        });
 
         const compiledOutput: DataParsedDocument = {
             content: markdownRendererInstance.render(resource.content),
@@ -95,6 +99,11 @@ export class MarkdownRunner extends FileRunner {
             //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
             data: resource.data
         };
+
+        /*if (compiledOutput.data) {
+            compiledOutput.data.compileRunner = 'njk';
+            return config.masterCompileRunner?.compile(compiledOutput, config);
+        }*/
 
         return compiledOutput;
     }

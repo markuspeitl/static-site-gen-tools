@@ -68,12 +68,20 @@ export async function readFileAsString(filePath: string): FalsyStringPromise {
 
 //CompileRunner, ResourceWriter, 
 export abstract class FileRunner implements ResourceRunner {
-    public async readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): FalsyStringPromise {
+    public async readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
         if (!resource || !resource.data?.src) {
             return null;
         }
 
-        return readFileAsString(resource.data.src);
+        const fileContent: FalsyString = await readFileAsString(resource.data.src);
+        if (!fileContent) {
+            return null;
+        }
+
+        return {
+            content: fileContent,
+            data: resource.data
+        };
     }
 
     abstract extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;

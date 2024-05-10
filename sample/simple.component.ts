@@ -72,13 +72,21 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             </div>
         `;*/
 
-        const htmlContent: string = curvyTemplate(html`
+        let htmlContent: string = curvyTemplate(html`
             <h1>{{title}}</h1>
             <p>{{description}}</p>
             <div>
                 {{content}}
             </div>
+# Markdown test
+        
+- lets
+- try
+- some
+- bulletpoints
         `, dataCtx);
+
+        htmlContent = htmlContent + "\n Try njk compile: {{ description }}";
 
         return {
             content: htmlContent,

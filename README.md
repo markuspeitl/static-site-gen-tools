@@ -530,3 +530,38 @@ And the specific interface between language syntax and the javascript code.
 5. Instantiate configuration
 6. Run 2nd stage config (online Instances can be modified -> prevent monkey patching for non configurable params)
 7. Perform target operation
+
+## Runner chain:
+
+At the end of the runner chain the input component should represent html.
+
+Example markdown:
+1. Compile to html
+2. Resolve html based extended template syntax (njk, ehtml, liquid)
+3. Check if there are unresolved features that identify a certain syntax / template language/system
+4. If there are repeat at 2. until everything is done
+
+Maybe add a data property:
+```
+runnerChain: 
+compileRunners: md njk ehtml
+```
+
+for a file type it should be possible to define a default set of compile chains to use.
+maybe don't allow jumping around to different syntax types willfully and instead
+enforce usage of pseudo runner components (\<\njk><\md><\yml>) for these uses
+(the component/template has to indicate the runner to evaluate a block in, instead of the runners detecting unresolved syntax)
+
+
+## Imports:
+- Enforce import referencing by file name  no matter the platform (ehtml, njk, md, ts)
+
+```
+const for = getComponent('for')
+for.render(Object.assign({{}, data, it: 'tag', of: 'tagList'}))
+
+renderComponent('for', {it: 'tag', of: 'tagList'} , data)
+# should be universal components, that can be used from any platform
+
+
+```

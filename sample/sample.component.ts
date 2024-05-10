@@ -44,6 +44,13 @@ export function render(data: any) {
     return `
         <h1>{{data.text}}</h1>
         <p>{{data.topClass}}</p>
+
+        # Markdown test
+        
+        - lets
+        - try
+        - some
+        - bulletpoints
     `;
 }
 

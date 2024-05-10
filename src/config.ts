@@ -13,7 +13,7 @@ export interface SsgConfig {
 
     //Generic compile runner that selects a target runner from src data
     masterCompileRunner?: CompileRunner;
-    resMatchCompileRunnersDict?: Record<string, string>;
+    resMatchCompileRunnersDict?: Record<string, string[]>;
     idCompileRunnersDict?: Record<string, CompileRunner>;
     //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
     //Default: [./src/compilers]

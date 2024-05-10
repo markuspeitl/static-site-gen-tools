@@ -102,11 +102,29 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
 
     config.resMatchCompileRunnersDict = {
-        '.+.html': "html",
-        '.+.ehtml': "html",
-        '.+.md': "md",
-        '.+.njk': "njk",
-        '.+.ts': "ts",
+        '.+.html': [
+            'html',
+            'njk',
+        ],
+        '.+.ehtml': [
+            'njk',
+            'html'
+        ],
+        '.+.md': [
+            'md',
+            'njk',
+            'html'
+        ],
+        '.+.njk': [
+            'njk',
+            'html'
+        ],
+        '.+.ts': [
+            "ts",
+            "md",
+            'njk',
+            'html'
+        ],
     };
 
     config.outDir = './dist';
@@ -126,11 +144,13 @@ async function loadOrCallConfigFile(defaultConfig: SsgConfig, configPath?: strin
         return defaultConfig;
     }
 
-    const configModule = await import(configPath);
+    const resolvedModulePath: string = path.resolve(configPath);
+
+    const configModule = await import(resolvedModulePath);
     if (configPath.endsWith('.json')) {
         return Object.assign(defaultConfig, configModule);
     }
-    const defaultExport = configModule.default();
+    const defaultExport = configModule.default;
     if (typeof defaultExport === 'object') {
         return Object.assign(defaultConfig, configModule);
     }
