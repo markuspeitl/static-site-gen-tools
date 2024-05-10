@@ -9,8 +9,9 @@ import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 export class AssetRunner implements ResourceRunner {
 
     //Usually a resource is the - component file (has data func for data extraction + preperation, and render for the actual tranformation of data)
-    public async readResource(resourceId: string, config: SsgConfig): Promise<any> {
+    public async readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<any> {
         //return resourceId;
+        return resource;
     }
 
     //Extract
@@ -41,17 +42,20 @@ export class AssetRunner implements ResourceRunner {
     public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
         return {
-            content: resource?.data,
+            content: null,
             data: resource?.data,
         };
     }
 
     //Write
-    public async writeResource(writeInfo: any, config: SsgConfig): Promise<void> {
+    public async writeResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<void> {
         //throw new Error("Method not implemented.");
+        if (!resource) {
+            return;
+        }
 
-        if (writeInfo.content?.src && writeInfo.content?.target) {
-            return fs.promises.copyFile(writeInfo.content.src, writeInfo.content.target);
+        if (resource.data?.src && resource.data?.target) {
+            return fs.promises.copyFile(resource.data.src, resource.data.target);
         }
         return;
     }

@@ -1,7 +1,14 @@
 import fastglob from 'fast-glob';
+import path from 'path';
 
-export function anchorGlobs(globPatterns: string[], atPath: string): string[] {
-    const rootedGlobs = globPatterns.map((inPageGlob) => atPath + inPageGlob);//path.join(rootDir as string, inPageGlob)
+export function anchorGlobs(globPatterns: string[], atPath: string, pathJoinAnchor: boolean = false): string[] {
+    const rootedGlobs = globPatterns.map((inPathGlob) => {
+        if (!pathJoinAnchor) {
+            return atPath + inPathGlob;
+        }
+        return path.join(atPath, inPathGlob);
+    });
+    //path.join(rootDir as string, inPageGlob)
     return rootedGlobs;
 }
 
@@ -31,13 +38,13 @@ async function findFirstGlobbed(globPatterns: string[], rootDir: string): Promis
 
 }
 
-export async function anchorAndGlob(globPatterns: string[], anchorPath?: string): Promise<string[]> {
+export async function anchorAndGlob(globPatterns: string[], anchorPath?: string, pathJoinAnchor: boolean = false): Promise<string[]> {
 
     if (!anchorPath) {
         anchorPath = '';
     }
 
-    const anchoredGlobs = anchorGlobs(globPatterns, anchorPath);
+    const anchoredGlobs = anchorGlobs(globPatterns, anchorPath, pathJoinAnchor);
 
     const matchedPaths: string[] = await fastglob(anchoredGlobs, {
         caseSensitiveMatch: false, // insensitive

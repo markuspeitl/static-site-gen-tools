@@ -1,5 +1,5 @@
-import { defaultFragmentCache } from "./fragement-cache";
-import { SsgConfig } from "./config";
+import { defaultFragmentCache } from "../fragement-cache";
+import { SsgConfig } from "../config";
 
 //These should modifyable through config
 export const defaultCompileRunnersFileMap: Record<string, string> = {

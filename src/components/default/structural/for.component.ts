@@ -42,10 +42,13 @@ export abstract class ForComponent implements BaseComponent, FnBaseComponent {
             subDataCtx[ iteratorItemName ] = itemValue;
 
             subDataCtx.compileRunner = 'html';
-            const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.compileRunnerCaller?.compile({
-                content: loopBody,
-                data: subDataCtx
-            }, config);
+            const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(
+                {
+                    content: loopBody,
+                    data: subDataCtx
+                },
+                config
+            );
 
             const renderedBody = renderedLoopDocument?.content || '';
             renderedIterations.push(renderedBody);

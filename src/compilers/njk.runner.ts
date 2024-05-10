@@ -57,7 +57,7 @@ export class NunjucksRunner extends FileRunner {
     public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
 
-        let markdownRunner: CompileRunner | null = await getRunnerInstance('markdown', config);
+        let markdownRunner: FalsyAble<CompileRunner> = await getRunnerInstance('markdown', config);
         if (!markdownRunner) {
             markdownRunner = getMarkdownRunnerInstance();
         }

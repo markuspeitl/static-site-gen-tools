@@ -1,11 +1,10 @@
-import { ArgumentParser } from 'argparse';
-import { compileFileTo } from './src/document-compile';
 import { SsgConfig } from './src/config';
-import path from 'path';
-import { compileResourceTo } from './src/generic-compile';
+import { parseArgsSetupInitializeConfig } from './src/setup-config';
+import { DataParsedDocument } from './src/compilers/runners';
+import { FalsyAble } from './src/components/helpers/generic-types';
 
-function main() {
-    const parser = new ArgumentParser({
+async function main() {
+    /*const parser = new ArgumentParser({
         description: 'Generated a populated container from a template'
     });
 
@@ -58,9 +57,35 @@ function main() {
         runnerResolvePaths: args.runnerResolvePaths,
         componentResolvePaths: args.componentResolvePaths,
         fragmentCacheDisabled: true,
+    };*/
+
+    let config: SsgConfig = {
+        fragmentCacheDisabled: true
     };
+    config = await parseArgsSetupInitializeConfig(config);
+
+    if (!config.sourcePath || !config.targetPath) {
+        throw new Error('Source and target path need to be specified to compile component');
+    }
+
+    const toCompileResource: DataParsedDocument = {
+        content: null,
+        data: {
+            src: config.sourcePath,
+            target: config.targetPath
+        }
+    };
+
+    const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
+    if (resultDoc) {
+        console.log("Compiled doc Content:");
+        console.log(resultDoc.content);
+        console.log("Compiled doc data:");
+        console.log(resultDoc.data);
+    }
+
     //return compileFileTo(args.sourceFilePath, args.targetFilePath, data, config);
-    return compileResourceTo(args.sourceFilePath, args.targetFilePath, data, config);
+    //return compileResourceTo(config.sourcePath, config.targetPath, config.data, config);
 }
 
 if (require.main?.filename === __filename) {

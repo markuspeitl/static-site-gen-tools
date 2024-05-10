@@ -1,9 +1,9 @@
-export interface MatchedAndExpression {
-    match: any,
-    expression: string,
+export interface MatchedDictKeyRes<ValueType> {
+    pattern: string,
+    dictValue: ValueType,
 }
 
-export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapDict?: Record<string, ValueType>): MatchedAndExpression[] | null {
+export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapDict?: Record<string, ValueType>): MatchedDictKeyRes<ValueType>[] | null {
     if (!toMatchString) {
         return null;
     }
@@ -11,7 +11,7 @@ export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapD
         return null;
     }
 
-    const matchesValues: MatchedAndExpression[] = [];
+    const matchesValues: MatchedDictKeyRes<ValueType>[] = [];
     for (const key in matchMapDict) {
         const currentMatchMapValue: ValueType = matchMapDict[ key ];
 
@@ -25,8 +25,8 @@ export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapD
 
         if (toMatchString.match(expression)) {
             matchesValues.push({
-                expression: key.toString(),
-                match: currentMatchMapValue,
+                pattern: key.toString(),
+                dictValue: currentMatchMapValue,
             });
         }
     }

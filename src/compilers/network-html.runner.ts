@@ -1,7 +1,7 @@
-import { FalsyString } from "../components/helpers/generic-types";
+import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
 import { HtmlRunner } from "./html.runner";
-import { CompileRunner, ResourceRunner } from "./runners";
+import { CompileRunner, DataParsedDocument, ResourceRunner } from "./runners";
 
 export class NetworkHtmlRunner implements ResourceRunner {
     protected htmlRunner;
@@ -14,8 +14,8 @@ export class NetworkHtmlRunner implements ResourceRunner {
         this.compile = this.htmlRunner.compile;
     }
 
-    async readResource(resourceId: string, config: SsgConfig): Promise<any> {
-        const fetchedResourceResult: Response = await fetch(resourceId);
+    async readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<any> {
+        const fetchedResourceResult: Response = await fetch(resource?.data?.src);
         return fetchedResourceResult.json();
     }
     async writeResource(compiledResource: any, config: SsgConfig): Promise<void> {

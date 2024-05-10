@@ -6,12 +6,33 @@ export interface SsgConfig {
     //compilers?: Record<string, any>;
     //dataExtractors?: Record<string, any>;
 
+    sourcePath?: string;
+    targetPath?: string;
+    //global data available to all compile runs
+    data?: any;
+
     //Generic compile runner that selects a target runner from src data
     masterCompileRunner?: CompileRunner;
     resMatchCompileRunnersDict?: Record<string, string>;
     idCompileRunnersDict?: Record<string, CompileRunner>;
     //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
+    //Default: [./src/compilers]
     defaultRunnerDirs?: string[];
+    //Detected Components matching in those paths should be automatically loaded as dependencies
+    //Default: [./src/components/default]
+    defaultComponentImportDirs?: string[];
+
+
+    userConfigPath?: string;
+    runtimeConfigPath?: string;
+
+    masterCompileRunnerPath?: string;
+    defaultRunnersMatchGlobs?: string[];
+    defaultComponentsMatchGlobs?: string[];
+
+
+    outDir?: string;
+    outFile?: string;
 
 
 
@@ -52,11 +73,10 @@ export interface SsgConfig {
     tsComponentsCache?: Record<string, Module>;
 
     //Default paths from which to scan for a relative notated runner ts file, holding a document compiler
-    runnerResolvePaths?: string[];
+    //runnerResolvePaths?: string[];
     //Default paths from which to scan for layout paths
     //layoutResolvePaths?: string[]; // removed layout == component
     //Note: the more paths -> can affect the layout and compiler resolve speed
     componentResolvePaths?: string[];
-    //Detected Components matching in those paths should be automatically loaded as dependencies
-    defaultComponentImportDirs?: string[];
+
 }

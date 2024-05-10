@@ -1,6 +1,6 @@
-import { SsgConfig } from './config';
-import { DataExtractor, DataParsedDocument, DocumentData, findRunnerInstanceFor, getRunnerInstance, setDefaultRunnerInstantiatorsFromFiles } from './compilers/runners';
-import { FalsyAble } from './components/helpers/generic-types';
+import { SsgConfig } from '../config';
+import { DataExtractor, DataParsedDocument, DocumentData, getRunnerInstance } from '../compilers/runners';
+import { FalsyAble } from '../components/helpers/generic-types';
 
 export function getDataExtractedDocOfData(documentData: DocumentData | DataParsedDocument | null, docContent?: string | null): DataParsedDocument {
     if (!documentData) {
@@ -20,7 +20,7 @@ export function getDataExtractedDocOfData(documentData: DocumentData | DataParse
     };
 }
 
-export async function extractData(documentContents: FalsyAble<string>, fsNodePath: FalsyAble<string>, config: SsgConfig = {}): Promise<DataParsedDocument> {
+export async function extractData(documentContents: FalsyAble<string>, fsNodePath: FalsyAble<string>, config: SsgConfig = {}): Promise<FalsyAble<DataParsedDocument>> {
 
     //dataExtractors?: DataExtractors
     /*if (!dataExtractors) {
@@ -47,9 +47,11 @@ export async function extractData(documentContents: FalsyAble<string>, fsNodePat
         return resultDataParsedDoc;
     }
 
-    const parsedDataDoc: DataParsedDocument | DocumentData | null = await dataExtractorInstance.extractData(documentContents, config);
+    const parsedDataDoc: FalsyAble<DataParsedDocument> = await dataExtractorInstance.extractData(resultDataParsedDoc, config);
 
-    return getDataExtractedDocOfData(parsedDataDoc, documentContents);
+    return parsedDataDoc;
+
+    //return getDataExtractedDocOfData(parsedDataDoc, documentContents);
 
 
     //const defaultDataExtractors: DataExtractors = await getDefaultDataExtractors();

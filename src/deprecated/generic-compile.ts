@@ -1,10 +1,10 @@
 import path from "path";
-import { CompileRunner, DataParsedDocument, DocumentData, findRunnerInstanceFor, ResourceRunner, ResourceWriter, setDefaultRunnerInstantiatorsFromFiles } from "./compilers/runners";
-import { SsgConfig } from "./config";
-import { FalsyAble, FalsyString, FalsyStringPromise } from './components/helpers/generic-types';
+import { CompileRunner, DataParsedDocument, DocumentData, ResourceRunner, ResourceWriter } from "../compilers/runners";
+import { SsgConfig } from "../config";
+import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helpers/generic-types';
 import * as fs from 'fs';
 import { getDataExtractedDocOfData } from "./data-extract";
-import { packIntoDataOpt } from "./components/helpers/dict-util";
+import { packIntoDataOpt } from "../components/helpers/dict-util";
 
 export async function readResource(resourceId: string, targetId: string, data: FalsyAble<DocumentData>, config: SsgConfig = {}): Promise<any> {
     data = packIntoDataOpt(data, {

@@ -1,10 +1,12 @@
 import path from "path";
 import { SsgConfig } from "../config";
-import { defaultCompileRunnersFileMap } from "../defaults";
+import { defaultCompileRunnersFileMap } from "../deprecated/defaults";
 import { getResolveTsModule, loadTsModule } from "../module-loading/util";
 import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 import { setDefaults } from "../utils/arg-util";
-import { MatchedAndExpression, getKeyMatches } from "../utils/regex-match-util";
+import { MatchedDictKeyRes, getKeyMatches } from "../utils/regex-match-util";
+import { anchorAndGlob } from "../utils/globbing";
+import Module from "module";
 
 export type DocumentData = Record<string, any>;
 
@@ -37,11 +39,11 @@ export interface CompileRunnerInstantiator {
 }
 
 export interface ResourceWriter {
-    writeResource(compiledResource: any, config: SsgConfig): Promise<void>;
+    writeResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<void>;
 }
 
 export interface ResourceReader {
-    readResource(resourceId: string, config: SsgConfig): Promise<any>;
+    readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<any>;
 }
 
 export interface ResourceRunner extends CompileRunner, ResourceReader, ResourceWriter {
@@ -83,20 +85,13 @@ export function getRunnerPath(name: string): string {
  * 3. If the runner module is not cached -> find the module and load it (needs identity -> module path association), push it onto the cache and continue with option 2.
  */
 
-export function initGetConfigDict<PropType>(config: any, key: string): PropType {
-    if (!config[ key ]) {
-        config[ key ] = {};
-    }
-    return config[ key ];
-}
-
-export function getRunnerInstanceFromModule(targetKey: FalsyAble<string>, module: FalsyAble<CompileRunnerInstantiator>, config: SsgConfig): CompileRunner | null {
+/*export function getRunnerInstanceFromModule(targetKey: FalsyAble<string>, module: FalsyAble<CompileRunnerInstantiator>, config: SsgConfig): CompileRunner | null {
 
     if (!targetKey) {
         return null;
     }
 
-    const runnerInstances: Record<string, CompileRunner> = initGetConfigDict(config, 'compileRunners');
+    const runnerInstances: Record<string, CompileRunner> = initGetConfigDict(config, 'idCompileRunnersDict');
 
     if (runnerInstances[ targetKey ]) {
         return runnerInstances[ targetKey ];
@@ -158,25 +153,6 @@ export async function findRunnerInstanceFor(fsNodePath: string, config: SsgConfi
     return null;
 }
 
-export async function getRunnerInstanceForResource(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<CompileRunner>> {
-
-    if (!resource) {
-        return null;
-    }
-    if (!resource.data) {
-        resource.data = {};
-    }
-
-    /*if (!resource.data.compileRunner) {
-        resource.data.compileRunner = await findRunnerFor(resource.data.src);
-    }
-    const compileRunnerInstance: FalsyAble<CompileRunner> = await getRunner(resource.data.compileRunner, config);*/
-
-    const compileRunnerInstance: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resource.data.src, config) as ResourceRunner;
-
-    return compileRunnerInstance;
-}
-
 export async function loadNewInstantiatorsFromFilesMap(config: SsgConfig): Promise<void> {
     const runnerInstantiators: Record<string, CompileRunnerInstantiator> = initGetConfigDict(config, 'compileRunnerInstatiators');
 
@@ -225,13 +201,13 @@ export async function addRunnerFromFile(matchKey: string, fileName: string, conf
     config.runnerFilesMap[ matchKey ] = fileName;
     return loadNewInstantiatorsFromFilesMap(config);
 
-    /*const runnerAtRootPath: string | null = getRunnerAtRootPath(fileName, config);
+    const runnerAtRootPath: string | null = getRunnerAtRootPath(fileName, config);
 
     if (runnerAtRootPath) {
         config.runnerFilesMap[ matchKey ] = runnerAtRootPath;
         return loadNewInstantiatorsFromFilesMap(config);
     }
-    return;*/
+    return;
 }
 
 export function removeRunnerById(runnerId: string, config: SsgConfig): void {
@@ -264,4 +240,132 @@ export function removeRunner(matchKey: string, config: SsgConfig): void {
     }
 
     delete config.resourceMatchCompileRunnersDict[ matchKey ];
+}*/
+
+// ------------------------------------------------------------
+
+
+export interface CompileRunnerModule extends Module {
+    getInstance(): CompileRunner;
+}
+
+export function getRunnerIdFromPath(runnerPath: string): string {
+    const parsedModulePath: path.ParsedPath = path.parse(runnerPath);
+    let parsedModuleName: string = parsedModulePath.name;
+    const postfixIndex = parsedModuleName.indexOf('.runner');
+    if (postfixIndex > -1) {
+        parsedModuleName = parsedModuleName.slice(0, postfixIndex);
+    }
+    return parsedModuleName;
+}
+
+export async function loadRunnerInstanceFrom(modulePath: string): Promise<CompileRunner | null> {
+    const runnerModule: CompileRunnerModule = await import(modulePath);
+
+    if (runnerModule.getInstance) {
+        const runnerInstance: CompileRunner = runnerModule.getInstance();
+        return runnerInstance;
+    }
+
+    for (const moduleProp in runnerModule) {
+        const propValue = runnerModule[ moduleProp ];
+        const propTypeProtoType = propValue?.prototype;
+        if (propTypeProtoType && propTypeProtoType.compile && typeof propTypeProtoType.compile === 'function') {
+            return Object.create(propTypeProtoType);
+        }
+    }
+    return null;
+}
+export function addRunnerInstance(runnerId: string, runnerInstance: CompileRunner, config: SsgConfig): void {
+    if (!config.idCompileRunnersDict) {
+        config.idCompileRunnersDict = {};
+    }
+    config.idCompileRunnersDict[ runnerId ] = runnerInstance;
+}
+
+export async function addRunnerInstanceFromPath(runnerPath: string, config: SsgConfig): Promise<void> {
+    if (!config.idCompileRunnersDict) {
+        config.idCompileRunnersDict = {};
+    }
+    const runnerId: string = getRunnerIdFromPath(runnerPath);
+    if (!config.idCompileRunnersDict[ runnerId ]) {
+
+        const runnerInstance: CompileRunner | null = await loadRunnerInstanceFrom(runnerPath);
+
+        if (runnerInstance) {
+            config.idCompileRunnersDict[ runnerId ] = runnerInstance;
+        }
+    }
+}
+
+export async function loadInitializeDefaultRunners(config: SsgConfig): Promise<void> {
+    if (!config.idCompileRunnersDict) {
+        config.idCompileRunnersDict = {};
+    }
+
+    if (config.defaultRunnerDirs && config.defaultRunnersMatchGlobs) {
+        for (const runnersDir of config.defaultRunnerDirs) {
+            //const runnerMatchGlob = path.join()
+
+            const runnerModulePaths: string[] = await anchorAndGlob(config.defaultRunnersMatchGlobs, path.resolve(runnersDir), true);
+
+            const addModulesPromises: Promise<any>[] = runnerModulePaths.map((runnerModulePath) => addRunnerInstanceFromPath(runnerModulePath, config));
+
+            await Promise.all(addModulesPromises);
+
+            /*for (const runnerModulePath of runnerModulePaths) {
+                await addRunnerInstanceFromPath(runnerModulePath, config);
+            }*/
+        }
+    }
+}
+
+export async function findRunnerIdForResource(resourceId: string, config: SsgConfig): Promise<FalsyAble<string>> {
+    if (!resourceId || !config.resMatchCompileRunnersDict) {
+        return null;
+    }
+    /*const directMatchRunnerInstance: CompileRunner | null = await getRunnerInstance(fsNodePath);
+    if (directMatchRunnerInstance) {
+        return directMatchRunnerInstance;
+    }*/
+    const runnerMatches: MatchedDictKeyRes<string>[] | null = getKeyMatches(resourceId, config.resMatchCompileRunnersDict);
+    if (runnerMatches && runnerMatches.length > 0) {
+        const lastMatch: MatchedDictKeyRes<string> | undefined = runnerMatches.at(-1);
+        return lastMatch?.dictValue;
+    }
+    return null;
+}
+
+export async function getRunnerInstance(runnerId: string, config: SsgConfig): Promise<FalsyAble<CompileRunner>> {
+    if (!runnerId) {
+        return null;
+    }
+    if (!config.idCompileRunnersDict) {
+        config.idCompileRunnersDict = {};
+    }
+
+    if (config.idCompileRunnersDict[ runnerId ]) {
+        return config.idCompileRunnersDict[ runnerId ];
+    }
+
+    return null;
+}
+
+export async function getRunnerInstanceForResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<CompileRunner>> {
+
+    if (!resource) {
+        return null;
+    }
+    if (!resource.data) {
+        resource.data = {};
+    }
+
+    const compileRunnerId: string = resource.data.compileRunner;
+    if (!compileRunnerId) {
+        resource.data.compileRunner = await findRunnerIdForResource(resource.data.src, config);
+    }
+    const compileRunnerInstance: FalsyAble<CompileRunner> = await getRunnerInstance(resource.data.compileRunner, config);
+
+    //const compileRunnerInstance: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resource.data.src, config) as ResourceRunner;
+    return compileRunnerInstance;
 }

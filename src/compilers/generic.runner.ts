@@ -1,14 +1,20 @@
 import { packIntoDataOpt } from "../components/helpers/dict-util";
 import { FalsyAble, FalsyStringPromise } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, findRunnerInstanceFor, getRunnerInstanceForResource, ResourceRunner, setDefaultRunnerInstantiatorsFromFiles } from "./runners";
+import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, getRunnerInstanceForResource, ResourceRunner } from "./runners";
 
-export abstract class GenericRunner implements ResourceRunner {
-    public async readResource(resourceId: string, config: SsgConfig): Promise<any> {
-        const compileRunner: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resourceId, config);
+export class GenericRunner implements ResourceRunner {
+    public async readResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<any> {
 
+        if (!resource || !resource.data) {
+            return null;
+        }
+
+        const compileRunner: FalsyAble<CompileRunner> = await getRunnerInstanceForResource(resource, config);
+
+        //const resourceId = resource.data.src;
         if (compileRunner && (compileRunner as ResourceRunner).readResource) {
-            return (compileRunner as ResourceRunner).readResource(resourceId, config);
+            return (compileRunner as ResourceRunner).readResource(resource, config);
         }
 
         return null;
@@ -48,7 +54,7 @@ export abstract class GenericRunner implements ResourceRunner {
         }
 
         //Load template defaults
-        await setDefaultRunnerInstantiatorsFromFiles(config);
+        //await setDefaultRunnerInstantiatorsFromFiles(config);
 
         //documentTypeExt = cleanUpExt(documentTypeExt);
         const dataExtractorInstance: FalsyAble<DataExtractor> = await getRunnerInstanceForResource(resource, config);
@@ -81,7 +87,7 @@ export abstract class GenericRunner implements ResourceRunner {
         }
 
         if (!resource.content) {
-            resource.content = this.readResource(resource.data.src, config);
+            resource.content = await this.readResource(resource, config);
         }
         if (compileRunnerInstance?.extractData) {
             const dataExtractedDoc: FalsyAble<DataParsedDocument> = await compileRunnerInstance.extractData(resource, config);
@@ -97,15 +103,20 @@ export abstract class GenericRunner implements ResourceRunner {
 
         const compiledResource: FalsyAble<DataParsedDocument> = await compileRunnerInstance.compile(resource, config);
 
-        const targetCompileRunnerInstance: FalsyAble<ResourceRunner> = await findRunnerInstanceFor(resource?.data?.target, config) as ResourceRunner;
-        if (targetCompileRunnerInstance && targetCompileRunnerInstance.writeResource) {
+        //const targetCompileRunnerInstance: FalsyAble<ResourceRunner> = await findRunnerInstanceFor(resource?.data?.target, config) as ResourceRunner;
+        /*if (targetCompileRunnerInstance && targetCompileRunnerInstance.writeResource) {
             await targetCompileRunnerInstance.writeResource(compiledResource, config);
+        }*/
+        if (compileRunnerInstance && (compileRunnerInstance as ResourceRunner).writeResource) {
+            await (compileRunnerInstance as ResourceRunner).writeResource(compiledResource, config);
         }
 
         return compiledResource;
     }
 
     //readResource
+}
 
-
+export function getInstance(): CompileRunner {
+    return new GenericRunner();
 }

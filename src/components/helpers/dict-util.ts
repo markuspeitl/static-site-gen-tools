@@ -100,3 +100,10 @@ export function unpackDataProps(data: any, dataToResultKeys: any): any {
     }
     return result;
 }
+
+export function initGetSubDict<PropType>(obj: any, key: string): PropType {
+    if (!obj[ key ]) {
+        obj[ key ] = {};
+    }
+    return obj[ key ];
+}
