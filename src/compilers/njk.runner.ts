@@ -72,7 +72,22 @@ export class NunjucksRunner extends FileRunner {
         }
         return markdownRunner.extractData(resource, config);*/
 
-        return config.masterCompileRunner?.extractData(resource, config);
+        //resource.data.compileRunner = 'md';
+
+        /*const dataResource: DataParsedDocument = {
+            content: resource.content,
+            data: Object.assign(
+                {},
+                resource.data,
+                {
+                    compileRunner: 'md'
+                }
+            )
+        };
+
+        return config.masterCompileRunner?.extractData(dataResource, config);*/
+
+        return config.masterCompileRunner?.extractDataWith('md', resource, config);
     }
 
     public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {

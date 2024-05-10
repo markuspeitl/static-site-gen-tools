@@ -1,7 +1,12 @@
 import { packIntoDataOpt } from "../components/helpers/dict-util";
 import { FalsyAble, FalsyStringPromise } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, getRunnerInstanceChainForResource, ResourceRunner } from "./runners";
+import { CompileRunner, DataExtractor, DataParsedDocument, DocumentData, getRunnerInstanceChainForResource, ResourceRunner, getRunnerInstance, parseRunnerIds, getRunnerChainInstances } from './runners';
+
+export interface IMasterRunner extends ResourceRunner {
+    extractDataWith(runnerIds: string | string[], resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
+    compileWith(runnerIds: string | string[], resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
+}
 
 export async function callOnFirstRunner(fnName: string, resource: DataParsedDocument, config: SsgConfig,): Promise<any> {
     const compileRunner: CompileRunner[] = await getRunnerInstanceChainForResource(resource, config);
@@ -60,6 +65,11 @@ export class GenericRunner implements ResourceRunner {
     //Other extractors (not only file extractors) should also be possible --> 192.168.0.1/network -- '[0-9\.]+/network.+': NetworkRunner
     //Therefore required are: the src id => in this case *192.168.0.1/network*, the target id 192.168.0.1/network (send result via http) or local file /home/test/some.html, .etc
 
+    public async extractDataWith(runnerIds: string | string[], resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+        runnerIds = parseRunnerIds(runnerIds);
+        const compileRunnerInstances: CompileRunner[] = await getRunnerChainInstances(runnerIds, config);
+        return compileRunnerInstances.at(0)?.extractData(resource, config);
+    }
     //input: identity of the data source
     //output: extracted data, and rest content of the data source without extracted data
     public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
@@ -70,7 +80,8 @@ export class GenericRunner implements ResourceRunner {
         //Load template defaults
         //await setDefaultRunnerInstantiatorsFromFiles(config);
 
-        return callOnFirstRunner('extractData', resource, config);
+        //return callOnFirstRunner('extractData', resource, config);
+        return this.extractDataWith(resource.data?.compileRunner, resource, config);
 
         //documentTypeExt = cleanUpExt(documentTypeExt);
         /*const dataExtractorInstance: FalsyAble<DataExtractor> = await getRunnerInstanceForResource(resource, config);
@@ -83,8 +94,7 @@ export class GenericRunner implements ResourceRunner {
         return dataExtractedDoc;*/
     }
 
-    //Main entry for the generic-runner ==> we want to compile a resource from src to target
-    public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig = {}): Promise<FalsyAble<DataParsedDocument>> {
+    public async compileWith(runnerIds: string | string[], resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
         if (!resource || !resource.data) {
             return null;
@@ -103,8 +113,6 @@ export class GenericRunner implements ResourceRunner {
         if (!resource) {
             return null;
         }
-
-
 
         const dataExtractedDoc: FalsyAble<DataParsedDocument> = await this.extractData(resource, config);
 
@@ -126,8 +134,11 @@ export class GenericRunner implements ResourceRunner {
         }*/
         //const mergedData = Object.assign(resource?.data || {}, data);
 
-        const compileRunnerChain: CompileRunner[] = await getRunnerInstanceChainForResource(resource, config);
+        //const compileRunnerChain: CompileRunner[] = await getRunnerInstanceChainForResource(resource, config);
         let compiledResource: FalsyAble<DataParsedDocument> = resource;
+        runnerIds = parseRunnerIds(runnerIds);
+        const compileRunnerChain: CompileRunner[] = await getRunnerChainInstances(runnerIds, config);
+        //return compileRunnerChain.at(0)?.extractData(resource, config);
 
         for (let i = 0; i < compileRunnerChain.length; i++) {
             const selectedCompileRunner = compileRunnerChain[ i ];
@@ -152,6 +163,10 @@ export class GenericRunner implements ResourceRunner {
         }*/
 
         return compiledResource;
+    }
+    //Main entry for the generic-runner ==> we want to compile a resource from src to target
+    public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig = {}): Promise<FalsyAble<DataParsedDocument>> {
+        return this.compileWith(resource?.data?.compileRunnner, resource, config);
     }
 
     //readResource

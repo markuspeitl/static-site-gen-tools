@@ -1,6 +1,7 @@
 import Module from "module";
 import { FragmentCache } from "./fragement-cache";
-import { CompileRunner, CompileRunnerInstantiator } from "./compilers/runners";
+import { CompileRunner } from "./compilers/runners";
+import { IMasterRunner } from "./compilers/generic.runner";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -12,7 +13,7 @@ export interface SsgConfig {
     data?: any;
 
     //Generic compile runner that selects a target runner from src data
-    masterCompileRunner?: CompileRunner;
+    masterCompileRunner?: IMasterRunner;
     resMatchCompileRunnersDict?: Record<string, string[]>;
     idCompileRunnersDict?: Record<string, CompileRunner>;
     //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)

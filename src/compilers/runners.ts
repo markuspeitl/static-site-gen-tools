@@ -352,8 +352,9 @@ export async function getRunnerInstance(runnerId: string, config: SsgConfig): Pr
 
     return null;
 }
-export async function getRunnerChainInstances(runnerIds: string[], config: SsgConfig): Promise<CompileRunner[]> {
+export async function getRunnerChainInstances(runnerIds: string[] | string, config: SsgConfig): Promise<CompileRunner[]> {
 
+    runnerIds = parseRunnerIds(runnerIds);
     const getRunnerChainPromises = runnerIds.map((runnerId: string) => getRunnerInstance(runnerId, config));
     const compileRunnerChain: FalsyAble<CompileRunner>[] = await Promise.all(getRunnerChainPromises);
 
@@ -361,6 +362,33 @@ export async function getRunnerChainInstances(runnerIds: string[], config: SsgCo
 
     //const compileRunnerChain: FalsyAble<CompileRunner>[] = runnerIds.map(async (runnerId: string) => await getRunnerInstance(runnerId, config));
 }
+
+export async function getRunnerIdsFor(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<string[]> {
+    if (!resource || !resource.data) {
+        return [];
+    }
+
+    const compileRunnerId: string | string[] = resource.data.compileRunner;
+    if (compileRunnerId && Array.isArray(compileRunnerId)) {
+        return compileRunnerId;
+    }
+    if (typeof compileRunnerId === 'string') {
+        return parseRunnerIds(resource.data.compileRunner);
+    }
+
+    const runnerIdsForResource: FalsyAble<string[]> = await findRunnerIdsChainForResource(resource.data.src, config);
+    if (!runnerIdsForResource) {
+        return [];
+    }
+    return runnerIdsForResource;
+}
+
+/*export async function getRunnerInstanceChainFromIds(runnerIds: string[] | string, config: SsgConfig): Promise<CompileRunner[]> {
+    const compileRunnerInstance: CompileRunner[] = await getRunnerChainInstances(runnerIds, config);
+
+    //const compileRunnerInstance: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resource.data.src, config) as ResourceRunner;
+    return compileRunnerInstance;
+}*/
 
 export async function getRunnerInstanceChainForResource(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<CompileRunner[]> {
 
@@ -370,16 +398,16 @@ export async function getRunnerInstanceChainForResource(resource: FalsyAble<Data
     if (!resource.data) {
         resource.data = {};
     }
-
-    const compileRunnerId: string = resource.data.compileRunner;
-    if (!compileRunnerId) {
-        resource.data.compileRunner = await findRunnerIdsChainForResource(resource.data.src, config);
-    } else if (typeof resource.data.compileRunner === 'string') {
-        resource.data.compileRunner = resource.data.compileRunner.split(' ');
-    }
-
+    resource.data.compileRunner = await getRunnerIdsFor(resource, config);
     const compileRunnerInstance: CompileRunner[] = await getRunnerChainInstances(resource.data.compileRunner, config);
 
     //const compileRunnerInstance: FalsyAble<CompileRunner> = await findRunnerInstanceFor(resource.data.src, config) as ResourceRunner;
     return compileRunnerInstance;
+}
+
+export function parseRunnerIds(runnerIdsString: string | string[]): string[] {
+    if (typeof runnerIdsString === 'string') {
+        return runnerIdsString.split(' ');
+    }
+    return runnerIdsString;
 }
