@@ -5,7 +5,13 @@ import path from 'path';
 import { SsgConfig } from '../config';
 import { FalsyAble, SingleOrArray } from '../components/helpers/generic-types';
 import { arrayifyFilter } from '../components/helpers/array-util';
-
+import {
+    requireFromString,
+    importFromString,
+    importFromStringSync
+} from 'module-from-string';
+import * as ts from "typescript";
+import { unescape } from 'lodash';
 
 export function callClassConstructor(classType) {
     const factoryFunction = classType.bind.apply(classType, arguments);
@@ -129,11 +135,12 @@ export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string
 
 }
 
-import {
-    requireFromString,
-    importFromString,
-    importFromStringSync
-} from 'module-from-string';
+
+function ts2EsCompile(tsCode: string, moduleType: ts.ModuleKind.ES2015): string {
+    const options: ts.TranspileOptions = { compilerOptions: { module: moduleType } };
+    return ts.transpileModule(tsCode, options).outputText;
+}
+
 
 export async function loadTsModuleFromString<ModuleInterface>(moduleContent: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
     if (!moduleContent) {
@@ -148,7 +155,10 @@ export async function loadTsModuleFromString<ModuleInterface>(moduleContent: Fal
     //https://stackoverflow.com/questions/57121467/import-a-module-from-string-variable
     //const base64EncodedModule = `data:text/javascript;base64,${btoa(moduleContent)}`;
 
-    const loadedModule = await importFromString(moduleContent);
+    //const unescaped = unescape(moduleContent);
+    //const jsModuleContent: string = ts2EsCompile(unescaped, ts.ModuleKind.ES2015);
+
+    const loadedModule: Module = await importFromString(moduleContent);
 
 
     //loadedModule = eval(moduleContent);

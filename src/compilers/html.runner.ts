@@ -12,6 +12,9 @@ import { loadComponentImports } from './lib/component-cache';
 import { BaseComponent, IInternalComponent } from '../components/base-component';
 import { getResourceImports } from '../components/components';
 import { unescape } from 'lodash';
+import { arrayify, isEmpty } from '../utils/util';
+import { resolvePrimitiveLeaves } from '../utils/walk-recurse';
+import path from 'path';
 
 
 
@@ -30,6 +33,17 @@ export function isComponentTagInHtml(html: string, tag: string): boolean {
     const regExp: RegExp = new RegExp(regexPattern, 'gi');
     const isMatch: boolean = regExp.test(html);
     return isMatch;
+}
+
+export function normalizeToDataParsedDoc(renderOutPut: string | DataParsedDocument, inputResource?: DataParsedDocument): DataParsedDocument {
+
+    if (typeof renderOutPut === 'string') {
+        return {
+            content: renderOutPut,
+            data: inputResource?.data
+        };
+    }
+    return renderOutPut;
 }
 
 export async function compileSubComponents(html: string, componentsToCompile: Record<string, IInternalComponent>, dataCtx: any, config: SsgConfig): Promise<string> {
@@ -54,7 +68,7 @@ export async function compileSubComponents(html: string, componentsToCompile: Re
 
 
 
-        const subCompiledDoc: FalsyAble<DataParsedDocument> = await selectedComponentInstance.render(dataParseDoc, config);
+        const subCompiledDoc: FalsyAble<DataParsedDocument> = normalizeToDataParsedDoc(await selectedComponentInstance.render(dataParseDoc, config));
 
         //const subCompiledDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith('ts', subDocToCompile, config);
 
@@ -68,7 +82,7 @@ export async function compileSubComponents(html: string, componentsToCompile: Re
         );*/
 
         if (!subCompiledDoc) {
-            componentHtml;
+            return componentHtml;
         }
         return subCompiledDoc?.content;
     };
@@ -113,6 +127,71 @@ export async function findCompileSubComponents(html: string, importedComponents:
     return compileSubComponents(html, usedComponents, dataCtx, config);
 }
 
+function assignAttribsToSelf(dict: any, key: string): any {
+
+    //Pull xml2js parsed attributes to node
+    Object.assign(dict[ key ], dict[ key ][ '$' ]);
+    delete dict[ key ][ '$' ];
+    return dict;
+}
+function assignXml2JsAttribsToSelf(dict: any): any {
+    //Pull xml2js parsed attributes to node
+
+    if (typeof dict === 'object' && dict[ '$' ]) {
+        Object.assign(dict, dict[ '$' ]);
+        delete dict[ '$' ];
+    }
+    return dict;
+}
+function assignAllAttribsToSelf(dict: any) {
+    assignXml2JsAttribsToSelf(dict);
+
+    if (Array.isArray(dict)) {
+        for (const currentValue of dict) {
+            assignAllAttribsToSelf(currentValue);
+        }
+    }
+    if (typeof dict === 'object') {
+        for (const key in dict) {
+            const currentValue = dict[ key ];
+
+            assignAllAttribsToSelf(currentValue);
+        }
+    }
+    return dict;
+}
+
+export function isRelativePath(value: any): boolean {
+    if (typeof value === 'string') {
+        const hasSeperator = value.includes(path.sep);
+        if (!hasSeperator) {
+            return false;
+        }
+
+        if (!value.startsWith('./') && !value.startsWith('../')) {
+            return false;
+        }
+
+        return true;
+    }
+    return false;
+}
+
+export function detectResolveRelativePath(relPath: string, rootPath: string): string | undefined {
+
+    if (isRelativePath(relPath)) {
+        const joinedPath = path.join(rootPath, relPath);
+        return path.resolve(joinedPath);
+    }
+    return undefined;
+
+}
+
+export function resolveRelativePaths(dict: any, rootPath: string): any {
+    return resolvePrimitiveLeaves(dict, (value) => detectResolveRelativePath(value, rootPath));
+}
+
+
 export class HtmlRunner extends FileRunner {
 
     protected matcherExpression: string | null = null;
@@ -148,7 +227,8 @@ export class HtmlRunner extends FileRunner {
 
         //const opts: ParserOptions = {}
         const parsedDataOuter: any = await parseStringPromise(contentExtraction.selected, { trim: true, explicitArray: false });
-        const parsedDataInner: any = parsedDataOuter.data;
+        const parsedDataInner: any = assignAllAttribsToSelf(parsedDataOuter.data);
+
 
         const dataExtractedDoc: FalsyAble<DataParsedDocument> = {
             content: contentExtraction.content,
@@ -157,11 +237,21 @@ export class HtmlRunner extends FileRunner {
 
         Object.assign(dataExtractedDoc.data || {}, resource.data);
 
-        if (resource.data) {
-            resource.data.import = resource.data?.import.map((importXmlData) => importXmlData.path);
+        if (dataExtractedDoc.data) {
+
+            //assignAttribsToSelf(dataExtractedDoc.data, 'import');
+
+            if (!Array.isArray(dataExtractedDoc.data.import)) {
+                dataExtractedDoc.data.import = arrayify(dataExtractedDoc.data.import);
+            }
+
+            dataExtractedDoc.data.import = dataExtractedDoc.data.import.map((importXmlData) => importXmlData.path);
+
+            const currentDocumentDir: string = path.parse(dataExtractedDoc.data.src).dir;
+            dataExtractedDoc.data = resolveRelativePaths(dataExtractedDoc.data, currentDocumentDir);
         }
 
-        parsedDataInner.importCache = getResourceImports(parsedDataInner, config);
+        parsedDataInner.importCache = await getResourceImports(dataExtractedDoc, config);
 
         return dataExtractedDoc;
     }
@@ -178,7 +268,16 @@ export class HtmlRunner extends FileRunner {
         //const $ = loadHtml(htmlContent);
 
         //const compiledContent: string = await findCompileSubComponents(htmlContent, resource.data?.importCache, resource.data, config);
-        const compiledContent: string = await findCompileSubComponents(htmlContent, config.defaultComponentsCache || {}, resource.data, config);
+
+        let selectedDependencies: Record<string, IInternalComponent> = {};
+        if (resource.data?.importCache && !isEmpty(resource.data?.importCache)) {
+            selectedDependencies = resource.data?.importCache;
+        }
+        else {
+            selectedDependencies = config.defaultComponentsCache || {};
+        }
+
+        const compiledContent: string = await findCompileSubComponents(htmlContent, selectedDependencies, resource.data, config);
 
         return {
             content: compiledContent,

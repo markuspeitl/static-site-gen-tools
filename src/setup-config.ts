@@ -92,7 +92,8 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         '**.component.ts',
         '*.component.ts',
         '.component.ts',
-        '**/*.component.ts'
+        '**/*.component.ts',
+        '/**/*.component.ts',
     ];
 
     config.defaultRunnerDirs = [
@@ -115,10 +116,11 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
             //'njk',
         ],
         '.+.md': [
-            'md',
+            //'md',
             //'njk',
             'html',
-            'njk'
+            'njk',
+            'md',
         ],
         '.+.njk': [
             'njk',

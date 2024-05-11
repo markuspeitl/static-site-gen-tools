@@ -11,6 +11,11 @@ const defaultLibConstructors = {
 
         //info: https://github.com/11ty/eleventy/issues/2438
         return markdownit.default(configOptions).disable('code');
+
+        //alternatives:
+        //https://github.com/micromark/micromark#extending-markdown
+        //remark
+
     },
     'matter': async () => {
         const module = await import('gray-matter');

@@ -249,7 +249,7 @@ export async function globInDirsCollectFlat(anchorDirs: string[], subGlobs: stri
 
     const results: any[] = [];
     for (const anchorDir of anchorDirs) {
-        const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), true);
+        const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), false);
 
         const processingResultPromises: Promise<FalsyAble<BaseComponent>>[] = globMatchedPaths.map((matchedPath: string) => processPathFn(matchedPath, ...fnArgs));
         const processingResults: FalsyAble<BaseComponent>[] = await Promise.all(processingResultPromises);

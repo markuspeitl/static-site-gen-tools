@@ -74,7 +74,7 @@
         </yml>
 
         <e-for item="tag" of="tags">
-            <tag-component>{ tag }</tag-component>
+            <tag-component>{{ tag }}</tag-component>
 
             <tag bind="tag-component"></tag>
             

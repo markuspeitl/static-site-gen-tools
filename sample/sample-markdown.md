@@ -71,6 +71,14 @@ hello
 
 </for>
 
+<failing-ts>
+export default () => {
+    const typescript: Array<string> = ["one"];
+
+    return `Hellor world from typescript component ${typescript[0]}`;
+}
+</failing-ts>
+
 <ts>
 export default () => {
     return `Hellor world from typescript component`;
