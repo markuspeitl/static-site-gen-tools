@@ -37,7 +37,7 @@ Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
     Hello world from hello world component
 </hello>
 
-heading text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsu
+Heading text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsu
 
 start title insert:
 {{ title }}
@@ -71,13 +71,14 @@ hello
 
 </for>
 
-<failing-ts>
-export default () => {
-    const typescript: Array<string> = ["one"];
 
-    return `Hellor world from typescript component ${typescript[0]}`;
+<ts>
+export default () => {
+    const typescript: string[] = ["one"];
+
+    return `Complex ts test: ` + typescript[0];
 }
-</failing-ts>
+</ts>
 
 <ts>
 export default () => {

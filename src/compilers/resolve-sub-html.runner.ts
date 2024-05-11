@@ -260,6 +260,24 @@ export async function compileDeferredComponent(args: DeferCompileArgs, data: any
     return args;
 }
 
+export async function failSafeCompileDeferredComponent(args: DeferCompileArgs, data: any, config: SsgConfig): Promise<DeferCompileArgs> {
+
+    try {
+        const deferredCompileResult: DeferCompileArgs = await compileDeferredComponent(args, data, config);
+        return deferredCompileResult;
+    }
+    catch (error) {
+        console.error(`Error occured which compiling sub component:`);
+        console.error(`${args}`);
+        console.error(`${error}`);
+
+        return args;
+    }
+
+    //args.content = compiledComponentDoc.content;
+    //return args;
+}
+
 export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], resource: DataParsedDocument, config: SsgConfig): Promise<DeferCompileArgs[] | null> {
 
     const parentData: any = resource.data;
@@ -267,17 +285,17 @@ export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], r
         return null;
     }
 
-    const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => compileDeferredComponent(args, parentData, config));
+    const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => failSafeCompileDeferredComponent(args, parentData, config));
 
-    const settledCompilePromises: PromiseSettledResult<DeferCompileArgs>[] = await Promise.allSettled(deferredCompilePromises);
+    return Promise.all(deferredCompilePromises);
 
+    /*const settledCompilePromises: PromiseSettledResult<DeferCompileArgs>[] = await Promise.allSettled(deferredCompilePromises);
     return settledCompilePromises.map((settledCompile: PromiseSettledResult<DeferCompileArgs>) => {
         if (settledCompile.status === 'rejected') {
-            return {};
         }
 
         return settledCompile.value;
-    });
+    });*/
 }
 
 export async function compileDeferredInsertToPlaceholder(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {

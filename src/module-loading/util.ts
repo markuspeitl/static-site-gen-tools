@@ -136,9 +136,13 @@ export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string
 }
 
 
-function ts2EsCompile(tsCode: string, moduleType: ts.ModuleKind.ES2015): string {
-    const options: ts.TranspileOptions = { compilerOptions: { module: moduleType } };
-    return ts.transpileModule(tsCode, options).outputText;
+function ts2EsCompile(tsCode: string, moduleType: ts.ModuleKind): string {
+    //const options: ts.TranspileOptions = { compilerOptions: { module: moduleType } };
+    const compiledTs = ts.transpileModule(tsCode, {});
+    const dia = compiledTs.diagnostics;
+    return compiledTs.outputText;
+
+    //return ts.transpileModule(tsCode, options).outputText;
 }
 
 
@@ -156,9 +160,11 @@ export async function loadTsModuleFromString<ModuleInterface>(moduleContent: Fal
     //const base64EncodedModule = `data:text/javascript;base64,${btoa(moduleContent)}`;
 
     //const unescaped = unescape(moduleContent);
-    //const jsModuleContent: string = ts2EsCompile(unescaped, ts.ModuleKind.ES2015);
+    const jsModuleContent: string = ts2EsCompile(moduleContent, ts.ModuleKind.Node16);
 
-    const loadedModule: Module = await importFromString(moduleContent);
+    const loadedModule: any = await requireFromString(jsModuleContent);
+
+    //const loadedModule: Module = await importFromString(jsModuleContent);
 
 
     //loadedModule = eval(moduleContent);
@@ -184,10 +190,20 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
         loadedModule = await loadTsModule(modulePath, tsModulesCache);
     }
     catch (error: any) {
-        console.log(`Failed to load ts module at ${loadedModule}`);
+        console.error(`Failed to load ts module at ${loadedModule}:`);
+        console.error(`Reason:`);
+        console.error(error);
     }
     if (!loadedModule && moduleContent) {
-        return loadTsModuleFromString(moduleContent, tsModulesCache);
+
+        try {
+            loadedModule = await loadTsModuleFromString(moduleContent, tsModulesCache);
+        }
+        catch (error: any) {
+            console.error(`Failed to load ts module from string:\n ${moduleContent}`);
+            console.error(`Reason:`);
+            console.error(error);
+        }
     }
 
     return loadedModule;

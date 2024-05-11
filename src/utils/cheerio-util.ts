@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 
-export function loadHtml(html: string): cheerio.Root {
+export function loadHtml(html: string, noHtmlEntities: boolean = true): cheerio.Root {
 
     //For some reasom loading the document with 'null, false' completely discards html and body elements from the 
     //resulting document
@@ -18,7 +18,7 @@ export function loadHtml(html: string): cheerio.Root {
 
     //https://cheerio.js.org/docs/api/interfaces/HTMLParser2Options
     //Using xmlMode prevents it from adding or removing html/body elements when parsing
-    return cheerio.load(html, { xmlMode: true }, false);
+    return cheerio.load(html, { xmlMode: true, decodeEntities: !noHtmlEntities }, false);
 }
 
 export function unparseHtml($: cheerio.Root): string {
