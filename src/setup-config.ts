@@ -118,8 +118,8 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         '.+.md': [
             //'md',
             //'njk',
-            'html',
-            'njk',
+            //'html',
+            //'njk',
             'md',
         ],
         '.+.njk': [

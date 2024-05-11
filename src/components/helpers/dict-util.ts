@@ -107,3 +107,17 @@ export function initGetSubDict<PropType>(obj: any, key: string): PropType {
     }
     return obj[ key ];
 }
+
+export function selectSubset(obj: Record<string, any>, selectedKeys: string[]): Record<string, any> {
+
+    const objKeys: string[] = Object.keys(obj);
+    return objKeys.reduce(
+        (targetObj, key) => {
+            if (selectedKeys.includes(key)) {
+                targetObj[ key ] = obj[ key ];
+            }
+            return targetObj;
+        },
+        {}
+    );
+}
