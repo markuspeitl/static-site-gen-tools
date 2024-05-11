@@ -1,6 +1,6 @@
 //https://github.com/fb55/htmlparser2 benchmarks + readme
 import * as htmlparser2 from 'htmlparser2';
-import { ContentExtraction, extractElement, loadHtml, orSelector, replaceSelected, replaceSelectedAsync } from "../utils/cheerio-util";
+import { ContentExtraction, extractElement, loadHtml, orSelector, replaceSelected, replaceSelectedAsync, unparseHtml } from "../utils/cheerio-util";
 import type { ParserOptions, parseStringPromise } from "xml2js";
 import type xml2js from "xml2js";
 import { getLibInstance } from "../dependencies/module-instances";
@@ -8,13 +8,13 @@ import { SsgConfig } from '../config';
 import { CompileRunner, DataParsedDocument, DocumentData } from './runners';
 import { FileRunner } from './file.runner';
 import { FalsyAble } from '../components/helpers/generic-types';
-import { loadComponentImports } from './lib/component-cache';
 import { BaseComponent, IInternalComponent } from '../components/base-component';
-import { getResourceImports } from '../components/components';
 import { unescape } from 'lodash';
 import { arrayify, isEmpty } from '../utils/util';
 import { resolvePrimitiveLeaves } from '../utils/walk-recurse';
 import path from 'path';
+import { calcHash } from '../fragement-cache';
+import { getResourceImports } from '../components/components';
 
 
 
@@ -65,9 +65,6 @@ export async function compileSubComponents(html: string, componentsToCompile: Re
         };
 
         const dataParseDoc: FalsyAble<DataParsedDocument> = await selectedComponentInstance.data(subDocToCompile, config);
-
-
-
         const subCompiledDoc: FalsyAble<DataParsedDocument> = normalizeToDataParsedDoc(await selectedComponentInstance.render(dataParseDoc, config));
 
         //const subCompiledDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith('ts', subDocToCompile, config);
@@ -191,210 +188,335 @@ export function resolveRelativePaths(dict: any, rootPath: string): any {
     return resolvePrimitiveLeaves(dict, (value) => detectResolveRelativePath(value, rootPath));
 }
 
+export function resolveImportPropToPath(importObj: any): string {
+    /*if (typeof importObj === 'string') {
+        return importObj;
+    }*/
+    if (typeof importObj === 'object') {
+        return importObj.path;
+    }
+    return importObj;
+}
+
+export async function resolveResourceImports(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+
+    if (!resource.data) {
+        resource.data = {};
+    }
+
+    //assignAttribsToSelf(dataExtractedDoc.data, 'import');
+    if (!resource.data.import) {
+        resource.data.import = [];
+    }
+    if (!Array.isArray(resource.data.import)) {
+        resource.data.import = arrayify(resource.data.import);
+    }
+    resource.data.import = resource.data.import.map(resolveImportPropToPath);
+
+    const currentDocumentDir: string = path.parse(resource.data.src).dir;
+    resource.data = resolveRelativePaths(resource.data, currentDocumentDir);
+
+    if (!resource.data) {
+        return resource;
+    }
+
+    resource.data.importCache = await getResourceImports(resource, config);
+
+    return resource;
+}
+
+function updateMergeResource(resource: DataParsedDocument, updatedResource: DataParsedDocument): DataParsedDocument {
+
+    if (!resource.data) {
+        resource.data = {};
+    }
+    if (!updatedResource.data) {
+        updatedResource.data = {};
+    }
+
+    return {
+        content: updatedResource.content,
+        data: Object.assign(resource.data, updatedResource.data)
+    };
+}
+
+async function parseHtmlData(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    //const opts: ParserOptions = {}
+    //const $: cheerio.Root = loadHtml(resource.content);
+
+    /*const xmlBuilder = new Builder();
+    const xmlString = xmlBuilder.buildObject({
+        root: {
+            title: "Resume Markus Peitl",
+            layout: "./frame.ehtml",
+            tags: [
+                'cv',
+                'resume',
+                'skills'
+            ]
+        }
+    });*/
+    const { parseStringPromise, Builder } = await getLibInstance('xml2js', config);
+
+    const contentExtraction: ContentExtraction = extractElement(resource.content, dataHtmlTag);
+
+    //No data prop to extract
+    if (!contentExtraction || !contentExtraction.selected) {
+        return resource;
+    }
+
+    const parsedDataOuter: any = await parseStringPromise(
+        contentExtraction.selected,
+        {
+            trim: true,
+            explicitArray: false
+        }
+    );
+    const parsedDataInner: any = assignAllAttribsToSelf(parsedDataOuter.data);
+
+    return {
+        content: contentExtraction.content,
+        data: parsedDataInner
+    };
+}
+
+export function getResourceImportsCache(resource: DataParsedDocument, config: SsgConfig): Record<string, IInternalComponent> {
+    let selectedDependencies: Record<string, IInternalComponent> = {};
+    if (resource.data?.importCache && !isEmpty(resource.data?.importCache)) {
+        selectedDependencies = resource.data?.importCache;
+    }
+    else {
+        selectedDependencies = config.defaultComponentsCache || {};
+    }
+    return selectedDependencies;
+}
+
+export async function compileResourceSubComponents(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<DataParsedDocument> {
+
+    if (!resource) {
+        return {
+            content: '',
+            data: {}
+        };
+    }
+
+    const htmlContent: string = resource.content;
+    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    const compiledContent: string = await findCompileSubComponents(htmlContent, selectedDependencies, resource.data, config);
+    return normalizeToDataParsedDoc(compiledContent, resource);
+}
+
+export type IDocumentDataParser = (resource: DataParsedDocument, config: SsgConfig) => Promise<DataParsedDocument>;
+
+export async function extractMergePrepareData(
+    resource: DataParsedDocument,
+    config: SsgConfig,
+    parseDocumentDataFn: IDocumentDataParser,
+
+): Promise<FalsyAble<DataParsedDocument>> {
+
+    const dataExtractedDoc: DataParsedDocument = await parseDocumentDataFn(resource, config);
+    const dataMergedDoc: DataParsedDocument = updateMergeResource(resource, dataExtractedDoc);
+    return resolveResourceImports(dataMergedDoc, config);
+}
+
+export async function detectReplaceComponents(
+    resource: DataParsedDocument,
+    config: SsgConfig,
+    replaceFn: (
+        tag: string,
+        body: string,
+        attrs: {
+            [ attr: string ]: string;
+        }
+    ) => string): Promise<DataParsedDocument> {
+
+    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+
+    //const toCompileComponentIds: string[] = Object.keys(componentsToCompile);
+    const anyComponentSelector = orSelector(importScopeSymbols);
+
+    const replacerFunction = async (tag: string, element: cheerio.Element, $: cheerio.Root) => {
+        const componentHtml = $(element).html() || '';
+        const componentData = $(element).data() || {};
+
+        const attrDict: { [ attr: string ]: string; } = $(element).attr();
+
+        const componentReplacedHtml = await replaceFn(tag, componentHtml, attrDict);
+        return componentReplacedHtml;
+    };
+
+    resource.content = await replaceSelectedAsync(resource.content, anyComponentSelector, replacerFunction);
+    return resource;
+}
+
+export interface DeferCompileArgs {
+    name?: string,
+    placeholder?: string,
+    id?: string,
+    content?: string,
+    attrs?: {
+        [ attr: string ]: string;
+    };
+    compiled?: string;
+}
+
+export async function substituteComponentsPlaceholder(
+    resource: DataParsedDocument,
+    config: SsgConfig,
+): Promise<FalsyAble<DataParsedDocument>> {
+
+    //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    //const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+
+    if (!resource.data) {
+        resource.data = {};
+    }
+
+    resource.data.compileAfter = [];
+
+    //Find component entry points (first/top-level components, nodes that are components in the syntax tree)
+
+    //Note: Must do a BFS search to properly work -> otherwise components under a component might be replaced as well 
+    //(though that should be the component's responsibility that holds this component)
+    resource = await detectReplaceComponents(resource, config, (tag: string, body: string, attrs: any) => {
+        if (!resource.data) {
+            resource.data = {};
+        }
+
+        const componentName: string = tag;
+        const placeholder: string = `${componentName}-placeholder`;
+        const content: string = body;
+
+        const deferCompileArgs: DeferCompileArgs = {
+            name: componentName,
+            placeholder: placeholder,
+            content: content,
+            attrs: attrs
+        };
+
+        const uniqueComponentCallHash: string = calcHash(deferCompileArgs);
+
+        //Filter for simple characters (special chars are not allowed in html id)
+        const uniqueComponentId: string = uniqueComponentCallHash.replace(/[^a-zA-Z0-9]/g, "");
+
+        deferCompileArgs.id = uniqueComponentId;
+
+        resource.data.compileAfter.push(deferCompileArgs);
+
+        return `<${deferCompileArgs.placeholder} id="${deferCompileArgs.id}"/>`;
+    });
+
+    return resource;
+}
+
+export async function compileHtmlResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    return resource;
+}
+
+export async function compileDeferredComponent(args: DeferCompileArgs, data: any, config: SsgConfig): Promise<DeferCompileArgs> {
+
+    //Shallow copy --> note currently there is no seperation between "parent data scope and child data scope"
+    //Modifications to data might bleed to siblings or parent document
+    const currentScopeData = Object.assign({}, data);
+    const dependencies: Record<string, IInternalComponent> = data.importCache;
+
+    if (!args.name) {
+        return {};
+    }
+
+    const component: IInternalComponent = dependencies[ args.name ];
+    if (!component) {
+        args.content = '';
+        return args;
+    }
+
+    const subDocToCompile: DataParsedDocument = {
+        content: args.content,
+        data: Object.assign({}, currentScopeData, args.attrs),
+    };
+
+    const dataParseDoc: FalsyAble<DataParsedDocument> = await component.data(subDocToCompile, config);
+    const compiledComponentDoc: FalsyAble<DataParsedDocument> = normalizeToDataParsedDoc(await component.render(dataParseDoc, config));
+
+    args.content = compiledComponentDoc.content;
+    return args;
+}
+
+export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], resource: DataParsedDocument, config: SsgConfig): Promise<DeferCompileArgs[] | null> {
+
+    const parentData: any = resource.data;
+    if (!parentData.importCache || !deferredCompileArgs) {
+        return null;
+    }
+
+    const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => compileDeferredComponent(args, parentData, config));
+
+    const settledCompilePromises: PromiseSettledResult<DeferCompileArgs>[] = await Promise.allSettled(deferredCompilePromises);
+
+    return settledCompilePromises.map((settledCompile: PromiseSettledResult<DeferCompileArgs>) => {
+        if (settledCompile.status === 'rejected') {
+            return {};
+        }
+
+        return settledCompile.value;
+    });
+}
+
+export async function compileDeferredInsertToPlaceholder(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    const compiledSubComponents: DeferCompileArgs[] | null = await compileDeferred(resource?.data?.compileAfter, resource, config);
+    if (!compiledSubComponents) {
+        return resource;
+    }
+
+    const $ = loadHtml(resource.content);
+
+    for (const deferCompiled of compiledSubComponents) {
+        //const placeHolderTagName = deferCompiled.name;
+        const componentPlaceholderId: string | undefined = deferCompiled.id;
+
+        if (!deferCompiled.content) {
+            deferCompiled.content = '';
+        }
+
+        const compiledBody: string | undefined = deferCompiled.content;
+        if (componentPlaceholderId) {
+            const placeholderElem = $(`#${componentPlaceholderId}`);
+
+            if (placeholderElem) {
+                placeholderElem.replaceWith(compiledBody);
+            }
+        }
+    }
+
+    resource.content = unparseHtml($);
+
+    return resource;
+}
+
+
+const dataHtmlTag: string = 'data';
 
 export class HtmlRunner extends FileRunner {
 
-    protected matcherExpression: string | null = null;
-    protected defaultMatcherExpression: string = ".+\.html|.+\.ehtml";
-
     public async extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
-
-        const { parseStringPromise, Builder } = await getLibInstance('xml2js', config);
-
-        //const $: cheerio.Root = loadHtml(resource.content);
-
-        const contentExtraction: ContentExtraction = extractElement(resource.content, 'data');
-
-        if (!contentExtraction || !contentExtraction.selected) {
-            return resource;
-            /*return {
-                content: contentExtraction.content || fileContent
-            };*/
-        }
-
-        /*const xmlBuilder = new Builder();
-        const xmlString = xmlBuilder.buildObject({
-            root: {
-                title: "Resume Markus Peitl",
-                layout: "./frame.ehtml",
-                tags: [
-                    'cv',
-                    'resume',
-                    'skills'
-                ]
-            }
-        });*/
-
-        //const opts: ParserOptions = {}
-        const parsedDataOuter: any = await parseStringPromise(contentExtraction.selected, { trim: true, explicitArray: false });
-        const parsedDataInner: any = assignAllAttribsToSelf(parsedDataOuter.data);
-
-
-        const dataExtractedDoc: FalsyAble<DataParsedDocument> = {
-            content: contentExtraction.content,
-            data: parsedDataInner,
-        };
-
-        Object.assign(dataExtractedDoc.data || {}, resource.data);
-
-        if (dataExtractedDoc.data) {
-
-            //assignAttribsToSelf(dataExtractedDoc.data, 'import');
-
-            if (!Array.isArray(dataExtractedDoc.data.import)) {
-                dataExtractedDoc.data.import = arrayify(dataExtractedDoc.data.import);
-            }
-
-            dataExtractedDoc.data.import = dataExtractedDoc.data.import.map((importXmlData) => importXmlData.path);
-
-            const currentDocumentDir: string = path.parse(dataExtractedDoc.data.src).dir;
-            dataExtractedDoc.data = resolveRelativePaths(dataExtractedDoc.data, currentDocumentDir);
-        }
-
-        parsedDataInner.importCache = await getResourceImports(dataExtractedDoc, config);
-
-        return dataExtractedDoc;
+        return extractMergePrepareData(resource, config, parseHtmlData);
     }
-
-
 
     public async compile(resource: FalsyAble<DataParsedDocument>, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
-
         if (!resource) {
-            return null;
+            resource = {};
         }
 
-        const htmlContent: string = resource.content;
-        //const $ = loadHtml(htmlContent);
+        resource = await substituteComponentsPlaceholder(resource, config);
+        resource = await compileHtmlResource(resource as DataParsedDocument, config);
+        resource = await compileDeferredInsertToPlaceholder(resource as DataParsedDocument, config);
 
-        //const compiledContent: string = await findCompileSubComponents(htmlContent, resource.data?.importCache, resource.data, config);
-
-        let selectedDependencies: Record<string, IInternalComponent> = {};
-        if (resource.data?.importCache && !isEmpty(resource.data?.importCache)) {
-            selectedDependencies = resource.data?.importCache;
-        }
-        else {
-            selectedDependencies = config.defaultComponentsCache || {};
-        }
-
-        const compiledContent: string = await findCompileSubComponents(htmlContent, selectedDependencies, resource.data, config);
-
-        return {
-            content: compiledContent,
-            data: resource.data
-        };
-
-
-        /*const compiledOutput: DataParsedDocument = {
-            content: resource,
-            data: data
-        };
-
-        const componentImportLocations: string[] = data?.import;*/
-
-        //const importedComponents: BaseComponent[] = loadComponentImports(data?.src, componentImportLocations);
-
-        //TODO: detect and load custom components
-        //TODO: linking or loading in custom component definitions for usage in the document
-
-        //return resource;
-    }
-
-    public getMatcher(): string | RegExp {
-        if (this.matcherExpression) {
-            return this.matcherExpression;
-        }
-        return this.defaultMatcherExpression;
+        return resource;
     }
 }
 
 export function getInstance(): CompileRunner {
     return new HtmlRunner();
 }
-
-/*export function getCompiler(): DocumentCompiler {
-    const defaultHtmlDocumentCompiler: DocumentCompiler = {
-        compile: async (fileContent: string | null | undefined, dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig) => {
-
-            if (!fileContent) {
-                return null;
-            }
-
-            const compiledOutput: DataParsedDocument = {
-                content: fileContent,
-                data: dataCtx
-            };
-
-            return compiledOutput;
-        }
-    };
-
-    return defaultHtmlDocumentCompiler;
-}
-
-export function extractHtmlBetweenTags(fileContent: string, tag: string): string {
-
-    return new Promise<string>((resolve: (result: any) => void, reject: (reason?: any) => void) => {
-        console.log();
-        //return resolve();
-        //return reject();
-
-        const parser = new htmlparser2.Parser({
-            onopentag(name, attributes) {
-
-                if (name === "script" && attributes.type === "text/javascript") {
-                    console.log("JS! Hooray!");
-                }
-            },
-            ontext(text) {
-                console.log("-->", text);
-            },
-            onclosetag(tagname) {
-                if (tagname === "data") {
-                    console.log("That's it?!");
-                }
-            },
-        });
-
-        parser.write(fileContent);
-
-    });
-}
-
-export function extractHtmlDataContents(fileContent: string): string {
-
-    const parsedDom = htmlparser2.parseDocument(fileContent);
-}
-
-
-export async function getExtractor(): Promise<DataExtractor> {
-
-    const { parseStringPromise } = await import("xml2js");
-
-    const defaultHtmlDataExtractor: DataExtractor = {
-        extractData: async (fileContent: string, config?: SsgConfig) => {
-
-            const $: cheerio.Root = loadHtml(fileContent);
-
-            const contentExtraction: ContentExtraction = extractElement(fileContent, 'data');
-
-            if (!contentExtraction || !contentExtraction.selected) {
-                return {
-                    content: contentExtraction.content || fileContent
-                };
-            }
-
-            //const opts: ParserOptions = {}
-            const parsedData: any = await parseStringPromise(contentExtraction.selected);
-
-            const parsedDoc: DataParsedDocument = {
-                content: contentExtraction.content,
-                data: parsedData
-            };
-
-            return parsedDoc;
-        }
-    };
-
-    return defaultHtmlDataExtractor;
-}*/

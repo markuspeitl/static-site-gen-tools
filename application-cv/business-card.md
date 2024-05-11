@@ -62,3 +62,8 @@ An abstract component would also be useful for data and import prep.
 As currently the importCache is only created in html-runner.
 
 Later maybe generalize components: Currently it is assumed that components always return html formatted data.
+
+Issue:
+When using multiple instances of certain components, we need to be able to identify the
+component usage/call from the placeholder.
+(Maybe hash content and attributes and use as id)

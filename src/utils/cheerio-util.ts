@@ -3,6 +3,7 @@ import { AttrDict, isEmpty } from './util';
 import * as path from 'path';
 import * as fs from 'fs';
 
+
 export function loadHtml(html: string): cheerio.Root {
 
     //For some reasom loading the document with 'null, false' completely discards html and body elements from the 
@@ -18,6 +19,18 @@ export function loadHtml(html: string): cheerio.Root {
     //https://cheerio.js.org/docs/api/interfaces/HTMLParser2Options
     //Using xmlMode prevents it from adding or removing html/body elements when parsing
     return cheerio.load(html, { xmlMode: true }, false);
+}
+
+export function unparseHtml($: cheerio.Root): string {
+    //const docHtml: string = $.root().prop('outerHTML');
+    const rootElem = $.root();
+    const docHtml: string | null = rootElem.html();
+
+    if (!docHtml) {
+        return '';
+    }
+
+    return docHtml;
 }
 
 export function unwrapHtml(html?: string): string {
@@ -259,19 +272,12 @@ export function performHtmlModification(html: string, modificationFn: ($: cheeri
 
     modificationFn($);
 
-    //const docHtml: string = $.root().prop('outerHTML');
-    const rootElem = $.root();
-    const docHtml: string | null = rootElem.html();
+    return unparseHtml($);
 
     /*const htmlElem = $('html');
     if (htmlElem.length > 0) {
         return $(htmlElem).prop('outerHtml');
     }*/
-
-    if (!docHtml) {
-        return '';
-    }
-    return docHtml;
 }
 export async function performHtmlModificationAsync(html: string, modificationFn: ($: cheerio.Root) => void): Promise<string> {
     if (!html) {
@@ -281,14 +287,7 @@ export async function performHtmlModificationAsync(html: string, modificationFn:
 
     await modificationFn($);
 
-    //const docHtml: string = $.root().prop('outerHTML');
-    const rootElem = $.root();
-    const docHtml: string | null = rootElem.html();
-
-    if (!docHtml) {
-        return '';
-    }
-    return docHtml;
+    return unparseHtml($);
 }
 
 export function replaceSelected(html: string, selector: string, replacerFunction: (tag: string, element: cheerio.Element, $: cheerio.Root) => string): string {
