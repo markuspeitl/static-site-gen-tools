@@ -1,6 +1,6 @@
 import { DocumentData, DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
-import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/util";
+import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/ts-modules";
 import { FalsyAble } from "./helpers/generic-types";
 
 

@@ -4,7 +4,7 @@ import { SsgConfig } from "../config";
 import { DocumentData } from "./data-extract";
 import { CompilerModule } from "./defaults";
 import { compileDocument, DocumentCompileData } from "./document-compile";
-import { getResolveTsModuleWithConfig } from "../module-loading/util";
+import { getResolveTsModuleWithConfig } from "../module-loading/ts-modules";
 import * as shlex from 'shlex';
 
 export function getCompileDataProp(doc: DocumentCompileData, key: string, ctxPriority: boolean = false): any {

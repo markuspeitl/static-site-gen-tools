@@ -1,7 +1,7 @@
 import path from "path";
 import { SsgConfig } from "../config";
 import { defaultCompileRunnersFileMap } from "../deprecated/defaults";
-import { getFirstInstanceTargetClass, getModuleId, getResolveTsModule, loadTsModule } from "../module-loading/util";
+import { getFirstInstanceTargetClass, getModuleId, getResolveTsModule, loadTsModule } from "../module-loading/ts-modules";
 import { FalsyAble, FalsyString } from "../components/helpers/generic-types";
 import { setDefaults } from "../utils/arg-util";
 import { MatchedDictKeyRes, getKeyMatches } from "../utils/regex-match-util";

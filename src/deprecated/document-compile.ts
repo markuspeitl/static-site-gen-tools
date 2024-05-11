@@ -5,7 +5,7 @@ import { extractData } from './data-extract';
 import { setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from '../fragement-cache';
 import { SsgConfig } from '../config';
-import { loadTsModule } from '../module-loading/util';
+import { loadTsModule } from '../module-loading/ts-modules';
 import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, getRunnerInstance } from '../compilers/runners';
 import { readFileAsString } from '../compilers/file.runner';
 import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helpers/generic-types';

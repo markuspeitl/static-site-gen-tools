@@ -2,7 +2,7 @@ import { BaseComponent, IInternalComponent } from "../components/base-component"
 import { getComponent } from "../components/components";
 import { FalsyAble } from "../components/helpers/generic-types";
 import { SsgConfig } from "../config";
-import { getTsModule, getFirstDefPropAsFn } from "../module-loading/util";
+import { getTsModule, getFirstDefPropAsFn } from "../module-loading/ts-modules";
 import { FileRunner } from "./file.runner";
 import { CompileRunner, DataParsedDocument, DocumentData } from "./runners";
 import { data } from '../deprecated/render/sample-layout';

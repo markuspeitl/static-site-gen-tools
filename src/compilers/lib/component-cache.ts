@@ -4,7 +4,7 @@ import { FalsyAble } from "../../components/helpers/generic-types";
 import { SsgConfig } from "../../config";
 import { anchorAndGlob } from "../../utils/globbing";
 import * as fs from 'fs';
-import { loadTsModule } from "../../module-loading/util";
+import { loadTsModule } from "../../module-loading/ts-modules";
 import { filterFalsy } from "../../components/helpers/array-util";
 
 export function detectComponentFiles(componentCandidatePaths: string[], config: SsgConfig): string[] {

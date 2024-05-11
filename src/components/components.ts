@@ -2,7 +2,7 @@ import path from "path";
 import { SsgConfig } from "../config";
 import { anchorAndGlob } from "../utils/globbing";
 import { DataParsedDocument, DocumentData } from "../compilers/runners";
-import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/util";
+import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
 import { BaseComponent, IInternalComponent } from "./base-component";
 import { FalsyAble } from "./helpers/generic-types";
 import { filterFalsy } from "./helpers/array-util";
@@ -85,6 +85,9 @@ export function normalizeModuleToComponent(module: any): FalsyAble<IInternalComp
             };
         };
     }
+
+    //TODO add special component: not function and export is specified, but the 'data', 'config' properties can be assumed to
+    //be available during runtime and the compiled document string is printed to std.out
 
     return componentInstance as FalsyAble<IInternalComponent>;
 
