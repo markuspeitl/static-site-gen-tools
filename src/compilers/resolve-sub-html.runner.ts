@@ -4,11 +4,12 @@ import { SsgConfig } from "../config";
 import { FileRunner } from "./file.runner";
 import { DataParsedDocument } from "./runners";
 import { resolvePrimitiveLeaves } from "../utils/walk-recurse";
-import { arrayify, isEmpty } from "../components/helpers/array-util";
+import { arrayify, isEmpty, removeArrayItem } from "../components/helpers/array-util";
 import { getResourceImports } from "../components/components";
 import { IInternalComponent } from "../components/base-component";
 import { loadHtml, orSelector, replaceSelectedAsync, unparseHtml } from "../utils/cheerio-util";
 import { calcHash } from "../fragement-cache";
+import * as cheerio from 'cheerio';
 
 /*export abstract class ResolveDataImportsRunner extends FileRunner {
     abstract extractData(resource: DataParsedDocument, config: SsgConfig): Promise<FalsyAble<DataParsedDocument>>;
@@ -151,6 +152,144 @@ export async function extractMergePrepareData(
     return resolveResourceImports(dataMergedDoc, config);
 }
 
+export type CheerioNodeFn<ReturnType> = ($: cheerio.Root, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
+
+export function cheerioDfsWalk<ReturnType>($: cheerio.Root, currentCursor: cheerio.Cheerio, handleFork: CheerioNodeFn<ReturnType>, handleLeaf: CheerioNodeFn<ReturnType>): ReturnType[] {
+
+    const currentElement = $(currentCursor);
+    let currentChildren: cheerio.Cheerio = currentElement.children();
+    if (currentChildren.length <= 0) {
+        const leafProcessingResult: FalsyAble<ReturnType> = handleLeaf($, $(currentCursor));
+        if (!leafProcessingResult) {
+            return [];
+        }
+
+        return [ leafProcessingResult ];
+    }
+    const forkProcessResult: FalsyAble<ReturnType> = handleFork($, currentCursor);
+
+    //NON standard control flow! --> early exit branch if fork was successfully processed
+    if (forkProcessResult) {
+        return [ forkProcessResult ];
+    }
+
+    currentChildren = $(currentCursor).children();
+
+    const flatDescendantResults: ReturnType[] = [];
+
+    if (currentChildren.length > 0) {
+        for (const child of currentChildren) {
+            const processingResults: ReturnType[] = cheerioDfsWalk($, $(child), handleFork, handleLeaf);
+
+            flatDescendantResults.push(...processingResults);
+        }
+    }
+
+
+    return flatDescendantResults;
+}
+
+/*export async function findReplaceTopComponents(
+    componentTags: string[],
+    $: cheerio.Root,
+    currentCursor: cheerio.Element,
+    replaceFn: (
+        tag: string,
+        body: string,
+        attrs: {
+            [ attr: string ]: string;
+        }
+    ) => string
+): Promise<DeferCompileArgs[]> {
+
+    const currentTag = $(currentCursor).prop('tagName').toLowerCase();
+    if (componentTags.includes(currentTag)) {
+
+        const placeholder = replaceFn(currentTag, $(currentCursor).html(), $(currentCursor).attrs());
+        $(currentTag).replaceWith(placeholder);
+        return [ {
+            name: currentTag
+        } ];
+    }
+
+    const currentChildren = $(currentCursor).children;
+    if (currentChildren.length <= 0) {
+        return [];
+    }
+
+    const collectedComponents: DeferCompileArgs[][] = [];
+
+    for (const child of currentChildren) {
+        const foundTopComponents: DeferCompileArgs[] = await findReplaceTopComponents(componentTags, $, child, replaceFn);
+        collectedComponents.push(foundTopComponents);
+    }
+    return collectedComponents.flat();
+}*/
+
+
+export async function findReplaceTopLevelDetectedComponents(
+    resource: DataParsedDocument,
+    config: SsgConfig
+): Promise<DataParsedDocument> {
+
+    const $ = loadHtml(resource.content);
+    const currentNode = $.root();
+
+    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+
+    const handleNode: CheerioNodeFn<DeferCompileArgs> = ($: cheerio.Root, currentCursor: cheerio.Cheerio) => {
+
+        const tagSel = $(currentCursor).prop('tagName');
+
+        if (!tagSel) {
+            return undefined;
+        }
+
+        const currentTag = tagSel.toLowerCase();
+
+        if (currentTag && importScopeSymbols.includes(currentTag)) {
+
+            const body = $(currentCursor).html();
+            const attrs = $(currentCursor).attr();
+
+            const deferCompileArgs = registerCompileArgsResource(resource, currentTag, body, attrs);
+
+            if (deferCompileArgs && deferCompileArgs.placeholder) {
+                $(currentCursor).replaceWith(deferCompileArgs.placeholder);
+                $(currentCursor).remove();
+            }
+            return deferCompileArgs;
+        }
+        return undefined;
+    };
+
+    const detectedComponentsCompileArgs = cheerioDfsWalk<DeferCompileArgs>($, currentNode, handleNode, handleNode);
+
+    resource.content = unparseHtml($);
+
+    //const deferRequestArgs = await findReplaceTopComponents(importScopeSymbols, $, currentNode, deferArgsToPlaceholder);
+    //resource.data.compileAfter = detectedComponentsCompileArgs;
+
+    return resource;
+}
+
+/*export async function findTopLevelDetectedComponents(
+    resource: DataParsedDocument,
+    config: SsgConfig
+): Promise<DataParsedDocument> {
+
+    const $ = loadHtml(resource.content);
+    const currentNode = $.root();
+
+    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+    const deferRequestArgs = await findReplaceTopComponents(importScopeSymbols, $, currentNode, deferArgsToPlaceholder);
+    resource.data.compileAfter = deferRequestArgs;
+
+    return resource;
+}*/
+
 export async function detectReplaceComponents(
     resource: DataParsedDocument,
     config: SsgConfig,
@@ -182,6 +321,47 @@ export async function detectReplaceComponents(
     return resource;
 }
 
+export function hashObjGetHtmlId(obj: Object): string {
+    const objHash: string = calcHash(obj);
+    //Filter for simple characters (special chars are not allowed in html id)
+    const uniqueHtmlId: string = objHash.replace(/[^a-zA-Z0-9]/g, "");
+    return uniqueHtmlId;
+}
+
+export function getDeferCompileArgs(componentName: string, componentBody: FalsyAble<string>, attrs: FalsyAble<any>): DeferCompileArgs {
+    //const componentName: string = tag;
+    const content: FalsyAble<string> = componentBody;
+
+    const deferCompileArgs: DeferCompileArgs = {
+        name: componentName,
+        placeholder: '',
+        content: content || '',
+        attrs: attrs
+    };
+    const componentArgsId = hashObjGetHtmlId(deferCompileArgs);
+    deferCompileArgs.id = componentArgsId;
+    //resource.data.compileAfter.push(deferCompileArgs);
+
+    const placeholderName: string = `${componentName}-placeholder`;
+    const placeholderFull = `<${placeholderName} id="${deferCompileArgs.id}"/>`;
+    deferCompileArgs.placeholder = placeholderFull;
+    return deferCompileArgs;
+}
+
+export function registerCompileArgsResource(resource: DataParsedDocument, componentName: string, componentBody: FalsyAble<string>, attrs: FalsyAble<any>): DeferCompileArgs {
+    if (!resource.data) {
+        resource.data = {};
+    }
+    if (!resource.data.compileAfter) {
+        resource.data.compileAfter = [];
+    }
+
+    const deferCompileArgs: DeferCompileArgs = getDeferCompileArgs(componentName, componentBody, attrs);
+    resource.data.compileAfter.push(deferCompileArgs);
+    return deferCompileArgs;
+}
+
+
 export async function substituteComponentsPlaceholder(
     resource: DataParsedDocument,
     config: SsgConfig,
@@ -189,46 +369,15 @@ export async function substituteComponentsPlaceholder(
 
     //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
     //const importScopeSymbols: string[] = Object.keys(selectedDependencies);
-
-    if (!resource.data) {
-        resource.data = {};
-    }
-
-    resource.data.compileAfter = [];
-
     //Find component entry points (first/top-level components, nodes that are components in the syntax tree)
 
-    //Note: Must do a BFS search to properly work -> otherwise components under a component might be replaced as well 
+    //Note: Must do a BFS search to properly work -> otherwise components under a component might be replaced as well
     //(though that should be the component's responsibility that holds this component)
-    resource = await detectReplaceComponents(resource, config, (tag: string, body: string, attrs: any) => {
-        if (!resource.data) {
-            resource.data = {};
-        }
+    //resource = await detectReplaceComponents(resource, config, (tag: string, body: string, attrs: any) => registerCompileArgsResource(resource, tag, body, attrs));
 
-        const componentName: string = tag;
-        const placeholder: string = `${componentName}-placeholder`;
-        const content: string = body;
+    return findReplaceTopLevelDetectedComponents(resource, config);
 
-        const deferCompileArgs: DeferCompileArgs = {
-            name: componentName,
-            placeholder: placeholder,
-            content: content,
-            attrs: attrs
-        };
-
-        const uniqueComponentCallHash: string = calcHash(deferCompileArgs);
-
-        //Filter for simple characters (special chars are not allowed in html id)
-        const uniqueComponentId: string = uniqueComponentCallHash.replace(/[^a-zA-Z0-9]/g, "");
-
-        deferCompileArgs.id = uniqueComponentId;
-
-        resource.data.compileAfter.push(deferCompileArgs);
-
-        return `<${deferCompileArgs.placeholder} id="${deferCompileArgs.id}"/>`;
-    });
-
-    return resource;
+    //return resource;
 }
 
 export async function compileDeferredComponent(args: DeferCompileArgs, data: any, config: SsgConfig): Promise<DeferCompileArgs> {
@@ -300,7 +449,17 @@ export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], r
         return null;
     }
 
-    const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => failSafeCompileDeferredComponent(args, parentData, config));
+
+
+    const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => {
+        const deferCompiledArgs: DeferCompileArgs = args;
+
+        if (resource.data) {
+            resource.data.compileAfter = removeArrayItem(resource?.data?.compileAfter, deferCompiledArgs);
+        }
+
+        return failSafeCompileDeferredComponent(args, parentData, config);
+    });
 
     return Promise.all(deferredCompilePromises);
 
@@ -319,7 +478,26 @@ export async function compileDeferredInsertToPlaceholder(resource: DataParsedDoc
         return resource;
     }
 
-    const $ = loadHtml(resource.content);
+    if (!resource.content) {
+        resource.content = '';
+    }
+
+
+
+    for (const deferCompiled of compiledSubComponents) {
+        if (!deferCompiled.content) {
+            deferCompiled.content = '';
+        }
+
+        if (deferCompiled.placeholder) {
+            const compiledBody: string | undefined = deferCompiled.content;
+            resource.content = resource.content.replace(deferCompiled.placeholder, deferCompiled.compiled);
+        }
+    }
+
+
+
+    /*const $ = loadHtml(resource.content);
 
     for (const deferCompiled of compiledSubComponents) {
         //const placeHolderTagName = deferCompiled.name;
@@ -339,7 +517,7 @@ export async function compileDeferredInsertToPlaceholder(resource: DataParsedDoc
         }
     }
 
-    resource.content = unparseHtml($);
+    resource.content = unparseHtml($);*/
 
     return resource;
 }
@@ -360,6 +538,8 @@ export abstract class ResolveSubHtmlRunner extends FileRunner {
         if (!resource.content) {
             return null;
         }
+
+        //Note compileAfter needs to be associated with the current component compile scope
 
         resource = await substituteComponentsPlaceholder(resource, config);
         resource = await this.compileRootDocument(resource as DataParsedDocument, config);

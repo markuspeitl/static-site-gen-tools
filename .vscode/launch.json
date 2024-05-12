@@ -5,7 +5,7 @@
             "type": "node",
             "runtimeVersion": "20.9.0",
             "request": "launch",
-            "name": "document compile sample/markdown",
+            "name": "sample/markdown document compile ",
             "runtimeExecutable": "node",
             "runtimeArgs": [
                 "--require",
@@ -29,7 +29,31 @@
             "type": "node",
             "runtimeVersion": "20.9.0",
             "request": "launch",
-            "name": "document compile sample/typescript",
+            "name": "nested-for sample/markdown",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps",
+            ],
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "${workspaceRoot}/cli.ts",
+                "sample/nested-for.md",
+                "sample/dist/nested-for.html",
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps",
+            }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "name": "sample/typescript document compile",
             "runtimeExecutable": "node",
             "runtimeArgs": [
                 "--require",

@@ -106,3 +106,21 @@ export function addItemMakeArray(dict, key, item) {
 
     dict[ key ].push(item);
 }
+
+
+export function removeArrayItem<ItemType>(array: ItemType[], itemToRemove: ItemType): ItemType[] {
+
+    if (!itemToRemove) {
+        return array || [];
+    }
+
+    if (!array) {
+        return [];
+    }
+
+    const index = array.indexOf(itemToRemove);
+    if (index > -1) {
+        array.splice(index, 1);
+    }
+    return array;
+}
