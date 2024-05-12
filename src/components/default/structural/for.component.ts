@@ -9,6 +9,11 @@ import { FalsyAble } from "../../helpers/generic-types";
 export abstract class ForComponent implements BaseComponent, FnBaseComponent {
 
     private getCompileDocumentFromDataCtx(dataCtx?: DocumentData | null): DataParsedDocument {
+
+        if (dataCtx?.data) {
+            return dataCtx;
+        }
+
         const toCompileResource: DataParsedDocument = {
             content: dataCtx?.content,
             data: dataCtx,
@@ -41,13 +46,11 @@ export abstract class ForComponent implements BaseComponent, FnBaseComponent {
                 {},
                 data
             );
+
             subDataCtx[ iteratorItemName ] = itemValue;
 
-            //subDataCtx.compileRunner = 'html';
-            const resMatchRunners = config?.resMatchCompileRunnersDict || {};
-            subDataCtx.compileRunner = resMatchRunners[ '.+.html' ] || 'html';
-
-            const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(
+            const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith(
+                'html njk',
                 {
                     content: loopBody,
                     data: subDataCtx

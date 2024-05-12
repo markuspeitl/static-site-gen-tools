@@ -1,6 +1,6 @@
 import { DocumentData, DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
-import { getFnFromParam, getTsModule, loadTsModule } from "../module-loading/ts-modules";
+import { getFnFromParam, getTsModule, loadTsModuleFromPath } from "../module-loading/ts-modules";
 import { FalsyAble } from "./helpers/generic-types";
 
 
@@ -86,7 +86,7 @@ export async function renderComponentAt(componentIdOrLocation: string, dataCtx: 
         config.tsComponentsCache = {};
     }
 
-    const componentModule: BaseComponent | null = (await loadTsModule(componentIdOrLocation, config.tsComponentsCache)) as BaseComponent | null;
+    const componentModule: BaseComponent | null = (await loadTsModuleFromPath(componentIdOrLocation, config.tsComponentsCache)) as BaseComponent | null;
 
     if (componentModule) {
         return renderComponent(componentModule, dataCtx, config);

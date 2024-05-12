@@ -106,7 +106,7 @@ export function getFirstDefPropAsFn(obj: Object | null | undefined, propKeys: st
 
 const defaultTsModulesCache: Record<string, Module> = {};
 
-export async function loadTsModule<ModuleInterface>(modulePath: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
+export async function loadTsModuleFromPath<ModuleInterface>(modulePath: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
     if (!modulePath) {
         return null;
     }
@@ -146,7 +146,7 @@ function ts2EsCompile(tsCode: string, moduleType: ts.ModuleKind): string {
 }
 
 
-export async function loadTsModuleFromString<ModuleInterface>(moduleContent: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
+export async function loadTsModuleFromPathFromString<ModuleInterface>(moduleContent: FalsyAble<string>, tsModulesCache?: Record<string, Module>): Promise<ModuleInterface | null> {
     if (!moduleContent) {
         return null;
     }
@@ -187,7 +187,7 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
 
     let loadedModule: Module | null = null;
     try {
-        loadedModule = await loadTsModule(modulePath, tsModulesCache);
+        loadedModule = await loadTsModuleFromPath(modulePath, tsModulesCache);
     }
     catch (error: any) {
         console.error(`Failed to load ts module at ${loadedModule}:`);
@@ -197,7 +197,7 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
     if (!loadedModule && moduleContent) {
 
         try {
-            loadedModule = await loadTsModuleFromString(moduleContent, tsModulesCache);
+            loadedModule = await loadTsModuleFromPathFromString(moduleContent, tsModulesCache);
         }
         catch (error: any) {
             console.error(`Failed to load ts module from string:\n ${moduleContent}`);
@@ -253,7 +253,7 @@ export async function getResolveTsModule<ModuleInterface>(moduleIdOrPath: string
 
     let moduleAbsPath: string | null = findExistingPath(moduleIdOrPath, resolvePathRoots);
 
-    const loadedModule: ModuleInterface | null = await loadTsModule<ModuleInterface>(moduleAbsPath, tsModulesCache);
+    const loadedModule: ModuleInterface | null = await loadTsModuleFromPath<ModuleInterface>(moduleAbsPath, tsModulesCache);
 
     return loadedModule;
 }
@@ -311,7 +311,7 @@ export async function loadModulesFrom(srcDirPath: string, extension: string = 't
         const dirFileExt = dirFileParsed.ext;
 
         if (dirFileExt === extension) {
-            const loadedTsModule: Module | null = await loadTsModule(dirFileAbs);
+            const loadedTsModule: Module | null = await loadTsModuleFromPath(dirFileAbs);
             if (loadedTsModule) {
                 loadedModules.push(loadedTsModule);
             }

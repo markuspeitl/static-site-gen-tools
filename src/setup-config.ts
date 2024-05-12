@@ -106,6 +106,27 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
 
     config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
 
+    //which compile runners to use for reading component data (needs to go through the extraction chain before compiling, to make sure all data is set up)
+    //before inflating view from data pieces
+    config.resMatchDataExtractorsDict = {
+        '.+.html': [
+            'html',
+        ],
+        '.+.ehtml': [
+            'html'
+        ],
+        '.+.md': [
+            'md',
+            'html',
+        ],
+        '.+.njk': [
+            'md',
+            'html'
+        ],
+        '.+.ts': [
+            "ts",
+        ]
+    };
     config.resMatchCompileRunnersDict = {
         '.+.html': [
             'html',
@@ -198,6 +219,9 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     }
     if (!config.resMatchCompileRunnersDict) {
         config.resMatchCompileRunnersDict = {};
+    }
+    if (!config.resMatchDataExtractorsDict) {
+        config.resMatchDataExtractorsDict = {};
     }
     await setUpMasterRunner(config.masterCompileRunnerPath, config);
     await loadDefaultRunners(config);

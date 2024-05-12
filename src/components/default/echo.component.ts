@@ -2,22 +2,14 @@ import { DocumentData, DataParsedDocument } from "../../compilers/runners";
 import { SsgConfig } from "../../config";
 import { BaseComponent, FnBaseComponent } from "../base-component";
 
-export class HelloWorldComponent implements BaseComponent, FnBaseComponent {
+export class EchoComponent implements BaseComponent, FnBaseComponent {
 
     public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
-        dataCtx = dataCtx || {};
-        dataCtx.data.message = "Hello world from component subrenderer";
         return dataCtx || {};
     }
     public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
-
-        const message = `\
-${dataCtx?.content}
-This is the message from hello:
-${dataCtx?.data?.message}`;
-
         return {
-            content: message,
+            content: `ECHO--- ${dataCtx?.content || ''} ---ECHO`,
             data: dataCtx,
         };
     }

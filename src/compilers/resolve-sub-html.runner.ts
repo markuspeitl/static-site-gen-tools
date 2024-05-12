@@ -253,8 +253,23 @@ export async function compileDeferredComponent(args: DeferCompileArgs, data: any
         data: Object.assign({}, currentScopeData, args.attrs),
     };
 
-    const dataParseDoc: FalsyAble<DataParsedDocument> = await component.data(subDocToCompile, config);
-    const compiledComponentDoc: FalsyAble<DataParsedDocument> = normalizeToDataParsedDoc(await component.render(dataParseDoc, config));
+    //const dataParseDoc: FalsyAble<DataParsedDocument> = await component.data(subDocToCompile, config);
+    const dataParseDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.extractDataWith('html', subDocToCompile, config);
+
+
+    //Resolve any html tags that link other components in the result
+    const subsRenderedDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith('html', dataParseDoc, config);
+    //Render component contents
+    const compiledComponentDoc: FalsyAble<DataParsedDocument> = await component.render(subsRenderedDoc, config);
+    //Problem is the component tags will still be in content (if the component wrap this is not good)
+    //--> evaluate html before??
+
+
+    if (!compiledComponentDoc) {
+        return args;
+    }
+
+    //const compiledComponentDoc: FalsyAble<DataParsedDocument> = normalizeToDataParsedDoc(renderedDoc);
 
     args.content = compiledComponentDoc.content;
     return args;

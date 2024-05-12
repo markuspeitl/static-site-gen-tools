@@ -16,6 +16,7 @@ export interface SsgConfig {
     //Generic compile runner that selects a target runner from src data
     masterCompileRunner?: IMasterRunner;
     resMatchCompileRunnersDict?: Record<string, string[]>;
+    resMatchDataExtractorsDict?: Record<string, string[]>;
     idCompileRunnersDict?: Record<string, CompileRunner>;
 
 

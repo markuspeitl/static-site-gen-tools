@@ -5,7 +5,7 @@ import { extractData } from './data-extract';
 import { setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from '../fragement-cache';
 import { SsgConfig } from '../config';
-import { loadTsModule } from '../module-loading/ts-modules';
+import { loadTsModuleFromPath } from '../module-loading/ts-modules';
 import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, getRunnerInstance } from '../compilers/runners';
 import { readFileAsString } from '../compilers/file.runner';
 import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helpers/generic-types';
@@ -43,7 +43,7 @@ import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helper
 
             //TODO: these are not really DocumentCompilers (need to define a module interface)
             const loadedModule: CompilerModule = await import(absTargetRunnerPath);
-            //loadTsModule(absTargetRunnerPath, compilersCache);
+            //loadTsModuleFromPath(absTargetRunnerPath, compilersCache);
             compilersCache[ absTargetRunnerPath ] = loadedModule.getCompiler();
         }
 

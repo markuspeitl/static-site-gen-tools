@@ -4,7 +4,10 @@ import { SsgConfig } from "../../config";
 import { BaseRunnerComponent } from "../base-runner-component";
 
 export class TypeScriptComponent extends BaseRunnerComponent {
-    public getRunner(config?: SsgConfig): CompileRunner | null {
-        return new TsRunner();
+    public getRunnerIds(config?: SsgConfig | undefined): string | string[] {
+        return 'ts html';
     }
+    /*public getRunner(config?: SsgConfig): CompileRunner | null {
+        return new TsRunner();
+    }*/
 }

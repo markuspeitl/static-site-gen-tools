@@ -19,6 +19,20 @@ tags:
 
 ---
 
+<md>
+# Markdown Title
+This is a description
+    <md>
+    This is a nested element in markdown
+
+    </md>
+</md>
+
+<echo>
+    Testing echoing back --------------  
+    <echo>nested: Testing echo nested</echo>  
+</echo>
+
 # Lorem Ipsum
 
 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.
@@ -49,7 +63,7 @@ end title insert
 
 <if cond="this.index <= 100">
     <p class="ifyes">
-        Hello world from 'if' component
+        IF: Hello world from 'if' component
     <p>
 </if>
 
@@ -62,11 +76,14 @@ hello
 </ehtml>
 
 <for it="tag" of="tags">
-    <hello>{{tag}}</hello>
+    <hello>
+        <span>{{tag}}</span>
+    </hello>
 
     Anything tabbed is treated as a code block in markdown ( -> markdown it escapes the following)
+
     <if cond="this.tag === 'peach'">
-        I am a fruit: PEACH
+        IF CONDITION MATCHED: I am a fruit: PEACH
     </if>
 
 </for>
@@ -82,9 +99,21 @@ export default () => {
 
 <ts>
 export default () => {
-    return `Hellor world from typescript component`;
+    return `Hello world inline from outer typescript component`;
 }
+
+    <ts>
+        export default () => {
+            return `Hello world inline nested from typescript nested`;
+        }
+    </ts>
 </ts>
+
+<hello>
+Outer hello component paragraph
+    <hello>Inner hello component paragraph</hello>
+</hello>
+
 
 => code
     console.log("test)
@@ -95,4 +124,3 @@ Maybe option for parsing top level special blocks
 ! code
   console.log("test")  
 !
-

@@ -4,7 +4,7 @@ import { FalsyAble } from "../../components/helpers/generic-types";
 import { SsgConfig } from "../../config";
 import { anchorAndGlob } from "../../utils/globbing";
 import * as fs from 'fs';
-import { loadTsModule } from "../../module-loading/ts-modules";
+import { loadTsModuleFromPath } from "../../module-loading/ts-modules";
 import { filterFalsy } from "../../components/helpers/array-util";
 
 export function detectComponentFiles(componentCandidatePaths: string[], config: SsgConfig): string[] {
@@ -12,7 +12,7 @@ export function detectComponentFiles(componentCandidatePaths: string[], config: 
 }
 
 export async function loadComponentModule(path: string, config: SsgConfig): Promise<Module | null> {
-    const componentModule: Module | null = await loadTsModule(path, config?.tsModulesCache);
+    const componentModule: Module | null = await loadTsModuleFromPath(path, config?.tsModulesCache);
 
     if (!config.tsComponentsCache) {
         config.tsComponentsCache = {};
