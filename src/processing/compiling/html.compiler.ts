@@ -2,6 +2,7 @@ import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { setHtmlOutputFormat } from './output-format';
 
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html';
@@ -34,6 +35,7 @@ export class HtmlCompiler implements IResourceProcessor {
         resource.content = resourceContent;
         const dataResource: DataParsedDocument = resource;
 
+        resource = setHtmlOutputFormat(resource);
         return addHandlerId(dataResource, 'compiler', this);
     }
 }

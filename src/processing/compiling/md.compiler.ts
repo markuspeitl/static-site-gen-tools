@@ -2,6 +2,7 @@ import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { setHtmlOutputFormat } from './output-format';
 
 async function compileMarkdownResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
@@ -44,6 +45,7 @@ export class MarkdownCompiler implements IResourceProcessor {
         resource.content = resourceContent;
         const dataResource: DataParsedDocument = await compileMarkdownResource(resource, config);
 
+        resource = setHtmlOutputFormat(resource);
         return addHandlerId(dataResource, 'compiler', this);
     }
 }

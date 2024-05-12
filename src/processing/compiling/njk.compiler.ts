@@ -4,6 +4,7 @@ import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
 import type { Environment } from 'nunjucks';
+import { setHtmlOutputFormat } from './output-format';
 
 async function compileMarkdownResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
@@ -68,6 +69,7 @@ export class NunjucksCompiler implements IResourceProcessor {
             data: resource.data
         };
 
+        resource = setHtmlOutputFormat(resource);
         return addHandlerId(dataResource, 'compiler', this);
     }
 }

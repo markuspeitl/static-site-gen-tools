@@ -33,3 +33,11 @@ export function getKeyMatches<ValueType>(toMatchString: string | null, matchMapD
 
     return matchesValues;
 }
+
+export function getKeyMatchValues<ValueType>(toMatchString: string | null, matchMapDict?: Record<string, ValueType>): ValueType[] | null {
+    const matchesValues: MatchedDictKeyRes<ValueType>[] | null = getKeyMatches(toMatchString, matchMapDict);
+    if (!matchesValues) {
+        return null;
+    }
+    return matchesValues.map((matchedValue: MatchedDictKeyRes<ValueType>) => matchedValue.dictValue);
+}

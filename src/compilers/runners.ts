@@ -314,7 +314,7 @@ export interface PatternMatchValueDict<ValueType> {
 
 export interface PatternIdChainDict extends PatternMatchValueDict<string[]> { }
 
-export function findMatchedKeyDictValue<ValueType>(resourceId: FalsyAble<string>, matchingDict: FalsyAble<PatternMatchValueDict<ValueType>>): FalsyAble<ValueType> {
+export function findLastMatchedKeyDictValue<ValueType>(resourceId: FalsyAble<string>, matchingDict: FalsyAble<PatternMatchValueDict<ValueType>>): FalsyAble<ValueType> {
     if (!resourceId || !matchingDict) {
         return null;
     }
@@ -388,7 +388,7 @@ export function getResourceMatchIds(resource: FalsyAble<DataParsedDocument>, dat
     }
 
     if (config && configMatchDictKey) {
-        const selectedMatchedIdsForResource: FalsyAble<string[]> = findMatchedKeyDictValue(resource.data.src, config[ configMatchDictKey ]);
+        const selectedMatchedIdsForResource: FalsyAble<string[]> = findLastMatchedKeyDictValue(resource.data.src, config[ configMatchDictKey ]);
 
         if (selectedMatchedIdsForResource) {
             return selectedMatchedIdsForResource;

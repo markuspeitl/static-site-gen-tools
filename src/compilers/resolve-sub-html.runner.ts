@@ -42,7 +42,7 @@ export function normalizeToDataParsedDoc(renderOutPut: string | DataParsedDocume
 
 
 export function isDirPath(value: any): boolean {
-    return isPath(value) && !value.endsWith('/');
+    return isPath(value) && value.endsWith('/');
 }
 
 export function isPath(value: any): boolean {

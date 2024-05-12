@@ -18,3 +18,8 @@ tags:
     </if>
 
 </for>
+
+# Some markdown
+
+- text to be compiled to
+- html outputFormat

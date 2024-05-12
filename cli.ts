@@ -2,6 +2,7 @@ import { SsgConfig } from './src/config';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
 import { DataParsedDocument } from './src/compilers/runners';
 import { FalsyAble } from './src/components/helpers/generic-types';
+import { processFsNodeAtPath } from './src/processing/process-resource';
 
 async function main() {
     /*const parser = new ArgumentParser({
@@ -82,15 +83,18 @@ async function main() {
 
     console.time('compile');
 
-    //TODO seperate file and buffer compile
 
-    const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
+    await processFsNodeAtPath(config.sourcePath, config.targetPath, config);
+
+
+    //TODO seperate file and buffer compile
+    /*const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
     if (resultDoc) {
         console.log("Compiled doc Content:");
         console.log(resultDoc.content);
         console.log("Compiled doc data:");
         console.log(resultDoc.data);
-    }
+    }*/
 
     console.timeEnd('compile');
 
