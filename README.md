@@ -565,3 +565,77 @@ renderComponent('for', {it: 'tag', of: 'tagList'} , data)
 
 
 ```
+
+
+## Compile Stages:
+1. Read in data chain.
+    - input = resource identity
+    - output = resource, with a buffer to be compiled in resource.content, document type
+        (-> info about the extract data chain to use after)
+2. Extract data chain. 
+    - input = resource with filled content, (possibly explicitly passed input data)
+    - output = resource with filled content (any parsed data was removed), data where the parsed properties were added
+        (-> info about the compile chain to use after)
+3. Compile resource chain:
+    - input: resource with filled content and final merged data
+    - output: resource with filled content (transformed into different representation) and new data
+    (-> info about the chain to use after)
+4. Write data chain:
+    - input: compiled and rendered resource with filled content, and the data state after full rendering
+    - output: send the content buffer or buffer + data to output.
+
+Example: fragment cache --> file writer
+
+- Readers are selected by resource identity match (they store the buffer format in data), or passed specifically
+- Extractors are selected based on buffer format match, or passed specifically
+- Compilers are selected based on buffer format match, or passed specifically
+- Writers: are selected based on compiler format output and data???? 
+
+readers, extractors, compilers and writers should be modifyable by the
+resource to be compiled itself by modifying its data.
+also should be able to be accessed while compiling (print the data reader, original document, input format, output format, .etc)
+
+```js
+{
+    content: `
+        <data>
+            <tags></tags>
+        </data>
+        <html> i am an html document</html>
+    `,
+    data: {
+        document: {
+            src: '/path/to/doc || resourceId'
+            inputFormat: 'md'
+            outputFormat: 'html'
+            target: '/path/to/doc || targetResourceId'
+        }
+        reader: 'network file',
+        extractor: 'md html', //auto selection based on default for a given inputFormat, or based on content (check for '---'/'---', check for '<data>'/'<data>', check for 'export data()'  )
+        compiler: 'md html njk', //--> should be inherited by sub components (unless overwritten)
+        writers: 'dir file'
+    }
+}
+```
+
+Multi stage detection chain:
+{
+    canHandle(resource, config)
+    process(resource, config): resource;
+}
+
+read: 'dir file'
+extract: 'multi'
+
+
+Handling multiplication:
+If there is a manager that passes the resource through the chain, 
+there needs to be a specific instruction for multiplication, or merging of the resource (at manage level).
+Or the control is given to the stages themselves to where to continue (call process detect on each contained document in the case of a directory reader)
+
+Fork data and store the whole resource list in 'content'
+the caller can then unpack
+
+
+
+TODO: Revamp component interface (force call with "DataParsedDocument and config", possibly expose a ctx with helper functions)

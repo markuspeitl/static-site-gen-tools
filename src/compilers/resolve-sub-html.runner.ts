@@ -41,18 +41,24 @@ export function normalizeToDataParsedDoc(renderOutPut: string | DataParsedDocume
 }
 
 
+export function isDirPath(value: any): boolean {
+    return isPath(value) && !value.endsWith('/');
+}
 
-export function isRelativePath(value: any): boolean {
+export function isPath(value: any): boolean {
     if (typeof value === 'string') {
         const hasSeperator = value.includes(path.sep);
         if (!hasSeperator) {
             return false;
         }
+        return true;
+    }
+    return false;
+}
 
-        if (!value.startsWith('./') && !value.startsWith('../')) {
-            return false;
-        }
+export function isRelativePath(value: any): boolean {
 
+    if (isPath(value) && (value.startsWith('./') || value.startsWith('../'))) {
         return true;
     }
     return false;

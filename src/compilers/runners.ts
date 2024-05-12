@@ -12,6 +12,7 @@ import { arrayify, filterFalsy } from "../utils/util";
 export type DocumentData = Record<string, any>;
 
 export interface DataParsedDocument {
+    id?: string;
     content?: any; //string | null;
     data?: DocumentData | null;
 }

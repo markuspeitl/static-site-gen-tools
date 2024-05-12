@@ -82,6 +82,8 @@ async function main() {
 
     console.time('compile');
 
+    //TODO seperate file and buffer compile
+
     const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
     if (resultDoc) {
         console.log("Compiled doc Content:");
