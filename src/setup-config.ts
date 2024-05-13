@@ -8,6 +8,7 @@ import * as lodash from 'lodash';
 import { getFsNodeStat } from "./utils/fs-util";
 import { FalsyString } from "./components/helpers/generic-types";
 import { loadDefaultComponents } from "./components/components";
+import { loadStageProcessorInstances, ProcessingStagesInfo, StageInfo } from "./processing/process-resource";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -79,6 +80,63 @@ export async function parseArgsSetupInitializeConfig(config: SsgConfig = {}): Pr
     return config;
 }
 
+export function getDefaultProcessingStages(): ProcessingStagesInfo {
+    const processingStages: ProcessingStagesInfo = {
+        reader: {
+            inputProp: 'id',
+            matchChains: {
+                '.+\.html': [ 'file' ],
+                '.+\.md': [ 'file' ],
+                '.+\.njk': [ 'file' ],
+                '.+\.ts': [ 'file' ],
+                'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
+                '.+/.+.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                '.+\.scss': [ 'file' ],
+                '.+\/': [ 'dir' ],
+                '.+': [ 'dir' ],
+            }
+
+        },
+        extractor: {
+            inputProp: 'data.document.inputFormat',
+            matchChains: {
+                'html': [ 'html' ],
+                'md': [ 'md', 'html' ],
+                'njk': [ 'md', 'html' ],
+                'ts': [ 'md', 'ts' ],
+            }
+        },
+        compiler: {
+            inputProp: 'data.document.inputFormat',
+            matchChains: {
+                'html': [ 'placeholder', 'component' ], // or 'placeholder', 'component' instead of component
+                'md': [ 'placeholder', 'md', 'component', 'njk' ],
+                'njk': [ 'placeholder', 'njk', 'component' ],
+                'ts': [ 'ts', 'placeholder', 'html', 'component' ],
+                'scss': [ 'scss' ],
+            }
+        },
+        writer: {
+            inputProp: 'data.document.outputFormat',
+            matchChains: {
+                'html': [ 'file' ],
+                'md': [ 'file' ],
+                'njk': [ 'file' ],
+                'ts': [ 'file' ],
+                'asset': [ 'copy' ], //Receives all files tagged as asset -> uses document.src and document.target to copy file
+                'scss': [ 'file' ],
+                '.+': [ 'dir' ],
+            }
+        }
+    };
+
+    for (const stageName in processingStages) {
+        const currentStageInfo: StageInfo = processingStages[ stageName ];
+        currentStageInfo.id = stageName;
+    }
+
+    return processingStages;
+}
 
 export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     if (!config) {
@@ -89,11 +147,16 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         './src/components/default/'
     ];
     config.defaultComponentsMatchGlobs = [
-        '**.component.ts',
-        '*.component.ts',
-        '.component.ts',
-        '**/*.component.ts',
-        '/**/*.component.ts',
+        '**.component.*',
+        '*.component.*',
+        '.component.*',
+        '**/*.component.*',
+        '/**/*.component.*',
+        //'**.component.ts',
+        //'*.component.ts',
+        //'.component.ts',
+        //'**/*.component.ts',
+        //'/**/*.component.ts',
     ];
 
     config.defaultRunnerDirs = [
@@ -104,11 +167,18 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         '*.runner.ts'
     ];
 
+    config.defaultResourceProcessorDirs = [
+        './src/processing'
+    ];
+    const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();
+    config.processingStages = processingStages;
+
+
     config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
 
     //which compile runners to use for reading component data (needs to go through the extraction chain before compiling, to make sure all data is set up)
     //before inflating view from data pieces
-    config.resMatchDataExtractorsDict = {
+    /*config.resMatchDataExtractorsDict = {
         '.+.html': [
             'html',
         ],
@@ -153,7 +223,7 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
             //'njk',
             'html',
         ],
-    };
+    };*/
 
     config.outDir = './dist';
     config.cacheDir = path.join(config.outDir, '/cache');
@@ -223,8 +293,15 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     if (!config.resMatchDataExtractorsDict) {
         config.resMatchDataExtractorsDict = {};
     }
-    await setUpMasterRunner(config.masterCompileRunnerPath, config);
+    //await setUpMasterRunner(config.masterCompileRunnerPath, config);
     //await loadDefaultRunners(config);
+
+    console.log('Initializing processing stages');
+    config.defaultResourceProcessorDirs = config.defaultResourceProcessorDirs || [];
+    config.processingStages = config.processingStages || {};
+    await loadStageProcessorInstances(config.defaultResourceProcessorDirs, config.processingStages);
+
+    console.log("Loading default components");
     await loadDefaultComponents(config);
     const initializedConfig = await loadUserRuntimeConfig(config);
 

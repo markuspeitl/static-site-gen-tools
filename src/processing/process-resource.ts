@@ -72,60 +72,7 @@ export interface ProcessingStagesInfo {
     [ stageName: string ]: StageInfo;
 }
 
-export function getDefaultProcessingStages(): ProcessingStagesInfo {
-    const processingStages: ProcessingStagesInfo = {
-        reader: {
-            inputProp: 'id',
-            matchChains: {
-                '.+\.html': [ 'file' ],
-                '.+\.md': [ 'file' ],
-                '.+\.njk': [ 'file' ],
-                '.+\.ts': [ 'file' ],
-                'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                '.+/.+.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                '.+\/': [ 'dir' ],
-                '.+': [ 'dir' ],
-            }
 
-        },
-        extractor: {
-            inputProp: 'data.document.inputFormat',
-            matchChains: {
-                'html': [ 'html' ],
-                'md': [ 'md', 'html' ],
-                'njk': [ 'md', 'html' ],
-                'ts': [ 'md', 'ts' ]
-            }
-        },
-        compiler: {
-            inputProp: 'data.document.inputFormat',
-            matchChains: {
-                'html': [ 'placeholder', 'component' ], // or 'placeholder', 'component' instead of component
-                'md': [ 'placeholder', 'md', 'component', 'njk' ],
-                'njk': [ 'placeholder', 'njk', 'component' ],
-                'ts': [ 'ts', 'placeholder', 'html', 'component' ]
-            }
-        },
-        writer: {
-            inputProp: 'data.document.outputFormat',
-            matchChains: {
-                'html': [ 'file' ],
-                'md': [ 'file' ],
-                'njk': [ 'file' ],
-                'ts': [ 'file' ],
-                'asset': [ 'copy' ], //Receives all files tagged as asset -> uses document.src and document.target to copy file
-                '.+': [ 'dir' ],
-            }
-        }
-    };
-
-    for (const stageName in processingStages) {
-        const currentStageInfo: StageInfo = processingStages[ stageName ];
-        currentStageInfo.id = stageName;
-    }
-
-    return processingStages;
-}
 
 export async function loadStageProcessorInstances(searchRootAnchorDirs: string[], processingStages: ProcessingStagesInfo): Promise<void> {
     const availableStages = Object.keys(processingStages);
@@ -201,27 +148,41 @@ export async function passThroughProcessChain(resource: DataParsedDocument, conf
     return resultResource;
 }
 
-export async function processAllPassingStages(resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
-    for (const stageName in processingStages) {
-        const currentStageInfo: StageInfo = processingStages[ stageName ];
 
-        const matchedStageChains: ChainIds[] | null = getMatchedChainsFromStage(resource, currentStageInfo);
-        const resourceConfirmedChain: ChainIds | null = await findChainCanHandleResource(resource, config, matchedStageChains, currentStageInfo);
-        if (resourceConfirmedChain && resourceConfirmedChain.length > 0) {
+export async function processConfStage(stageName: string, resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    return processStage(stageName, resource, config, config.processingStages || {});
+}
 
-            const chainToProcess: FalsyAble<IResourceProcessor>[] = resourceConfirmedChain.map((id: string) => {
-                if (currentStageInfo.instances) {
-                    return currentStageInfo.instances[ id ];
-                }
-                return null;
-            });
-            const processingResult: DataParsedDocument = await passThroughProcessChain(resource, config, filterFalsy(chainToProcess));
-            if (processingResult) {
-                resource = processingResult;
+export async function processStage(stageName: string, resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
+    const currentStageInfo: StageInfo = processingStages[ stageName ];
+
+    const matchedStageChains: ChainIds[] | null = getMatchedChainsFromStage(resource, currentStageInfo);
+    const resourceConfirmedChain: ChainIds | null = await findChainCanHandleResource(resource, config, matchedStageChains, currentStageInfo);
+    if (resourceConfirmedChain && resourceConfirmedChain.length > 0) {
+
+        const chainToProcess: FalsyAble<IResourceProcessor>[] = resourceConfirmedChain.map((id: string) => {
+            if (currentStageInfo.instances) {
+                return currentStageInfo.instances[ id ];
             }
+            return null;
+        });
+
+        const processingResult: DataParsedDocument = await passThroughProcessChain(resource, config, filterFalsy(chainToProcess));
+        if (processingResult) {
+            return processingResult;
         }
     }
     return resource;
+}
+
+export async function processAllPassingStages(resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
+
+    let stageProcessedResource: DataParsedDocument = resource;
+    for (const stageName in processingStages) {
+
+        stageProcessedResource = await processStage(stageName, stageProcessedResource, config, processingStages);
+    }
+    return stageProcessedResource;
 }
 
 
@@ -250,11 +211,11 @@ export async function processResource(resource: DataParsedDocument, config: SsgC
         resource = forkDataScope(resource);
     }
 
-    const resourceProcessorDirs = [ __dirname ];
-    const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();
-    await loadStageProcessorInstances(resourceProcessorDirs, processingStages);
+    /*const resourceProcessorDirs = config.defaultResourceProcessorDirs || [];
+    const processingStages: ProcessingStagesInfo = config.processingStages || {};
+    await loadStageProcessorInstances(resourceProcessorDirs, processingStages);*/
 
-    const processedDocument: DataParsedDocument = await processAllPassingStages(resource, config, processingStages);
+    const processedDocument: DataParsedDocument = await processAllPassingStages(resource, config, config.processingStages || {});
     return processedDocument;
 
 

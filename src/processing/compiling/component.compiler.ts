@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import { DeferCompileArgs, getResourceImportsCache, resolveResourceImports } from '../../compilers/resolve-sub-html.runner';
 import { DataParsedDocument } from '../../compilers/runners';
 import { BaseComponent, IInternalComponent } from '../../components/base-component';
@@ -85,10 +86,19 @@ export class ComponentCompiler implements IResourceProcessor {
 
                 componentResource.content = removeBaseBlockIndent(componentResource.content);
 
-                const compiledComponentResource: DataParsedDocument = await selectedSubComponent.render(componentResource, config);
+                const pendingCompileComponentId: string = componentResource.data?.componentId;
+
+                let dataExtractedDocument: DataParsedDocument = await selectedSubComponent.data(componentResource, config);
+                if (!dataExtractedDocument) {
+                    dataExtractedDocument = {};
+                }
+
+                const mergedDataResource: DataParsedDocument = lodash.merge({}, resource, dataExtractedDocument);
+
+                const compiledComponentResource: DataParsedDocument = await selectedSubComponent.render(mergedDataResource, config);
 
                 //const componentReplacedContent: string = resource.content.replace(compiledComponentResource.data?.placeholder, compiledComponentResource.content);
-                const componentReplacedContent: string = cheerioReplaceElem(resource.content, compiledComponentResource.data?.componentId, compiledComponentResource.content);
+                const componentReplacedContent: string = cheerioReplaceElem(resource.content, pendingCompileComponentId, compiledComponentResource.content);
 
                 resource.content = componentReplacedContent;
 

@@ -19,7 +19,7 @@ export class HtmlCompiler implements IResourceProcessor {
         const matchesCnt = (resourceContent.match(/<\s*[a-zA-Z0-9\-\_]+\s*>|<\s*\/\s*[a-zA-Z0-9\-\_]+\s*>/g) || []).length;
 
         //Has any openend and closed html tags in document
-        if (matchesCnt >= 2) {
+        if (matchesCnt >= 1) {
             return true;
         }
 

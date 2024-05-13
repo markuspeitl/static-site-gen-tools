@@ -3,6 +3,7 @@ import { FragmentCache } from "./fragement-cache";
 import { CompileRunner } from "./compilers/runners";
 import { IMasterRunner } from "./compilers/generic.runner";
 import { BaseComponent, IInternalComponent } from "./components/base-component";
+import { ProcessingStagesInfo } from "./processing/process-resource";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -10,38 +11,43 @@ export interface SsgConfig {
 
     sourcePath?: string;
     targetPath?: string;
-    //global data available to all compile runs
-    data?: any;
-
-    //Generic compile runner that selects a target runner from src data
-    masterCompileRunner?: IMasterRunner;
-    resMatchCompileRunnersDict?: Record<string, string[]>;
-    resMatchDataExtractorsDict?: Record<string, string[]>;
-    idCompileRunnersDict?: Record<string, CompileRunner>;
 
 
+    processingStages?: ProcessingStagesInfo;
+    defaultResourceProcessorDirs?: string[];
+    //defaultResourceProcessorDirsMatchGlobs?: string[]; --> depend on stage name --> 'reader' -> file.reader.ts within 'defaultResourceProcessorDirs'
+
+    //paths to the config extensions and mods to load
     userConfigPath?: string;
     runtimeConfigPath?: string;
-
-    masterCompileRunnerPath?: string;
-
-    //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
-    //Default: [./src/compilers]
-    defaultRunnerDirs?: string[];
-    defaultRunnersMatchGlobs?: string[];
 
     //Detected Components matching in those paths should be automatically loaded as dependencies
     //Default: [./src/components/default]
     defaultComponentImportDirs?: string[];
     defaultComponentsMatchGlobs?: string[];
 
-
-    outDir?: string;
-    outFile?: string;
-
     defaultComponentsCache?: Record<string, IInternalComponent>;
     componentsCache?: Record<string, IInternalComponent>;
 
+    //global data available to all compile runs
+    data?: any;
+    outDir?: string;
+    outFile?: string;
+
+
+    //<deprecated>
+    //Generic compile runner that selects a target runner from src data
+    masterCompileRunner?: IMasterRunner;
+    resMatchCompileRunnersDict?: Record<string, string[]>;
+    resMatchDataExtractorsDict?: Record<string, string[]>;
+    idCompileRunnersDict?: Record<string, CompileRunner>;
+
+    masterCompileRunnerPath?: string;
+    //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
+    //Default: [./src/compilers]
+    defaultRunnerDirs?: string[];
+    defaultRunnersMatchGlobs?: string[];
+    //</deprecated>
 
 
     //Holds instantiated compile runners
@@ -78,13 +84,13 @@ export interface SsgConfig {
     //ctxDataPriority?: boolean;
 
     tsModulesCache?: Record<string, Module>;
-    tsComponentsCache?: Record<string, Module>;
+    //tsComponentsCache?: Record<string, Module>;
 
     //Default paths from which to scan for a relative notated runner ts file, holding a document compiler
     //runnerResolvePaths?: string[];
     //Default paths from which to scan for layout paths
     //layoutResolvePaths?: string[]; // removed layout == component
     //Note: the more paths -> can affect the layout and compiler resolve speed
-    componentResolvePaths?: string[];
+    //componentResolvePaths?: string[];
 
 }

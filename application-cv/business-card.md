@@ -21,11 +21,12 @@ Email: office@markuspeitl.com
 Mobile: +436602094318  
 LinkedIn: https://www.linkedin.com/in/markuspeitl/  
 Birthday: 01.04.1995  
-Address: Rienößlgasse 16/2/1, 1040 Wien  
+Address: Rienößlgasse 16/2/1, 1040 Wien
 Some other: Property
 
 </pairs-to-list>
 
+<no-render>
 
 How to remove components from document before rendering with runner and adding them 
 back afterwards.
@@ -68,3 +69,5 @@ Issue:
 When using multiple instances of certain components, we need to be able to identify the
 component usage/call from the placeholder.
 (Maybe hash content and attributes and use as id)
+
+</no-render>

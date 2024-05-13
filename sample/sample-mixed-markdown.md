@@ -6,6 +6,8 @@ image: /assets/img/logo.svg
 sectionclass: centertext
 ---
 
+<hello-md />
+
 <div class="content-box small-width">
 
 <img style="width: 12em; margin-bottom:-2.5em; margin-top:2em;filter: hue-rotate(160deg);" src="/assets/img/myimg.jpg" alt="{{ image }}" />

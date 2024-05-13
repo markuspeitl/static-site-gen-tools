@@ -8,6 +8,10 @@ import { FalsyAble } from "./helpers/generic-types";
 import { filterFalsy } from "./helpers/array-util";
 import { PassthroughComponent } from "./default/passthrough.component";
 import { EHtmlComponent } from "./default/ehtml.component";
+import { processConfStage, processResource } from "../processing/process-resource";
+import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
+import { getFsNodeStat } from "../utils/fs-util";
+import fs from 'fs';
 
 export function getComponentIdFromPath(runnerPath: string): string {
     return getModuleId(runnerPath, '.component');
@@ -109,7 +113,71 @@ export function normalizeModuleToInternalComponent(module: any): FalsyAble<IInte
     return instance;*/
 }
 
+export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<DataParsedDocument> {
+    //Use process stage to read resource to memory
+    const toReadResource = {
+        id: documentPath,
+        data: {
+            document: {
+                src: documentPath
+            }
+        }
+    };
+    const readResource: DataParsedDocument = await processConfStage('reader', toReadResource, config || {});
+    return readResource;
+}
+
+export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+    //Also load other file formats (.md, .njk, .html, based on available readers & extractor/compilers)
+    //If no reader exists or if no compiler exists, then the component would not be compileable -> do not load as component
+
+    const readResource: DataParsedDocument = await useReaderStageToRead(documentPath, config);
+
+    if (!readResource.content || !readResource.data?.document?.inputFormat) {
+        return null;
+    }
+
+    const internalDocumentComponent: PassthroughComponent = new PassthroughComponent();
+
+    //let dataExtractedContent: string | null = null;
+    let dataExtractedResource: DataParsedDocument | null = null;
+    internalDocumentComponent.data = async (resource: DataParsedDocument, config: SsgConfig) => {
+
+        resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
+        resource.content = readResource.content;
+
+        dataExtractedResource = await processConfStage('extractor', resource, config);
+        //dataExtractedContent = dataExtractedResource.content;
+
+        return dataExtractedResource;
+    };
+    internalDocumentComponent.render = async (resource: DataParsedDocument, config: SsgConfig) => {
+        //resource.data.document.src = componentPath;
+        //resource.content = readResource.content;
+
+        //resource.content = dataExtractedContent || readResource.content || resource.content;
+
+        return processConfStage('compiler', resource || dataExtractedResource || readResource, config);
+
+        //return processConfStage('compiler', resource, config);
+    };
+
+    return internalDocumentComponent;
+}
+
 export async function getComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
+
+    if (componentPath && componentPath.endsWith('.ts') || moduleContent) {
+        return getTsComponentFrom(componentPath, config, moduleContent);
+    }
+
+    if (componentPath) {
+        return getComponentFromPath(componentPath, config);
+    }
+    return null;
+}
+
+export async function getTsComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
     let loadedModule: any = await getTsModule(moduleContent, componentPath, config?.tsModulesCache);
     if (!loadedModule) {
         return null;
@@ -134,7 +202,7 @@ export async function getComponent(dataCtx?: DocumentData | null, moduleContent?
 }
 
 export function getCachesValue(key: string, caches: Record<string, any>[]): any {
-    const truthyCaches: Record<string, BaseComponent>[] = filterFalsy(caches);
+    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
     for (const cache of truthyCaches) {
         if (cache[ key ]) {
             return cache[ key ];
@@ -143,13 +211,13 @@ export function getCachesValue(key: string, caches: Record<string, any>[]): any 
     return null;
 }
 export function setCachesValue(key: string, value: any, caches: Record<string, any>[]): void {
-    const truthyCaches: Record<string, BaseComponent>[] = filterFalsy(caches);
+    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
     for (const cache of truthyCaches) {
         cache[ key ] = value;
     }
 }
 export function syncCachesValue(key: string, value: any, caches: Record<string, any>[]): any {
-    const truthyCaches: Record<string, BaseComponent>[] = filterFalsy(caches);
+    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
     for (const cache of truthyCaches) {
         if (!cache[ key ]) {
             cache[ key ] = value;
@@ -160,7 +228,7 @@ export function syncCachesValue(key: string, value: any, caches: Record<string, 
 
 export async function loadComponentToCaches(modulePath: string, config: SsgConfig, caches: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
     const componentId: string = getComponentIdFromPath(modulePath);
-    const foundVal: BaseComponent = getCachesValue(componentId, caches);
+    const foundVal: IInternalComponent = getCachesValue(componentId, caches);
     if (foundVal) {
         return syncCachesValue(componentId, foundVal, caches);
     }
@@ -190,7 +258,7 @@ export async function loadComponentToCaches(modulePath: string, config: SsgConfi
     return loadedComponent;
 }*/
 
-export async function loadDefaultComponent(modulePath: string, config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
+/*export async function loadDefaultComponent(modulePath: string, config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
     if (!config.defaultComponentsCache) {
         config.defaultComponentsCache = {};
     }
@@ -202,7 +270,13 @@ export async function loadDefaultComponent(modulePath: string, config: SsgConfig
     }
 
     return loadComponentToCaches(modulePath, config, [ config.componentsCache, config.defaultComponentsCache, ...caches ]);
-}
+}*/
+
+/*export async function loadFileComponentsRemovePath(paths: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
+    for (const path of paths) {
+        
+    }
+}*/
 
 export async function loadComponents(searchAnchorPaths: string[], componentMatchGlobs: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
     if (!config.defaultComponentsCache) {
@@ -214,6 +288,11 @@ export async function loadComponents(searchAnchorPaths: string[], componentMatch
     if (!searchAnchorPaths || !componentMatchGlobs) {
         return null;
     }
+
+    /*const validFilePaths: string[] = searchAnchorPaths.map((rootPath: string) => {
+        getFsNodeStat(rootPath);
+    });*/
+
 
     return globInDirsCollectFlat(searchAnchorPaths, componentMatchGlobs, loadComponentToCaches, config, caches);
 
@@ -237,7 +316,11 @@ export async function loadDefaultComponents(config: SsgConfig): Promise<FalsyAbl
         return null;
     }
 
-    return globInDirsCollectFlat(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, loadDefaultComponent, config);
+    return loadComponents(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, config, [
+        config.defaultComponentsCache, config.componentsCache
+    ]);
+
+    //return globInDirsCollectFlat(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, loadDefaultComponent, config);
 
     /*for (const componentDir of config.defaultComponentImportDirs) {
         const componentModulePaths: string[] = await anchorAndGlob(config.defaultComponentsMatchGlobs, path.resolve(componentDir), true);
@@ -252,12 +335,19 @@ export async function globInDirsCollectFlat(anchorDirs: string[], subGlobs: stri
 
     const results: any[] = [];
     for (const anchorDir of anchorDirs) {
-        const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), false);
 
-        const processingResultPromises: Promise<FalsyAble<BaseComponent>>[] = globMatchedPaths.map((matchedPath: string) => processPathFn(matchedPath, ...fnArgs));
-        const processingResults: FalsyAble<BaseComponent>[] = await Promise.all(processingResultPromises);
-        const truthyResults: any[] = filterFalsy(processingResults);
-        results.push(truthyResults);
+        const nodeStat: fs.Stats | null = await getFsNodeStat(anchorDir);
+        if (nodeStat && nodeStat.isFile()) {
+            results.push(await processPathFn(anchorDir, ...fnArgs));
+        }
+        else {
+            const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), false);
+
+            const processingResultPromises: Promise<FalsyAble<BaseComponent>>[] = globMatchedPaths.map((matchedPath: string) => processPathFn(matchedPath, ...fnArgs));
+            const processingResults: FalsyAble<BaseComponent>[] = await Promise.all(processingResultPromises);
+            const truthyResults: any[] = filterFalsy(processingResults);
+            results.push(truthyResults);
+        }
     }
     return results.flat();
 }
