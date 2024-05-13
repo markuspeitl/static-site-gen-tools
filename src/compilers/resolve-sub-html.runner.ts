@@ -88,12 +88,11 @@ export function resolveImportPropToPath(importObj: any): string {
     return importObj;
 }
 
-export async function resolveResourceImports(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+export async function resolveResourceImports(fromRootDirPath: string, resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
 
     if (!resource.data) {
         resource.data = {};
     }
-
     //assignAttribsToSelf(dataExtractedDoc.data, 'import');
     if (!resource.data.import) {
         resource.data.import = [];
@@ -103,8 +102,11 @@ export async function resolveResourceImports(resource: DataParsedDocument, confi
     }
     resource.data.import = resource.data.import.map(resolveImportPropToPath);
 
-    const currentDocumentDir: string = path.parse(resource.data.src).dir;
-    resource.data = resolveRelativePaths(resource.data, currentDocumentDir);
+    if (fromRootDirPath) {
+        //const currentDocumentDir: string = path.parse(fromRootPath).dir;
+        resource.data = resolveRelativePaths(resource.data, fromRootDirPath);
+    }
+
 
     if (!resource.data) {
         return resource;
@@ -155,7 +157,7 @@ export async function extractMergePrepareData(
         return resource;
     }
     const dataMergedDoc: DataParsedDocument = updateMergeResource(resource, dataExtractedDoc);
-    return resolveResourceImports(dataMergedDoc, config);
+    return resolveResourceImports(resource.data?.src, dataMergedDoc, config);
 }
 
 export type CheerioNodeFn<ReturnType> = ($: cheerio.Root, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
@@ -414,6 +416,9 @@ export async function compileDeferredComponent(args: DeferCompileArgs, data: any
 
     //Resolve any html tags that link other components in the result
     const subsRenderedDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith('html', dataParseDoc, config);
+    if (!subsRenderedDoc) {
+        return args;
+    }
     //Render component contents
     const compiledComponentDoc: FalsyAble<DataParsedDocument> = await component.render(subsRenderedDoc, config);
     //Problem is the component tags will still be in content (if the component wrap this is not good)

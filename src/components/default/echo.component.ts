@@ -1,16 +1,15 @@
-import { DocumentData, DataParsedDocument } from "../../compilers/runners";
+import { DataParsedDocument } from "../../compilers/runners";
 import { SsgConfig } from "../../config";
-import { BaseComponent, FnBaseComponent } from "../base-component";
+import { BaseComponent, IInternalComponent } from "../base-component";
 
-export class EchoComponent implements BaseComponent, FnBaseComponent {
+export class EchoComponent implements BaseComponent, IInternalComponent {
 
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
-        return dataCtx || {};
+    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+        return resource;
     }
-    public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
-        return {
-            content: `ECHO--- ${dataCtx?.content || ''} ---ECHO`,
-            data: dataCtx,
-        };
+    public async render(resource: DataParsedDocument, config?: SsgConfig): Promise<DataParsedDocument> {
+
+        resource.content = `ECHO--- ${resource?.content || ''} ---ECHO`;
+        return resource;
     }
 }

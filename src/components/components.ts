@@ -22,7 +22,7 @@ export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble
 }
 
 //Only 1 component per file is allowed right now
-export function normalizeModuleToComponent(module: any): FalsyAble<IInternalComponent> {
+export function normalizeModuleToInternalComponent(module: any): FalsyAble<IInternalComponent> {
 
     let componentInstance: BaseComponent | null = null;
     const passThroughComponent: PassthroughComponent = new PassthroughComponent();
@@ -115,7 +115,7 @@ export async function getComponentFrom(componentPath: FalsyAble<string>, config?
         return null;
     }
 
-    return normalizeModuleToComponent(loadedModule);
+    return normalizeModuleToInternalComponent(loadedModule);
 
     //const componentInstance: BaseComponent = loadedModule.default;
 
@@ -158,13 +158,13 @@ export function syncCachesValue(key: string, value: any, caches: Record<string, 
     return value;
 }
 
-export async function loadComponentToCaches(modulePath: string, config: SsgConfig, caches: Record<string, BaseComponent>[]): Promise<FalsyAble<BaseComponent>> {
+export async function loadComponentToCaches(modulePath: string, config: SsgConfig, caches: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
     const componentId: string = getComponentIdFromPath(modulePath);
     const foundVal: BaseComponent = getCachesValue(componentId, caches);
     if (foundVal) {
         return syncCachesValue(componentId, foundVal, caches);
     }
-    const loadedComponent: FalsyAble<BaseComponent> = await getComponentFrom(modulePath, config, null);
+    const loadedComponent: FalsyAble<IInternalComponent> = await getComponentFrom(modulePath, config, null);
     if (!loadedComponent) {
         return null;
     }
@@ -190,7 +190,7 @@ export async function loadComponentToCaches(modulePath: string, config: SsgConfi
     return loadedComponent;
 }*/
 
-export async function loadDefaultComponent(modulePath: string, config: SsgConfig, caches?: Record<string, BaseComponent>[]): Promise<FalsyAble<BaseComponent>> {
+export async function loadDefaultComponent(modulePath: string, config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
     if (!config.defaultComponentsCache) {
         config.defaultComponentsCache = {};
     }
@@ -204,7 +204,7 @@ export async function loadDefaultComponent(modulePath: string, config: SsgConfig
     return loadComponentToCaches(modulePath, config, [ config.componentsCache, config.defaultComponentsCache, ...caches ]);
 }
 
-export async function loadComponents(searchAnchorPaths: string[], componentMatchGlobs: string[], config: SsgConfig, caches?: Record<string, BaseComponent>[]): Promise<FalsyAble<BaseComponent[]>> {
+export async function loadComponents(searchAnchorPaths: string[], componentMatchGlobs: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
     if (!config.defaultComponentsCache) {
         config.defaultComponentsCache = {};
     }
@@ -262,15 +262,15 @@ export async function globInDirsCollectFlat(anchorDirs: string[], subGlobs: stri
     return results.flat();
 }
 
-export function getCachedDefaultComponent(componentId: string, config: SsgConfig): FalsyAble<BaseComponent> {
+export function getCachedDefaultComponent(componentId: string, config: SsgConfig): FalsyAble<IInternalComponent> {
     if (config.defaultComponentsCache && config.defaultComponentsCache[ componentId ]) {
         return config.defaultComponentsCache[ componentId ];
     }
     return null;
 }
 
-export async function getImportComponentsPool(importPaths: string[], config: SsgConfig): Promise<Record<string, BaseComponent>> {
-    const currentImportComponentsPool: Record<string, BaseComponent> = {};
+export async function getImportComponentsPool(importPaths: string[], config: SsgConfig): Promise<Record<string, IInternalComponent>> {
+    const currentImportComponentsPool: Record<string, IInternalComponent> = {};
 
     if (!config.defaultComponentsMatchGlobs) {
         config.defaultComponentsMatchGlobs = [];
@@ -286,12 +286,12 @@ export async function getImportComponentsPool(importPaths: string[], config: Ssg
 
     await Promise.all(loadComponentsPromises);
 
-    const defaultComponentsCache: Record<string, BaseComponent> = config.defaultComponentsCache;
+    const defaultComponentsCache: Record<string, IInternalComponent> = config.defaultComponentsCache;
     return Object.assign({}, defaultComponentsCache, currentImportComponentsPool);
     //return currentImportComponentsPool;
 }
 
-export async function getResourceImports(resource: DataParsedDocument, config: SsgConfig): Promise<Record<string, BaseComponent>> {
+export async function getResourceImports(resource: DataParsedDocument, config: SsgConfig): Promise<Record<string, IInternalComponent>> {
 
     if (!resource) {
         return {};
@@ -303,7 +303,7 @@ export async function getResourceImports(resource: DataParsedDocument, config: S
         resource.data.import = [];
     }
     const importPaths: string[] = resource.data.import;
-    const currentImportComponentsPool: Record<string, BaseComponent> = await getImportComponentsPool(importPaths, config);
+    const currentImportComponentsPool: Record<string, IInternalComponent> = await getImportComponentsPool(importPaths, config);
 
     resource.data.importCache = currentImportComponentsPool;
 

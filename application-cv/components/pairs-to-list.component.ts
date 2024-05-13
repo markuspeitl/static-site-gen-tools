@@ -7,9 +7,13 @@ function renderSpan(content: string): string {
     return `<span>${content}</span>`;
 }
 
-export async function render(dataCtx: DocumentData, config: SsgConfig = {}): Promise<DataParsedDocument | string> {
-    const data = dataCtx.data;
-    const content: string = dataCtx.content;
+export async function render(resouce: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+    let data = resouce.data;
+    const content: string = resouce.content;
+
+    if (!data) {
+        data = {};
+    }
 
     const itemTag = data.tag || 'span';
     const rootTag = data[ 'root-tag' ];// || 'div';
@@ -19,12 +23,16 @@ export async function render(dataCtx: DocumentData, config: SsgConfig = {}): Pro
     const allSplitItemsList: string[] = contentLines.map((line) => splitStringPreserve(line, splitToken, false)).flat();
     const htmlItemList = allSplitItemsList.map((textPart: string) => wrapContent(itemTag, textPart));
 
+    const unwrappedContent: string = htmlItemList.join('\n');
+
     if (!rootTag) {
-        return htmlItemList.join('\n');
+        resouce.content = unwrappedContent;
     }
 
-    return wrapContent(rootTag, htmlItemList, {
+    resouce.content = wrapContent(rootTag, unwrappedContent, {
         class: data.class,
     });
+
+    return resouce;
     //return allSplitItemsList.map((textPart: string) => renderSpan(textPart)).join('\n');
 };

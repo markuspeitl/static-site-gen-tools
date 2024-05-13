@@ -6,12 +6,13 @@ import { FalsyAble } from "./helpers/generic-types";
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
 
-export type DataToParsedDocumentFn = (dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<DataParsedDocument | string>;
+export type DataToParsedDocumentFn = (resource: DocumentData | DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument | string>;
 export type DataToParsedDocumentOrString = DataToParsedDocumentFn | DataParsedDocument | string;
 
-export type DataFunction = (dataCtx?: DocumentData | null, config?: SsgConfig) => Promise<DataParsedDocument | DocumentData>;
+export type DataFunction = (resource: DocumentData | DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument | DocumentData>;
 //export type RenderFunction = DataToParsedDocumentFn;
 
+//Possible formats of Component on disk (before the component is loaded into memory)
 export interface BaseComponent {
     //model
     data: DataFunction | DocumentData;
@@ -22,17 +23,16 @@ export interface BaseComponent {
     //controlData?(dataCtx?: DocumentData | null, config?: SsgConfig): any;
 }
 
+//Format the components after loading them into memory (normalized internal component)
 export interface IInternalComponent {
-    data: (dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig) => Promise<DataParsedDocument>;
-    render: (dataCtx?: FalsyAble<DocumentData>, config?: SsgConfig) => Promise<DataParsedDocument>;
+    data: (resource: DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument>;
+    render: (resource: DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument>;
 }
 
-
-export interface FnBaseComponent {
+/*export interface FnBaseComponent {
     data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData>;
     render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string>;
-}
-
+}*/
 
 //export type StyleFunction = DataToParsedDocumentFn;
 //export type ClientCodeFunction = DataToParsedDocumentFn;
@@ -42,7 +42,7 @@ export interface ExtensiveComponent extends BaseComponent {
     clientCode: DataToParsedDocumentOrString;
 }
 
-const dataPackResultKeys: string[] = [
+/*const dataPackResultKeys: string[] = [
     'style',
     'clientCode'
 ];
@@ -92,4 +92,4 @@ export async function renderComponentAt(componentIdOrLocation: string, dataCtx: 
         return renderComponent(componentModule, dataCtx, config);
     }
     return null;
-}
+}*/

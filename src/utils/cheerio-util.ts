@@ -12,13 +12,22 @@ export function loadHtml(html: string, noHtmlEntities: boolean = true): cheerio.
     //    return cheerio.load(html);
     //}
 
-    // @ts-ignore
+
     //return cheerio.load(html, null, false);
 
 
     //https://cheerio.js.org/docs/api/interfaces/HTMLParser2Options
     //Using xmlMode prevents it from adding or removing html/body elements when parsing
-    return cheerio.load(html, { xmlMode: true, decodeEntities: !noHtmlEntities }, false);
+
+    return cheerio.load(html, {
+        xmlMode: true,
+        decodeEntities: !noHtmlEntities,
+        selfClosingTags: false, //forces all self closing tags to be closed --> disables parsing of self closing!
+        //Self closing tags being closed without content is allowed for HTML5, but not for XHTML
+        //https://github.com/cheeriojs/cheerio/issues/1235
+        //https://github.com/lesjoursfr/html-to-epub/issues/50
+        // @ts-ignore
+    }, false);
 }
 
 export function unparseHtml($: cheerio.Root): string {
@@ -734,4 +743,15 @@ export function extractAttrs(elemHtml: string, elemSelector?: string): AttrDict 
     const $: cheerio.Root = loadHtml(elemHtml);
 
     return $(elemSelector).attr() as AttrDict;
+}
+
+
+export function cheerioReplaceElem(html: string, id: string, replaceHtml: string): string {
+
+    if (!id) {
+        return html;
+    }
+    const $: cheerio.Root = loadHtml(html);
+    $(`#${id}`).replaceWith(replaceHtml);
+    return unparseHtml($);
 }

@@ -224,7 +224,7 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
         config.resMatchDataExtractorsDict = {};
     }
     await setUpMasterRunner(config.masterCompileRunnerPath, config);
-    await loadDefaultRunners(config);
+    //await loadDefaultRunners(config);
     await loadDefaultComponents(config);
     const initializedConfig = await loadUserRuntimeConfig(config);
 

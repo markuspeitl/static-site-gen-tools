@@ -33,3 +33,17 @@ export function addExtractorId(resource: DataParsedDocument, extractorInstance: 
     return addHandlerId(resource, 'extractor', extractorInstance);
 }
 
+export function resetDocumentSetProp(resource: DataParsedDocument, docPropKey: string, docPropValue: any): DataParsedDocument {
+    if (!resource.data) {
+        resource.data = {};
+    }
+
+    resource.data.document = {};
+    resource.data.document[ docPropKey ] = docPropValue;
+
+    return resource;
+}
+
+export function resetDocumentSetInputFormat(resource: DataParsedDocument, inputFormat: any): DataParsedDocument {
+    return resetDocumentSetProp(resource, 'inputFormat', inputFormat);
+}

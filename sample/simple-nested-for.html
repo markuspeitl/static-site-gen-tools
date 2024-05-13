@@ -1,0 +1,42 @@
+<data>
+    <tags>test</tags>
+    <tags>apple</tags>
+    <tags>peach</tags>
+    <tags>markdown</tags>
+
+    <tagsalt>
+        <i>test</i>
+        <i>apple</i>
+        <i>peach</i>
+        <i>markdown</i>
+    </tagsalt>
+
+    <processing>stage-compile-html njk</processing>
+</data>
+
+<for it="tag" of="tags">
+    
+    The fruit:
+    <span>{{tag}}</span>
+    was eaten.
+
+    <if cond="this.tag">
+        Tag NAME is defined
+    </if>
+    <if cond="!this.tag">
+        Tag NAME is not defined
+    </if>
+
+    <if cond="this.tag !== 'apple'">
+        IF CONDITION MATCHED: I am NOT an apple
+    </if>
+
+    <if cond="this.tag === 'apple'">
+        IF CONDITION MATCHED: I am a fruit: APPLE
+    </if>
+
+    <if cond="this.tag === 'peach'">
+        IF CONDITION MATCHED: I am a fruit: PEACH
+    </if>
+
+</for>

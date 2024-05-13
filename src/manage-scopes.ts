@@ -6,6 +6,11 @@ export function forkDataScope(resource: DataParsedDocument): DataParsedDocument 
     return lodash.cloneDeep(resource) as DataParsedDocument;
 }
 
+export function forkResourceScope(resource: DataParsedDocument): DataParsedDocument {
+    //Inefficient but simple
+    return lodash.cloneDeep(resource) as DataParsedDocument;
+}
+
 
 //parentScope: available variables unless shadowed by any component specific data.
 //passDataScope: Things like html attributes or data specifically passed to component. (data passed into component)

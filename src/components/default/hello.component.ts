@@ -1,24 +1,25 @@
 import { DocumentData, DataParsedDocument } from "../../compilers/runners";
 import { SsgConfig } from "../../config";
-import { BaseComponent, FnBaseComponent } from "../base-component";
+import { BaseComponent, IInternalComponent } from "../base-component";
 
-export class HelloWorldComponent implements BaseComponent, FnBaseComponent {
+export class HelloWorldComponent implements BaseComponent, IInternalComponent {
 
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
-        dataCtx = dataCtx || {};
-        dataCtx.data.message = "Hello world from component subrenderer";
-        return dataCtx || {};
+    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+
+        if (!resource.data) {
+            resource.data = {};
+        }
+        resource.data.message = "Hello world from component subrenderer";
+        return resource;
     }
-    public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
+    public async render(resource: DataParsedDocument, config?: SsgConfig): Promise<DataParsedDocument> {
 
         const message = `\
-${dataCtx?.content}
+${resource?.content}
 This is the message from hello:
-${dataCtx?.data?.message}`;
+${resource?.data?.message}`;
 
-        return {
-            content: message,
-            data: dataCtx,
-        };
+        resource.content = message;
+        return resource;
     }
 }

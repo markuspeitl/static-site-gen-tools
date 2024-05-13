@@ -1,44 +1,43 @@
-import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
+import { DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { getScopedEvalFn } from "../../../utils/fn-apply";
-import { BaseComponent, FnBaseComponent } from "../../base-component";
+import { BaseComponent, IInternalComponent } from "../../base-component";
 
-export abstract class IfComponent implements BaseComponent, FnBaseComponent {
-
-    private getCompileDocumentFromDataCtx(dataCtx?: DocumentData | null): DataParsedDocument {
-        const toCompileResource: DataParsedDocument = {
-            content: dataCtx?.content,
-            data: dataCtx,
-        };
-        return toCompileResource;
-    }
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
-        return dataCtx || {};
-    }
-    public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
-        if (!dataCtx) {
-            return '';
-        }
-        const toCompileResource: DataParsedDocument = this.getCompileDocumentFromDataCtx(dataCtx);
-
-        if (!dataCtx.cond) {
-            console.log("Invalid 'if' component -> needs to have a condition with the 'cond' attribute");
+export abstract class IfComponent implements BaseComponent, IInternalComponent {
+    public canCompile(resource: DataParsedDocument, config?: SsgConfig): boolean {
+        if (!resource.data) {
+            console.error("Can not compile 'if' component -> data needs to be set");
+            return false;
         }
 
-        const data: any = dataCtx.data;
+        if (!resource.data.cond) {
+            console.error("Invalid 'if' component -> needs to have a condition with the 'cond' attribute");
+            return false;
+        }
 
+        return true;
+    }
+
+    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+        return resource;
+    }
+
+    public async render(resource: DataParsedDocument, config?: SsgConfig): Promise<DataParsedDocument> {
+        if (!this.canCompile(resource, config)) {
+            return resource;
+        }
+
+        const data: any = resource.data;
         const conditionExpression: string = data.cond;
 
         const conditionFn = getScopedEvalFn(data, conditionExpression);
         const truthyValue: boolean = Boolean(conditionFn());
 
         if (truthyValue) {
-            return toCompileResource;
+            return resource;
         }
 
-        return {
-            content: '',
-            data: dataCtx
-        };
+        resource.content = '';
+        return resource;
     }
 }

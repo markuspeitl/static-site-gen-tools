@@ -1,65 +1,72 @@
-import { HtmlRunner } from "../../../compilers/html.runner";
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
-import { getScopedEvalFn } from "../../../utils/fn-apply";
-import { BaseComponent, FnBaseComponent } from "../../base-component";
+import { processResource } from "../../../processing/process-resource";
+import { BaseComponent, IInternalComponent } from "../../base-component";
 import { getKeyFromDict } from "../../helpers/dict-util";
 import { FalsyAble } from "../../helpers/generic-types";
 
-export abstract class ForComponent implements BaseComponent, FnBaseComponent {
+export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
-    private getCompileDocumentFromDataCtx(dataCtx?: DocumentData | null): DataParsedDocument {
-
-        if (dataCtx?.data) {
-            return dataCtx;
+    public canCompile(resource: DataParsedDocument, config?: SsgConfig): boolean {
+        if (!resource.data) {
+            console.error("Can not compile 'for' component -> data needs to be set");
+            return false;
         }
 
-        const toCompileResource: DataParsedDocument = {
-            content: dataCtx?.content,
-            data: dataCtx,
-        };
-        return toCompileResource;
-    }
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
-        return dataCtx || {};
-    }
-    public async render(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | string> {
-        if (!dataCtx) {
-            return '';
+        if (!resource.data.it) {
+            console.error("Invalid 'for' component -> needs to have a condition with the 'it' attribute");
+            return false;
         }
-        const toCompileResource: DataParsedDocument = this.getCompileDocumentFromDataCtx(dataCtx);
+        if (!resource.data.of) {
+            console.error("Invalid 'for' component -> needs to have a condition with the 'of' attribute");
+            return false;
+        }
 
-        const data = dataCtx.data;
+        return true;
+    }
+
+    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+        return resource;
+    }
+
+    public async render(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+        if (!this.canCompile(resource, config)) {
+            return resource;
+        }
+        const data: any = resource.data;
 
         if (!data.it || !data.of) {
             console.log("Invalid 'for' component -> needs to have 'item' and 'of attribute");
         }
-        const iteratorItemName: string = data.item || data.it;
+        const iteratorItemName: string = data.it;
         const listItemName: string = data.of;
-        const loopBody: string = dataCtx.content;
-
+        //const loopBody: string = resource.content;
 
         const selectedArray: Array<any> = getKeyFromDict(data, listItemName);
+
+        if (!selectedArray) {
+            console.error(`Failed to select '${listItemName}' property from resource data --> not iterable --> skipping for`);
+            return resource;
+        }
+
         const renderedIterations: string[] = [];
         for (const itemValue of selectedArray) {
-            const subDataCtx = Object.assign(
-                {},
-                data
-            );
 
-            subDataCtx[ iteratorItemName ] = itemValue;
+            //Set local variable for current iteration
+            (resource.data as any)[ iteratorItemName ] = itemValue;
 
-            const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith(
+            const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
+            const renderedBody = renderedIterationResource?.content || '';
+            renderedIterations.push(renderedBody);
+
+            /*const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith(
                 'html njk',
                 {
                     content: loopBody,
                     data: subDataCtx
                 },
                 config
-            );
-
-            const renderedBody = renderedLoopDocument?.content || '';
-            renderedIterations.push(renderedBody);
+            );*/
 
             //const htmlComponent: BaseComponent = getComponent('html', config);
             //TODO improve + update
@@ -74,16 +81,13 @@ export abstract class ForComponent implements BaseComponent, FnBaseComponent {
         }
 
         const combinedIterRenderBody = renderedIterations.join('\n');
-
-        return {
-            content: combinedIterRenderBody,
-            data: dataCtx
-        };
+        resource.content = combinedIterRenderBody;
+        return resource;
     }
 }
 
 `
-<e-for item="tag" of="tags">
+<for it="tag" of="tags">
     <tag bind="tag-component"></tag>
     <tag-component>{ tag }</tag-component>
 
@@ -91,5 +95,5 @@ export abstract class ForComponent implements BaseComponent, FnBaseComponent {
         Condition that item tag is 'education' was met
     </e-if>
 
-</e-for>
+</for>
 `;

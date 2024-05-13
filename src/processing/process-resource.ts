@@ -100,10 +100,10 @@ export function getDefaultProcessingStages(): ProcessingStagesInfo {
         compiler: {
             inputProp: 'data.document.inputFormat',
             matchChains: {
-                'html': [ 'html' ],
-                'md': [ 'html', 'md' ],
-                'njk': [ 'html', 'njk' ],
-                'ts': [ 'ts' ]
+                'html': [ 'placeholder', 'component' ], // or 'placeholder', 'component' instead of component
+                'md': [ 'placeholder', 'md', 'component', 'njk' ],
+                'njk': [ 'placeholder', 'njk', 'component' ],
+                'ts': [ 'ts', 'placeholder', 'html', 'component' ]
             }
         },
         writer: {
@@ -164,13 +164,12 @@ export async function findChainCanHandleResource(resource: DataParsedDocument, c
 
     for (const idsChain of matchedIdChains) {
 
-        if (idsChain.length > 0) {
-            const firstIdOfChain: string = idsChain[ 0 ];
+        for (let i = 0; i < idsChain.length; i++) {
+            const id = idsChain[ i ];
+            const processorOfChain: IResourceProcessor | undefined = processingStage.instances[ id ];
 
-            const firstProcessorOfChain: IResourceProcessor | undefined = processingStage.instances[ firstIdOfChain ];
-
-            if (firstProcessorOfChain && await firstProcessorOfChain.canHandle(resource, config)) {
-                return idsChain;
+            if (processorOfChain && await processorOfChain.canHandle(resource, config)) {
+                return idsChain.slice(i);
             }
         }
     }
@@ -178,6 +177,7 @@ export async function findChainCanHandleResource(resource: DataParsedDocument, c
 }
 
 import * as lodash from 'lodash';
+import { forkDataScope } from "../manage-scopes";
 export async function useResourceProcessorMerge(resource: DataParsedDocument, config: any, processor: IResourceProcessor): Promise<DataParsedDocument> {
 
     if (!processor) {
@@ -244,7 +244,11 @@ export async function processAllPassingStages(resource: DataParsedDocument, conf
 export function processDetectStages(resource: DataParsedDocument, processingStages: ProcessingStagesInfo);
 */
 
-export async function processResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+export async function processResource(resource: DataParsedDocument, config: SsgConfig, forkResourceData: boolean = false): Promise<DataParsedDocument> {
+
+    if (forkResourceData) {
+        resource = forkDataScope(resource);
+    }
 
     const resourceProcessorDirs = [ __dirname ];
     const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();

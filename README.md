@@ -639,3 +639,43 @@ the caller can then unpack
 
 
 TODO: Revamp component interface (force call with "DataParsedDocument and config", possibly expose a ctx with helper functions)
+
+
+## Component compile flow:
+
+Example:
+```
+<html>I am a text</html>
+
+<md>
+    # Some stuff
+    in Markdown
+
+    <njk>
+        {{ somevar }}
+    </njk>
+
+</md>
+
+
+```
+1. After extracting the data for the document and loading the imports Compiling starts for the html input format
+2. Detect that <md> is a top level component and replace with placeholder
+```
+<html>I am a text</html>
+<md-placeholder id="sdiosdgisdgiosdg">
+```
+3. Render with placeholder (components should not be able to affect the data context of the parent so this should be fine)
+4. After this we can look onto "pending compiles" and see that the <md> component was detected but still not rendered
+5. Render the body of the md component (with a context/data forked from parent --> "pending compiles" should not be forked
+or other properties that are exclusive to the parent)
+6. Detect that <njk> is a top level component and replace with placeholder
+7. Render <md> body (component should select the 'md' compiler chain for rendering:
+`[ 'placeholder', 'md', 'component', 'njk' ]`
+- placeholder: should passthrough resource to md without doing anything
+- md: should use document with placeholder and transform `md --> html`
+
+
+
+1. Render document (after removing sub components)
+2. Render placeholders

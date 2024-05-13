@@ -2,9 +2,9 @@ import { loadComponentImports } from "../../../compilers/lib/component-cache";
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { getScopedEvalFn } from "../../../utils/fn-apply";
-import { BaseComponent, FnBaseComponent } from "../../base-component";
+import { BaseComponent } from "../../base-component";
 
-export abstract class ImportComponent implements BaseComponent, FnBaseComponent {
+export abstract class ImportComponent implements BaseComponent {
 
     public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
 
