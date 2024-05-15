@@ -5,6 +5,30 @@
             "type": "node",
             "runtimeVersion": "20.9.0",
             "request": "launch",
+            "name": "Test directory compile",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps",
+            ],
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "${workspaceRoot}/cli.ts",
+                "sample/sample-dir/",
+                "sample/dist/sample-dir/",
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps",
+            }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
             "name": "compile current file",
             "runtimeExecutable": "node",
             "runtimeArgs": [
@@ -16,7 +40,7 @@
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "${file}",
-                "sample/dist/${fileBasename}.html",
+                "sample/dist/${fileBasename}",
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,

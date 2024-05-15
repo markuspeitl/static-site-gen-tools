@@ -28,6 +28,7 @@ export class ComponentCompiler implements IResourceProcessor {
         if (!resource.data) {
             return resource;
         }
+        console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
 
         /*resource = await resolveResourceImports(resource, config);
         let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
@@ -102,7 +103,7 @@ export class ComponentCompiler implements IResourceProcessor {
 
                 resource.content = componentReplacedContent;
 
-                console.log(resource.content);
+                //console.log(resource.content);
 
                 //pendingArgs.compiled = `I would be the replaced placeholder: ${pendingArgs.name}`;
                 //resource.content = resource.content.replace(pendingArgs.placeholder, pendingArgs.compiled);

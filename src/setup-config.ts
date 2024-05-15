@@ -94,6 +94,8 @@ export function getDefaultProcessingStages(): ProcessingStagesInfo {
                 '.+\.scss': [ 'file' ],
                 '.+\/': [ 'dir' ],
                 '.+': [ 'dir' ],
+                '.+.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
+                //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
             }
 
         },

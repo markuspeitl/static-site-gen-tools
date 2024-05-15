@@ -127,22 +127,36 @@ export async function useReaderStageToRead(documentPath: string, config?: SsgCon
     return readResource;
 }
 
-export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
-    //Also load other file formats (.md, .njk, .html, based on available readers & extractor/compilers)
-    //If no reader exists or if no compiler exists, then the component would not be compileable -> do not load as component
+const cachedFileResources: Record<string, DataParsedDocument> = {};
+export async function getFileResource(documentPath: string, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
+
+    if (cachedFileResources[ documentPath ]) {
+        return cachedFileResources[ documentPath ];
+    }
 
     const readResource: DataParsedDocument = await useReaderStageToRead(documentPath, config);
-
     if (!readResource.content || !readResource.data?.document?.inputFormat) {
         return null;
     }
 
-    const internalDocumentComponent: PassthroughComponent = new PassthroughComponent();
+    cachedFileResources[ documentPath ] = readResource;
 
+    return readResource;
+}
+
+export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+    //Also load other file formats (.md, .njk, .html, based on available readers & extractor/compilers)
+    //If no reader exists or if no compiler exists, then the component would not be compileable -> do not load as component
+
+    const internalDocumentComponent: PassthroughComponent = new PassthroughComponent();
     //let dataExtractedContent: string | null = null;
     let dataExtractedResource: DataParsedDocument | null = null;
     internalDocumentComponent.data = async (resource: DataParsedDocument, config: SsgConfig) => {
 
+        const readResource: FalsyAble<DataParsedDocument> = await getFileResource(documentPath, config);
+        if (!readResource) {
+            return resource;
+        }
         resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
         resource.content = readResource.content;
 
@@ -154,9 +168,11 @@ export async function getComponentFromPath(documentPath: string, config?: SsgCon
     internalDocumentComponent.render = async (resource: DataParsedDocument, config: SsgConfig) => {
         //resource.data.document.src = componentPath;
         //resource.content = readResource.content;
-
+        const readResource: FalsyAble<DataParsedDocument> = await getFileResource(documentPath, config);
+        if (!readResource) {
+            return resource;
+        }
         //resource.content = dataExtractedContent || readResource.content || resource.content;
-
         return processConfStage('compiler', resource || dataExtractedResource || readResource, config);
 
         //return processConfStage('compiler', resource, config);

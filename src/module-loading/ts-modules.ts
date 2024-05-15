@@ -185,15 +185,20 @@ export async function getTsModule(moduleContent: FalsyAble<string>, modulePath: 
         modulePath = path.join(process.cwd(), modulePath);
     }
 
+
     let loadedModule: Module | null = null;
-    try {
-        loadedModule = await loadTsModuleFromPath(modulePath, tsModulesCache);
+
+    if (modulePath) {
+        try {
+            loadedModule = await loadTsModuleFromPath(modulePath, tsModulesCache);
+        }
+        catch (error: any) {
+            console.error(`Failed to load ts module at: ${modulePath}:`);
+            console.error(`Reason:`);
+            console.error(error);
+        }
     }
-    catch (error: any) {
-        console.error(`Failed to load ts module at ${loadedModule}:`);
-        console.error(`Reason:`);
-        console.error(error);
-    }
+
     if (!loadedModule && moduleContent) {
 
         try {

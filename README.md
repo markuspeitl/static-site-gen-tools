@@ -679,3 +679,22 @@ or other properties that are exclusive to the parent)
 
 1. Render document (after removing sub components)
 2. Render placeholders
+
+
+## High level operation (working on dirs)
+When reading a resource the program goes through all the
+resource matching options and checks if the 'processing-chain' should handle this resource.
+As many paths may be a directory, more specific handlers (files, specific names for resources .etc)
+should be first in the list of handler options in the processing stage.
+
+1. When no other things match we can check if the input resource may be a directory. (canHandle)
+2. If it is we can read the directorys contents, which would be files and directories.
+3. These files and directories can be sent back through the *reader* stage for processing.
+(note this would be recursive)
+4. More specifically we would also set the 'input' and 'output' paths for those spawned subresources,
+based on settings and location of the 'dir' resource
+
+
+- Read Image
+- Compress + rescale + multiply (extract + compile)
+- Write images

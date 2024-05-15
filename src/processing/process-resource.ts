@@ -18,7 +18,7 @@ import { filterFalsy } from "../components/helpers/array-util";
 export const processDir = processFsNodeAtPath;
 export const processFile = processFsNodeAtPath;
 
-export async function processFsNodeAtPath(inputPath: string, outputPath: string, config: SsgConfig): Promise<DataParsedDocument> {
+export async function processFsNodeAtPath(inputPath: string, outputPath: string | null, config: SsgConfig): Promise<DataParsedDocument> {
 
     const toProcessResource: DataParsedDocument = {
         id: inputPath,

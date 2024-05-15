@@ -106,6 +106,7 @@ export class HtmlExtractor implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
+        console.log(`Extracting ${this.id}: ${resource.data?.document?.src}`);
 
         const dataResource: DataParsedDocument = await parseHtmlData(resource, config);
         //The data is different here, as it only contains parsed data,

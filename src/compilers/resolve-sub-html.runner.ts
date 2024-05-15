@@ -45,6 +45,10 @@ export function isDirPath(value: any): boolean {
     return isPath(value) && value.endsWith('/');
 }
 
+export function possibleDirPath(value: any): boolean {
+    return isPath(value);
+}
+
 export function isPath(value: any): boolean {
     if (typeof value === 'string') {
         const hasSeperator = value.includes(path.sep);

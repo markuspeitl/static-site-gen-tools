@@ -25,6 +25,8 @@ export class TsCompiler implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
+        console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
+
         const component: FalsyAble<IInternalComponent> = await getComponentFrom(null, config, resourceContent);
         if (!component) {
             return resource;

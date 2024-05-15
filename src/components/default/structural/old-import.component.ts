@@ -1,4 +1,3 @@
-import { loadComponentImports } from "../../../compilers/lib/component-cache";
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { getScopedEvalFn } from "../../../utils/fn-apply";
@@ -19,7 +18,8 @@ export abstract class ImportComponent implements BaseComponent {
         const importPathGlob: string = dataCtx.path;
         const importAlias: string = dataCtx.as;
 
-        const importedComponents: BaseComponent[] = await loadComponentImports(dataCtx?.src, [ importPathGlob ]);
+        //const importedComponents: BaseComponent[] = await loadComponentImports(dataCtx?.src, [ importPathGlob ]);
+        const importedComponents: BaseComponent[] = [];
 
         if (importAlias) {
             if (importedComponents.length < 1) {

@@ -4,12 +4,12 @@ import { addHandlerId, addResourceDocProp, IResourceProcessor } from '../i-resou
 import * as fs from 'fs';
 import path from 'path';
 
-export class FileReader implements IResourceProcessor {
+export class FileWriter implements IResourceProcessor {
 
     public id: string = 'file';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
-        if (typeof resource.content !== 'string') {
+        if (!resource.content || typeof resource.content !== 'string') {
             return false;
         }
         const resourceContent: string | undefined = resource.content?.trim();
@@ -29,6 +29,7 @@ export class FileReader implements IResourceProcessor {
         if (!await this.canHandle(resource, config)) {
             return resource;
         }
+        console.log(`Writing ${this.id}: ${resource.data?.document?.target}`);
 
         const targetFilePath = resource.data?.document?.target;
         if (!targetFilePath) {
