@@ -4,6 +4,8 @@ import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
 import { IInternalComponent } from '../../components/base-component';
 import { FalsyAble } from '../../components/helpers/generic-types';
 import { getComponentFrom } from '../../components/components';
+import { setHtmlOutputFormat } from '../compiling/output-format';
+import { forkResourceScope } from '../../manage-scopes';
 
 
 export class TsExtractor implements IResourceProcessor {
@@ -28,8 +30,8 @@ export class TsExtractor implements IResourceProcessor {
             return true;
         }
 
-
-        return false;
+        return true;
+        //return false;
     }
     public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
         const resourceContent: string | undefined = resource.content?.trim();
@@ -44,10 +46,15 @@ export class TsExtractor implements IResourceProcessor {
             return resource;
         }
 
-        const dataResource: DataParsedDocument = await component.data(resource, config);
+        let dataResource: DataParsedDocument = await component.data(resource, config);
+        if (typeof dataResource === 'string') {
+            dataResource = Object.assign(forkResourceScope(resource), { content: dataResource });
+        }
+
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 
+        dataResource = setHtmlOutputFormat(dataResource);
         return addHandlerId(dataResource, 'extractor', this);
     }
 }

@@ -66,6 +66,8 @@ export interface StageInfo {
     inputProp: any;
     matchChains: Record<string, ChainIds>;
     instances?: Record<string, IResourceProcessor>;
+    postProcess?: (resource: DataParsedDocument, config: SsgConfig) => Promise<DataParsedDocument>;
+    preProcess?: (resource: DataParsedDocument, config: SsgConfig) => Promise<DataParsedDocument>;
 }
 
 export interface ProcessingStagesInfo {
@@ -153,26 +155,43 @@ export async function processConfStage(stageName: string, resource: DataParsedDo
     return processStage(stageName, resource, config, config.processingStages || {});
 }
 
-export async function processStage(stageName: string, resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
+export function getProcessorInstance(currentStageInfo: StageInfo, id: string): IResourceProcessor | null {
+    if (currentStageInfo.instances) {
+        return currentStageInfo.instances[ id ];
+    }
+    return null;
+}
+
+export async function processStage(stageName: string, resource: DataParsedDocument, config: SsgConfig, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
     const currentStageInfo: StageInfo = processingStages[ stageName ];
 
     const matchedStageChains: ChainIds[] | null = getMatchedChainsFromStage(resource, currentStageInfo);
     const resourceConfirmedChain: ChainIds | null = await findChainCanHandleResource(resource, config, matchedStageChains, currentStageInfo);
-    if (resourceConfirmedChain && resourceConfirmedChain.length > 0) {
 
-        const chainToProcess: FalsyAble<IResourceProcessor>[] = resourceConfirmedChain.map((id: string) => {
-            if (currentStageInfo.instances) {
-                return currentStageInfo.instances[ id ];
-            }
-            return null;
-        });
-
-        const processingResult: DataParsedDocument = await passThroughProcessChain(resource, config, filterFalsy(chainToProcess));
-        if (processingResult) {
-            return processingResult;
-        }
+    if (!resourceConfirmedChain || resourceConfirmedChain.length <= 0) {
+        return resource;
     }
-    return resource;
+
+    const chainToProcess: FalsyAble<IResourceProcessor>[] = resourceConfirmedChain.map((id: string) => getProcessorInstance(currentStageInfo, id));
+
+    let processingResult: DataParsedDocument = resource;
+    if (currentStageInfo.preProcess) {
+        processingResult = await currentStageInfo.preProcess(processingResult, config);
+    }
+
+    if (chainToProcess && chainToProcess.length > 0) {
+        processingResult = await passThroughProcessChain(resource, config, filterFalsy(chainToProcess));
+    }
+
+    if (currentStageInfo.postProcess) {
+        processingResult = await currentStageInfo.postProcess(processingResult, config);
+    }
+
+    if (!processingResult) {
+        return resource;
+    }
+
+    return processingResult;
 }
 
 export async function processAllPassingStages(resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
@@ -237,3 +256,17 @@ export async function processResource(resource: DataParsedDocument, config: SsgC
 
     //return resource;
 };
+
+export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<DataParsedDocument> {
+    //Use process stage to read resource to memory
+    const toReadResource = {
+        id: documentPath,
+        data: {
+            document: {
+                src: documentPath
+            }
+        }
+    };
+    const readResource: DataParsedDocument = await processConfStage('reader', toReadResource, config || {});
+    return readResource;
+}

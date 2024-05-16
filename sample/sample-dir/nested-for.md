@@ -7,6 +7,8 @@ tags:
 somevalue: hello from somevalue
 ---
 
+<file path="./subdir/hello-file-comp-md.md"></file>
+
 {{somevalue}}
 
 <for it="tag" of="tags">

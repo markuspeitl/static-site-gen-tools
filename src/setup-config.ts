@@ -9,6 +9,8 @@ import { getFsNodeStat } from "./utils/fs-util";
 import { FalsyString } from "./components/helpers/generic-types";
 import { loadDefaultComponents } from "./components/components";
 import { loadStageProcessorInstances, ProcessingStagesInfo, StageInfo } from "./processing/process-resource";
+import { postProcessExtracting } from "./processing/extracting/extracting";
+import { resolveDataFromSrc } from "./compilers/resolve-sub-html.runner";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -97,7 +99,6 @@ export function getDefaultProcessingStages(): ProcessingStagesInfo {
                 '.+.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
                 //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
             }
-
         },
         extractor: {
             inputProp: 'data.document.inputFormat',
@@ -106,15 +107,17 @@ export function getDefaultProcessingStages(): ProcessingStagesInfo {
                 'md': [ 'md', 'html' ],
                 'njk': [ 'md', 'html' ],
                 'ts': [ 'md', 'ts' ],
-            }
+            },
+            postProcess: resolveDataFromSrc,
         },
         compiler: {
+            preProcess: resolveDataFromSrc,
             inputProp: 'data.document.inputFormat',
             matchChains: {
                 'html': [ 'placeholder', 'component' ], // or 'placeholder', 'component' instead of component
                 'md': [ 'placeholder', 'md', 'component', 'njk' ],
                 'njk': [ 'placeholder', 'njk', 'component' ],
-                'ts': [ 'ts', 'placeholder', 'html', 'component' ],
+                'ts': [ 'placeholder', 'component', 'ts', 'html' ],
                 'scss': [ 'scss' ],
             }
         },

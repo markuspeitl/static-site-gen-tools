@@ -92,8 +92,15 @@ export function resolveImportPropToPath(importObj: any): string {
     return importObj;
 }
 
-export async function resolveResourceImports(fromRootDirPath: string, resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+export function resolveDataPaths(fromRootDirPath: string, resource: DataParsedDocument, config: SsgConfig): DataParsedDocument {
+    if (fromRootDirPath) {
+        //const currentDocumentDir: string = path.parse(fromRootPath).dir;
+        resource.data = resolveRelativePaths(resource.data, fromRootDirPath);
+    }
+    return resource;
+}
 
+export function resolveDataRefs(fromRootDirPath: string, resource: DataParsedDocument, config: SsgConfig): DataParsedDocument {
     if (!resource.data) {
         resource.data = {};
     }
@@ -106,18 +113,48 @@ export async function resolveResourceImports(fromRootDirPath: string, resource: 
     }
     resource.data.import = resource.data.import.map(resolveImportPropToPath);
 
-    if (fromRootDirPath) {
-        //const currentDocumentDir: string = path.parse(fromRootPath).dir;
-        resource.data = resolveRelativePaths(resource.data, fromRootDirPath);
-    }
+    resource = resolveDataPaths(fromRootDirPath, resource, config);
 
+    return resource;
+}
 
-    if (!resource.data) {
+export function resolveDataFromParentFile(parentFilePath: string, resource: DataParsedDocument, config: SsgConfig): DataParsedDocument {
+    if (!parentFilePath) {
         return resource;
     }
+    const currentDocumentDir: string = path.dirname(parentFilePath);
+    const dataResolvedResource: DataParsedDocument = resolveDataRefs(currentDocumentDir, resource, config);
 
+    return dataResolvedResource;
+}
+
+export function resolveDataFromParentResource(parentResource: DataParsedDocument, resource: DataParsedDocument, config: SsgConfig): DataParsedDocument {
+    if (!parentResource || !parentResource.data?.document?.src) {
+        return resource;
+    }
+    return resolveDataFromParentFile(parentResource.data?.document?.src, resource, config);
+}
+
+
+export async function resolveDataFromSrc(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    if (!resource?.data?.document?.src) {
+        return resource;
+    }
+    const currentDocumentDir: string = path.dirname(resource.data.document.src);
+    const dataResolvedResource: DataParsedDocument = resolveDataRefs(currentDocumentDir, resource, config);
+
+    return dataResolvedResource;
+}
+
+
+
+export async function resolveResourceImports(fromRootDirPath: string, resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+
+    resource = resolveDataRefs(fromRootDirPath, resource, config);
+    if (!resource.data) {
+        resource.data = {};
+    }
     resource.data.importCache = await getResourceImports(resource, config);
-
     return resource;
 }
 

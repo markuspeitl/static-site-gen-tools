@@ -698,3 +698,8 @@ based on settings and location of the 'dir' resource
 - Read Image
 - Compress + rescale + multiply (extract + compile)
 - Write images
+
+
+## Processor attached info
+should not be inherited from parent to child!
+Needs better scope seperation

@@ -12,6 +12,7 @@ import { processConfStage, processResource } from "../processing/process-resourc
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
 import { getFsNodeStat } from "../utils/fs-util";
 import fs from 'fs';
+import { FileComponent } from "./default/file.component";
 
 export function getComponentIdFromPath(runnerPath: string): string {
     return getModuleId(runnerPath, '.component');
@@ -26,7 +27,7 @@ export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble
 }
 
 //Only 1 component per file is allowed right now
-export function normalizeModuleToInternalComponent(module: any): FalsyAble<IInternalComponent> {
+export function moduleToComponentInstance(module: any): FalsyAble<IInternalComponent> {
 
     let componentInstance: BaseComponent | null = null;
     const passThroughComponent: PassthroughComponent = new PassthroughComponent();
@@ -113,40 +114,13 @@ export function normalizeModuleToInternalComponent(module: any): FalsyAble<IInte
     return instance;*/
 }
 
-export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<DataParsedDocument> {
-    //Use process stage to read resource to memory
-    const toReadResource = {
-        id: documentPath,
-        data: {
-            document: {
-                src: documentPath
-            }
-        }
-    };
-    const readResource: DataParsedDocument = await processConfStage('reader', toReadResource, config || {});
-    return readResource;
-}
 
-const cachedFileResources: Record<string, DataParsedDocument> = {};
-export async function getFileResource(documentPath: string, config?: SsgConfig): Promise<FalsyAble<DataParsedDocument>> {
 
-    if (cachedFileResources[ documentPath ]) {
-        return cachedFileResources[ documentPath ];
-    }
-
-    const readResource: DataParsedDocument = await useReaderStageToRead(documentPath, config);
-    if (!readResource.content || !readResource.data?.document?.inputFormat) {
-        return null;
-    }
-
-    cachedFileResources[ documentPath ] = readResource;
-
-    return readResource;
-}
-
-export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+/*export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
     //Also load other file formats (.md, .njk, .html, based on available readers & extractor/compilers)
     //If no reader exists or if no compiler exists, then the component would not be compileable -> do not load as component
+
+    return new FileComponent(documentPath);
 
     const internalDocumentComponent: PassthroughComponent = new PassthroughComponent();
     //let dataExtractedContent: string | null = null;
@@ -179,16 +153,18 @@ export async function getComponentFromPath(documentPath: string, config?: SsgCon
     };
 
     return internalDocumentComponent;
-}
+}*/
 
 export async function getComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
 
-    if (componentPath && componentPath.endsWith('.ts') || moduleContent) {
+    if ((componentPath && componentPath.endsWith('.ts')) || moduleContent) {
         return getTsComponentFrom(componentPath, config, moduleContent);
     }
 
     if (componentPath) {
-        return getComponentFromPath(componentPath, config);
+
+        return new FileComponent(componentPath);
+        //return getComponentFromPath(componentPath, config);
     }
     return null;
 }
@@ -199,7 +175,7 @@ export async function getTsComponentFrom(componentPath: FalsyAble<string>, confi
         return null;
     }
 
-    return normalizeModuleToInternalComponent(loadedModule);
+    return moduleToComponentInstance(loadedModule);
 
     //const componentInstance: BaseComponent = loadedModule.default;
 

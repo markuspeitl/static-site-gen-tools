@@ -1,7 +1,7 @@
 import { CompileRunner, DataParsedDocument, DocumentData } from "../compilers/runners";
 import { SsgConfig } from "../config";
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
-import { processResource } from "../processing/process-resource";
+import { processConfStage, processResource } from "../processing/process-resource";
 import { IInternalComponent } from "./base-component";
 import { FalsyAble } from "./helpers/generic-types";
 
@@ -39,11 +39,20 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
 
     public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
 
+        resource = resetDocumentSetInputFormat(resource, this.contentFormat);
+        resource.id = undefined;
+
         //TODO: right now the `processResource` call using a document with only `inputFormat` set will result in the
         //data extraction stage being processed, followed by the compiling stage --> should not be the case when doing 'data'
-        return deferContentCompile(resource, config, this.contentFormat);
+        //return deferContentCompile(resource, config, this.contentFormat);
+        return processConfStage('extractor', resource, config);
     }
     public async render(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
-        return deferContentCompile(resource, config, this.contentFormat);
+
+        resource = resetDocumentSetInputFormat(resource, this.contentFormat);
+        resource.id = undefined;
+
+        //return deferContentCompile(resource, config, this.contentFormat);
+        return processConfStage('compiler', resource, config);
     }
 }

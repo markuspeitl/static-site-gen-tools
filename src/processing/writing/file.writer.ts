@@ -8,6 +8,8 @@ export class FileWriter implements IResourceProcessor {
 
     public id: string = 'file';
 
+    protected fileWriteCounter: number = 0;
+
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (!resource.content || typeof resource.content !== 'string') {
             return false;
@@ -29,12 +31,15 @@ export class FileWriter implements IResourceProcessor {
         if (!await this.canHandle(resource, config)) {
             return resource;
         }
-        console.log(`Writing ${this.id}: ${resource.data?.document?.target}`);
+
 
         const targetFilePath = resource.data?.document?.target;
         if (!targetFilePath) {
             return resource;
         }
+
+        console.log(`Writing ${this.id}: path: ${resource.data?.document?.target} -- n-th: ${this.fileWriteCounter}`);
+        this.fileWriteCounter++;
 
         const targetDir: string = path.dirname(targetFilePath);
         await fs.promises.mkdir(targetDir, { recursive: true });

@@ -1,5 +1,5 @@
 import lodash from 'lodash';
-import { DeferCompileArgs, getResourceImportsCache, resolveResourceImports } from '../../compilers/resolve-sub-html.runner';
+import { DeferCompileArgs, getResourceImportsCache, resolveDataFromParentFile, resolveDataFromParentResource, resolveDataFromSrc, resolveResourceImports } from '../../compilers/resolve-sub-html.runner';
 import { DataParsedDocument } from '../../compilers/runners';
 import { BaseComponent, IInternalComponent } from '../../components/base-component';
 import { SsgConfig } from "../../config";
@@ -11,6 +11,7 @@ import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
 import { processResource } from '../process-resource';
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
+import { settleValueOrNull } from '../../utils/promise-util';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component';
@@ -39,78 +40,90 @@ export class ComponentCompiler implements IResourceProcessor {
 
         let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
 
-        if (resource.data.compileAfter) {
-
-            const preparedSubComponentResources = resource.data.compileAfter.map(
-                (pendingArgs: DeferCompileArgs) => {
-                    //const pendingArgs: DeferCompileArgs = pendingCompileArgs;
-
-                    //const mergedResource: DataParsedDocument = lodash.merge({}, resource, transformedResource);
-                    const componentToCompileResource: DataParsedDocument = forkResourceScope(resource);
-
-                    componentToCompileResource.content = pendingArgs.content;
-                    componentToCompileResource.id = undefined;
-                    if (componentToCompileResource.data) {
-
-                        componentToCompileResource.data.compileAfter = [];
-
-                        //componentToCompileResource.data.importCache = resource.data.importCache;
-                        componentToCompileResource.data.document = {
-                            inputFormat: 'html'
-                        };
-
-                        componentToCompileResource.data.placeholder = pendingArgs.placeholder;
-                        componentToCompileResource.data.componentTag = pendingArgs.name;
-                        componentToCompileResource.data.componentId = pendingArgs.id;
-                        Object.assign(componentToCompileResource.data, pendingArgs.attrs);
-                    }
-
-                    return componentToCompileResource;
-                }
-            );
-
-            resource.data.compileAfter = [];
-
-            for (const componentResource of preparedSubComponentResources) {
-
-                //const componentResource: DataParsedDocument = await processResource(resource, config, false);
-                //const compiledComponentResource: DataParsedDocument = await processResource(componentResource, config, false);
-
-                const selectedSubComponent: IInternalComponent = selectedDependencies[ componentResource.data?.componentTag ];
-
-                //TODO merge data from component
-                //selectedSubComponent.data();
-
-                //component should call 'processResource' if necessary
-                //its mainly necessary if wanting to render a different syntax -> render njk brackets, render md encoded text to html, detect and render sub components
-                //
-
-                componentResource.content = removeBaseBlockIndent(componentResource.content);
-
-                const pendingCompileComponentId: string = componentResource.data?.componentId;
-
-                let dataExtractedDocument: DataParsedDocument = await selectedSubComponent.data(componentResource, config);
-                if (!dataExtractedDocument) {
-                    dataExtractedDocument = {};
-                }
-
-                const mergedDataResource: DataParsedDocument = lodash.merge({}, resource, dataExtractedDocument);
-
-                const compiledComponentResource: DataParsedDocument = await selectedSubComponent.render(mergedDataResource, config);
-
-                //const componentReplacedContent: string = resource.content.replace(compiledComponentResource.data?.placeholder, compiledComponentResource.content);
-                const componentReplacedContent: string = cheerioReplaceElem(resource.content, pendingCompileComponentId, compiledComponentResource.content);
-
-                resource.content = componentReplacedContent;
-
-                //console.log(resource.content);
-
-                //pendingArgs.compiled = `I would be the replaced placeholder: ${pendingArgs.name}`;
-                //resource.content = resource.content.replace(pendingArgs.placeholder, pendingArgs.compiled);
-                //resource.content = resource.content.replace(pendingArgs.placeholder, componentResource.content);
-            }
+        if (!resource.data.compileAfter) {
+            return resource;
         }
 
+        const preparedSubComponentResources = resource.data.compileAfter.map(
+            (pendingArgs: DeferCompileArgs) => {
+                //const pendingArgs: DeferCompileArgs = pendingCompileArgs;
+
+                //const mergedResource: DataParsedDocument = lodash.merge({}, resource, transformedResource);
+                let componentToCompileResource: DataParsedDocument = forkResourceScope(resource);
+
+                componentToCompileResource.content = pendingArgs.content;
+                componentToCompileResource.id = undefined;
+                if (componentToCompileResource.data) {
+
+                    componentToCompileResource.data.compileAfter = [];
+
+                    //componentToCompileResource.data.importCache = resource.data.importCache;
+                    componentToCompileResource.data.document = {
+                        inputFormat: 'html'
+                    };
+
+                    componentToCompileResource.data.placeholder = pendingArgs.placeholder;
+                    componentToCompileResource.data.componentTag = pendingArgs.name;
+                    componentToCompileResource.data.componentId = pendingArgs.id;
+                    Object.assign(componentToCompileResource.data, pendingArgs.attrs);
+
+                    componentToCompileResource = resolveDataFromParentResource(resource, componentToCompileResource, config);
+                }
+
+                return componentToCompileResource;
+            }
+        );
+
+        resource.data.compileAfter = [];
+
+
+        const processSubResourcePromises: Promise<DataParsedDocument>[] = preparedSubComponentResources.map(async (componentResource: DataParsedDocument) => {
+            //const componentResource: DataParsedDocument = await processResource(resource, config, false);
+            //const compiledComponentResource: DataParsedDocument = await processResource(componentResource, config, false);
+
+            const selectedSubComponent: IInternalComponent = selectedDependencies[ componentResource.data?.componentTag ];
+
+            //TODO merge data from component
+            //selectedSubComponent.data();
+
+            //component should call 'processResource' if necessary
+            //its mainly necessary if wanting to render a different syntax -> render njk brackets, render md encoded text to html, detect and render sub components
+            //
+
+            componentResource.content = removeBaseBlockIndent(componentResource.content);
+
+
+            let dataExtractedDocument: DataParsedDocument = await selectedSubComponent.data(componentResource, config);
+            if (!dataExtractedDocument) {
+                dataExtractedDocument = {};
+            }
+            const mergedDataResource: DataParsedDocument = lodash.merge({}, resource, dataExtractedDocument);
+
+            //const compiledComponentResource: DataParsedDocument = await selectedSubComponent.render(mergedDataResource, config);
+
+            return selectedSubComponent.render(mergedDataResource, config);
+        });
+
+        const compiledComponentResources: Array<any | null> = await settleValueOrNull(processSubResourcePromises);
+
+
+
+        for (let compiledComponentResource of compiledComponentResources) {
+
+            if (compiledComponentResource) {
+
+                const pendingCompileComponentId: string = compiledComponentResource.data?.componentId;
+                //const componentReplacedContent: string = resource.content.replace(compiledComponentResource.data?.placeholder, compiledComponentResource.content);
+                const componentReplacedContent: string = cheerioReplaceElem(resource.content, pendingCompileComponentId, compiledComponentResource.content);
+                resource.content = componentReplacedContent;
+            }
+
+            //console.log(resource.content);
+
+            //pendingArgs.compiled = `I would be the replaced placeholder: ${pendingArgs.name}`;
+            //resource.content = resource.content.replace(pendingArgs.placeholder, pendingArgs.compiled);
+            //resource.content = resource.content.replace(pendingArgs.placeholder, componentResource.content);
+        }
 
         return resource;
 

@@ -1,6 +1,7 @@
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
-import { processResource } from "../../../processing/process-resource";
+import { forkDataScope } from "../../../manage-scopes";
+import { processConfStage, processResource } from "../../../processing/process-resource";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { getKeyFromDict } from "../../helpers/dict-util";
 import { FalsyAble } from "../../helpers/generic-types";
@@ -55,7 +56,12 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
 
-            const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
+            //const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
+
+            const forkedResource: DataParsedDocument = forkDataScope(resource);
+
+            let renderedIterationResource: FalsyAble<DataParsedDocument> = await processConfStage('extractor', forkedResource, config);
+            renderedIterationResource = await processConfStage('compiler', renderedIterationResource, config);
             const renderedBody = renderedIterationResource?.content || '';
             renderedIterations.push(renderedBody);
 
