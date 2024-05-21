@@ -7,11 +7,12 @@ import { getLibInstance } from "../../dependencies/module-instances";
 import { forkDataScope, forkResourceScope } from '../../manage-scopes';
 import { cheerioReplaceElem } from '../../utils/cheerio-util';
 import { removeBaseBlockIndent } from '../../utils/string-util';
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { processResource } from '../process-resource';
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
 import { settleValueOrNull } from '../../utils/promise-util';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component';

@@ -4,7 +4,7 @@
 
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { IInternalComponent } from '../../components/base-component';
 import { FalsyAble } from '../../components/helpers/generic-types';
 import { getComponentFrom } from '../../components/components';
@@ -12,7 +12,7 @@ import { TsExtractor } from '../extracting/ts.extractor';
 import { setHtmlOutputFormat } from './output-format';
 import * as lodash from 'lodash';
 import { forkResourceScope } from '../../manage-scopes';
-
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class TsCompiler implements IResourceProcessor {
     id: string = 'ts';

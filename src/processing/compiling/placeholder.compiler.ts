@@ -5,9 +5,10 @@ import { BaseComponent, IInternalComponent } from '../../components/base-compone
 import { FalsyAble } from '../../components/helpers/generic-types';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder';

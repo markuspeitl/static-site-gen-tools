@@ -1,64 +1,14 @@
 import path from "path";
-import { DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
 import { anchorAndGlob } from "../utils/globbing";
 import Module from "module";
 import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";
 import { getKeyFromDict } from "../components/helpers/dict-util";
 import { FalsyAble } from "../components/helpers/generic-types";
-import { IResourceProcessor } from "./i-resource-processor";
 import { getKeyMatches, getKeyMatchValues, MatchedDictKeyRes } from "../utils/regex-match-util";
 import { filterFalsy } from "../components/helpers/array-util";
 
 
-/*export async function processDir(inputPath: string, outputPath: string, config: SsgConfig): Promise<DataParsedDocument> {
-
-}*/
-
-export const processDir = processFsNodeAtPath;
-export const processFile = processFsNodeAtPath;
-
-export async function processFsNodeAtPath(inputPath: string, outputPath: string | null, config: SsgConfig): Promise<DataParsedDocument> {
-
-    const toProcessResource: DataParsedDocument = {
-        id: inputPath,
-        content: null,
-        data: {
-            document: {
-                src: inputPath,
-                target: outputPath
-            }
-        }
-    };
-
-    return processResource(toProcessResource, config);
-};
-
-export async function loadModuleFromPath<InstanceType>(modulePath: string, targetDict: Record<string, InstanceType>, nameToIdPostfix: string = ''): Promise<void> {
-
-    const moduleId = getModuleId(modulePath, nameToIdPostfix);
-
-    const importedModule: Module = await import(modulePath);
-
-    const moduleInstance = getFirstInstanceTargetClass(importedModule, '.+', [ 'process' ]);
-
-    targetDict[ moduleId ] = moduleInstance;
-}
-
-export async function loadModuleInstancesFromPaths<InstanceType>(anchorPaths: string[], filesMatchGlobs: string[], moduleNamePostfix: string): Promise<Record<string, InstanceType>> {
-
-    const resultModulesDict: Record<string, InstanceType> = {};
-
-    for (const anchorPath of anchorPaths) {
-
-        const modulePaths: string[] = await anchorAndGlob(filesMatchGlobs, path.resolve(anchorPath), true);
-
-        const importModulePromises: Promise<any>[] = modulePaths.map((runnerModulePath) => loadModuleFromPath(runnerModulePath, resultModulesDict, moduleNamePostfix));
-
-        await Promise.all(importModulePromises);
-    }
-    return resultModulesDict;
-}
 
 export type ChainIds = string[];
 export interface StageInfo {
@@ -66,8 +16,8 @@ export interface StageInfo {
     inputProp: any;
     matchChains: Record<string, ChainIds>;
     instances?: Record<string, IResourceProcessor>;
-    postProcess?: (resource: DataParsedDocument, config: SsgConfig) => Promise<DataParsedDocument>;
-    preProcess?: (resource: DataParsedDocument, config: SsgConfig) => Promise<DataParsedDocument>;
+    postProcess?: (resource: IProcessResource, config: SsgConfig) => Promise<IProcessResource>;
+    preProcess?: (resource: IProcessResource, config: SsgConfig) => Promise<IProcessResource>;
 }
 
 export interface ProcessingStagesInfo {
@@ -86,12 +36,12 @@ export async function loadStageProcessorInstances(searchRootAnchorDirs: string[]
             `*.${stageName}.ts`
         ];
 
-        const stageProcessorInstancesOfDirs = await loadModuleInstancesFromPaths<IResourceProcessor>(searchRootAnchorDirs, stageProcessorsGlobs, '.' + stageName);
+        const stageProcessorInstancesOfDirs = await loadProcessorInstancesFromPaths<IResourceProcessor>(searchRootAnchorDirs, stageProcessorsGlobs, '.' + stageName);
         processingStages[ stageName ].instances = stageProcessorInstancesOfDirs;
     }
 }
 
-export function getMatchedChainsFromStage(resource: DataParsedDocument, processingStage: StageInfo): ChainIds[] | null {
+export function getMatchedChainsFromStage(resource: IProcessResource, processingStage: StageInfo): ChainIds[] | null {
     const currentStageInfo: StageInfo = processingStage;
 
     const stageSelectionKey = currentStageInfo.inputProp;
@@ -102,7 +52,7 @@ export function getMatchedChainsFromStage(resource: DataParsedDocument, processi
     return matchedIdChains;
 }
 
-export async function findChainCanHandleResource(resource: DataParsedDocument, config: any, matchedIdChains: ChainIds[] | null, processingStage: StageInfo): Promise<ChainIds | null> {
+export async function findChainCanHandleResource(resource: IProcessResource, config: any, matchedIdChains: ChainIds[] | null, processingStage: StageInfo): Promise<ChainIds | null> {
     if (!matchedIdChains) {
         return null;
     }
@@ -127,7 +77,10 @@ export async function findChainCanHandleResource(resource: DataParsedDocument, c
 
 import * as lodash from 'lodash';
 import { forkDataScope } from "../manage-scopes";
-export async function useResourceProcessorMerge(resource: DataParsedDocument, config: any, processor: IResourceProcessor): Promise<DataParsedDocument> {
+import { IProcessingNode, IProcessResource, IResourceProcessor } from "../pipeline/resource-pipeline";
+import { settleValueOrNull, settleValueOrNullFilter } from "../utils/promise-util";
+import { loadProcessorInstancesFromPaths } from "../load-glob-modules";
+export async function useResourceProcessorMerge(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
 
     if (!processor) {
         return resource;
@@ -135,15 +88,15 @@ export async function useResourceProcessorMerge(resource: DataParsedDocument, co
 
     //Process does only return the data that it produces
     //The processor is not themselves resposible for data merging
-    const transformedResource: DataParsedDocument = await processor.process(resource, config);
+    const transformedResource: IProcessResource = await processor.process(resource, config);
 
-    const mergedResource: DataParsedDocument = lodash.merge({}, resource, transformedResource);
+    const mergedResource: IProcessResource = lodash.merge({}, resource, transformedResource);
     return mergedResource;
 }
 
-export async function passThroughProcessChain(resource: DataParsedDocument, config: any, chainToProcess: IResourceProcessor[]): Promise<DataParsedDocument> {
+export async function passThroughProcessChain(resource: IProcessResource, config: any, chainToProcess: IResourceProcessor[]): Promise<IProcessResource> {
 
-    let resultResource: DataParsedDocument = resource;
+    let resultResource: IProcessResource = resource;
     for (const processor of chainToProcess) {
         resultResource = await useResourceProcessorMerge(resultResource, config, processor);
     }
@@ -151,8 +104,8 @@ export async function passThroughProcessChain(resource: DataParsedDocument, conf
 }
 
 
-export async function processConfStage(stageName: string, resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
-    return processStage(stageName, resource, config, config.processingStages || {});
+export async function processConfStage(stageName: string, resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+    return processStage(stageName, resource, config, config.processingTree);
 }
 
 export function getProcessorInstance(currentStageInfo: StageInfo, id: string): IResourceProcessor | null {
@@ -162,7 +115,11 @@ export function getProcessorInstance(currentStageInfo: StageInfo, id: string): I
     return null;
 }
 
-export async function processStage(stageName: string, resource: DataParsedDocument, config: SsgConfig, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
+export async function processStage(stageName: string, resource: IProcessResource, config: SsgConfig, processingStages?: IProcessingNode): Promise<IProcessResource> {
+    if (!processingStages) {
+        return resource;
+    }
+
     const currentStageInfo: StageInfo = processingStages[ stageName ];
 
     const matchedStageChains: ChainIds[] | null = getMatchedChainsFromStage(resource, currentStageInfo);
@@ -174,7 +131,7 @@ export async function processStage(stageName: string, resource: DataParsedDocume
 
     const chainToProcess: FalsyAble<IResourceProcessor>[] = resourceConfirmedChain.map((id: string) => getProcessorInstance(currentStageInfo, id));
 
-    let processingResult: DataParsedDocument = resource;
+    let processingResult: IProcessResource = resource;
     if (currentStageInfo.preProcess) {
         processingResult = await currentStageInfo.preProcess(processingResult, config);
     }
@@ -194,9 +151,9 @@ export async function processStage(stageName: string, resource: DataParsedDocume
     return processingResult;
 }
 
-export async function processAllPassingStages(resource: DataParsedDocument, config: any, processingStages: ProcessingStagesInfo): Promise<DataParsedDocument> {
+export async function processAllPassingStages(resource: IProcessResource, config: any, processingStages: IProcessingNode): Promise<IProcessResource> {
 
-    let stageProcessedResource: DataParsedDocument = resource;
+    let stageProcessedResource: IProcessResource = resource;
     for (const stageName in processingStages) {
 
         stageProcessedResource = await processStage(stageName, stageProcessedResource, config, processingStages);
@@ -205,7 +162,7 @@ export async function processAllPassingStages(resource: DataParsedDocument, conf
 }
 
 
-/*export function findStageForResource(resource: DataParsedDocument, processingStages: ProcessingStagesInfo): StageInfo | null {
+/*export function findStageForResource(resource: IProcessResource, processingStages: ProcessingStagesInfo): StageInfo | null {
     for (const stageName in processingStages) {
         const currentStageInfo: StageInfo = processingStages[ stageName ];
 
@@ -221,10 +178,30 @@ export async function processAllPassingStages(resource: DataParsedDocument, conf
     return null;
 }
 
-export function processDetectStages(resource: DataParsedDocument, processingStages: ProcessingStagesInfo);
+export function processDetectStages(resource: IProcessResource, processingStages: ProcessingStagesInfo);
 */
 
-export async function processResource(resource: DataParsedDocument, config: SsgConfig, forkResourceData: boolean = false): Promise<DataParsedDocument> {
+
+export const processDir = processFsNodeAtPath;
+export const processFile = processFsNodeAtPath;
+
+export async function processFsNodeAtPath(inputPath: string, outputPath: string | null, config: SsgConfig): Promise<IProcessResource> {
+
+    const toProcessResource: IProcessResource = {
+        id: inputPath,
+        content: null,
+        data: {
+            document: {
+                src: inputPath,
+                target: outputPath
+            }
+        }
+    };
+
+    return processResource(toProcessResource, config);
+};
+
+export async function processResource(resource: IProcessResource, config: SsgConfig, forkResourceData: boolean = false): Promise<IProcessResource> {
 
     if (forkResourceData) {
         resource = forkDataScope(resource);
@@ -234,8 +211,15 @@ export async function processResource(resource: DataParsedDocument, config: SsgC
     const processingStages: ProcessingStagesInfo = config.processingStages || {};
     await loadStageProcessorInstances(resourceProcessorDirs, processingStages);*/
 
-    const processedDocument: DataParsedDocument = await processAllPassingStages(resource, config, config.processingStages || {});
+    const processedDocument: IProcessResource | undefined = await config.processingTree?.process(resource, config);
+    if (!processedDocument) {
+        return resource;
+    }
+
     return processedDocument;
+
+    //const processedDocument: IProcessResource = await processAllPassingStages(resource, config, config.processingStages);
+    //return processedDocument;
 
 
     /**
@@ -257,7 +241,7 @@ export async function processResource(resource: DataParsedDocument, config: SsgC
     //return resource;
 };
 
-export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<DataParsedDocument> {
+export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<IProcessResource> {
     //Use process stage to read resource to memory
     const toReadResource = {
         id: documentPath,
@@ -267,6 +251,6 @@ export async function useReaderStageToRead(documentPath: string, config?: SsgCon
             }
         }
     };
-    const readResource: DataParsedDocument = await processConfStage('reader', toReadResource, config || {});
+    const readResource: IProcessResource = await processConfStage('reader', toReadResource, config || {});
     return readResource;
 }

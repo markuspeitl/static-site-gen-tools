@@ -1,12 +1,12 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 //import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 //type MatterType = typeof matter;
 //import matter from "gray-matter";
-
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export async function parseMarkdownData(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const matterInstance: any = await getLibInstance('matter', config);

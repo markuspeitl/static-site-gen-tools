@@ -1,9 +1,10 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from '../../config';
-import { addHandlerId, addResourceDocProp, IResourceProcessor } from '../i-resource-processor';
+import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class FileReader implements IResourceProcessor {
 

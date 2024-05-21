@@ -13,6 +13,10 @@ was an Angular application that communicated with a python backend.
 I wrote most of their ondewo-grpc-generator and proposed it as a
 reuseable and maintainable method of generating our clients.
 
+I also wrote a document outlining code quality guidelines to be integrated into the
+development workflow.
+
+
 # Common Voice
 
 <e-relate-ref>jobs ondewo</e-relate-ref>

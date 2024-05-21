@@ -1,8 +1,9 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { setHtmlOutputFormat } from './output-format';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html';

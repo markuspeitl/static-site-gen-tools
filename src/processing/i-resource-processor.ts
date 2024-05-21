@@ -1,11 +1,6 @@
 import { DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
-
-export interface IResourceProcessor {
-    id: string;
-    canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean>;
-    process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument>;
-}
+import { IResourceProcessor } from "../pipeline/resource-pipeline";
 
 export function addResourceDocProp(resource: DataParsedDocument, newValuesDict: any): DataParsedDocument {
     if (!resource.data) {

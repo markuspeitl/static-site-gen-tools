@@ -1,8 +1,9 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from '../../config';
-import { addHandlerId, addResourceDocProp, IResourceProcessor } from '../i-resource-processor';
+import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class FileWriter implements IResourceProcessor {
 
@@ -38,7 +39,7 @@ export class FileWriter implements IResourceProcessor {
             return resource;
         }
 
-        console.log(`Writing ${this.id}: path: ${resource.data?.document?.target} -- n-th: ${this.fileWriteCounter}`);
+        console.log(`Writing ${this.id}: resource: ${resource?.id} -- n-th: ${this.fileWriteCounter} to path ${targetFilePath}`);
         this.fileWriteCounter++;
 
         const targetDir: string = path.dirname(targetFilePath);

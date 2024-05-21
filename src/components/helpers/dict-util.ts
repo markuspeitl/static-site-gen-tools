@@ -76,6 +76,75 @@ export function getKeyFromDict(dict: Object, key?: string): any | undefined {
     return currentLevelDict;
 }
 
+export function ensureKeyAtDict(dict: Object, key: string, setValue: any): any | undefined {
+    if (!key) {
+        return dict;
+    }
+
+    const keyParts = key.split(keySeperationToken);
+
+    let lastLevelDict: Object = dict;
+    for (let i = 0; i < keyParts.length - 1; i++) {
+        const key = keyParts[ i ];
+        if (!lastLevelDict[ key ]) {
+            lastLevelDict[ key ] = {};
+        }
+        lastLevelDict = lastLevelDict[ key ];
+    }
+
+    const lastKeyPart = keyParts.at(-1);
+    if (lastLevelDict && lastKeyPart) {
+        lastLevelDict[ lastKeyPart ] = setValue;
+    }
+
+    return dict;
+}
+
+export function mapDict(dict: Object, handleItemFn: (key: any, value: any) => { key: any, value: any; }): any | undefined {
+    const keys = Object.keys(dict);
+    for (let key of keys) {
+        const value: any = dict[ key ];
+        const remappedKeyValPair = handleItemFn(key, value);
+        const newValue = remappedKeyValPair.value;
+        const newKey = remappedKeyValPair.key;
+        /*if (newValue === undefined) {
+            delete dict[ key ];
+        }*/
+        if (key !== newKey) {
+            dict[ newKey ] = newValue;
+            delete dict[ key ];
+            key = newKey;
+        }
+
+        if (newValue) {
+            dict[ key ] = newValue;
+        }
+    }
+}
+
+export function dictToArray<ItemType>(dict: Record<any, ItemType>): ItemType[] {
+    const keys = Object.keys(dict);
+    const items: ItemType[] = [];
+    for (const key of keys) {
+        items.push(dict[ key ]);
+    }
+    return items;
+}
+
+export function addToDictByProp(targetDict: Object, sourceArray: any[], srcTargetKey: string): void {
+    for (const item of sourceArray) {
+
+        const key: string = item[ srcTargetKey ];
+        if (key) {
+            targetDict[ key ] = item;
+        }
+    }
+}
+
+export function addToDictById(targetDict: Object, sourceArray: any[]): void {
+    return addToDictByProp(targetDict, sourceArray, 'id');
+}
+
 
 export function packIntoDataOpt(data: any, packIfMissingObj: any): Record<string, any> {
     if (!data) {

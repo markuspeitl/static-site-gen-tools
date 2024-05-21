@@ -4,6 +4,7 @@ import { CompileRunner } from "./compilers/runners";
 import { IMasterRunner } from "./compilers/generic.runner";
 import { BaseComponent, IInternalComponent } from "./components/base-component";
 import { ProcessingStagesInfo } from "./processing/process-resource";
+import { IProcessingNode, IProcessingNodeConfig } from './pipeline/resource-pipeline';
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -12,8 +13,9 @@ export interface SsgConfig {
     sourcePath?: string;
     targetPath?: string;
 
+    processingTreeConfig?: IProcessingNodeConfig;
+    processingTree?: IProcessingNode;
 
-    processingStages?: ProcessingStagesInfo;
     defaultResourceProcessorDirs?: string[];
     //defaultResourceProcessorDirsMatchGlobs?: string[]; --> depend on stage name --> 'reader' -> file.reader.ts within 'defaultResourceProcessorDirs'
 

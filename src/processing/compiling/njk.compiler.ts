@@ -1,10 +1,11 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
 import type { Environment } from 'nunjucks';
 import { setHtmlOutputFormat } from './output-format';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 async function compileMarkdownResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {

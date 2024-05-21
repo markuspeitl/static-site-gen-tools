@@ -1,14 +1,14 @@
 import { DataParsedDocument } from "./compilers/runners";
 import * as lodash from 'lodash';
 
-export function forkDataScope(resource: DataParsedDocument): DataParsedDocument {
+export function forkDataScope(resource: any): any {
     //Inefficient but simple
-    return lodash.cloneDeep(resource) as DataParsedDocument;
+    return lodash.cloneDeep(resource) as any;
 }
 
-export function forkResourceScope(resource: DataParsedDocument): DataParsedDocument {
+export function forkResourceScope(resource: any): any {
     //Inefficient but simple
-    return lodash.cloneDeep(resource) as DataParsedDocument;
+    return lodash.cloneDeep(resource) as any;
 }
 
 

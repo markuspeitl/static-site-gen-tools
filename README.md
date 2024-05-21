@@ -703,3 +703,109 @@ based on settings and location of the 'dir' resource
 ## Processor attached info
 should not be inherited from parent to child!
 Needs better scope seperation
+
+# Generic document components:
+Add ways to define different component syntaxes
+(inflate components in scss, css, ts, client-ts, .etc, xml==html)
+
+```css
+@import(./custom-components/*);
+
+@for(it: color, of: colors){
+    @if(color === 'blue'){
+        body: blue;
+        text-style: bold;
+    }
+}
+@placeholder-for();
+```
+CSS returns css code which is a text format, therefore css components return a string that already evaluated the data to css.
+
+```ts
+    function render() {
+        () => `Hello world inline from outer typescript component`;
+
+        component('for')(it=color, of=colors)(
+            () => component('if')(cond=`color === 'blue'`)(
+                () => 'blue'
+            )
+        )
+    }
+
+    component('ts')(
+        () => {
+            return `Hello world inline nested from typescript nested`;
+        }
+    )
+```
+TS should return *ts code to eval* or a *string*??
+
+```json
+{
+    for: {
+        it: "color",
+        of: "colors",
+        content: {
+            0: "Hello World",
+            if: {
+                cond: "color === 'blue'"
+                content: {
+                    myResultKey: "myValue"
+                }
+            },
+            if: {
+                cond: "color === 'blue'"
+                content: {
+                    myResultKey: "myValue"
+                }
+            }
+            1: {
+                content: {
+                    someMore: "data"
+                }
+            }
+        }
+    }
+}
+```
+JSON should return *data objects* or a *string*??
+
+
+## 11ty compat layer
+
+- 11ty merges data by overwriting singular frontmatter variables and merging array variables together
+- 11ty provides helper functions and shortcodes everywhere
+    --> implement shortcodes and filters (compat needs to provide this.page info to use without changing them)
+- Sass compile: not an 11ty feature per se
+- Loading *global_data* into the data ctx passed to the renderers
+- Load .layout .component 11ty.ts 11ty.js as components with the compat layer
+- Asset copy paths --> migrate
+- Data parsers = just merge data files/components into *global_data*
+- Url postprocessing /Css postprocessing: might be easily convertable, BUT should not be used anyway as it has bad performance
+(--> do while compiling the component): or maybe add in highest level parent component the transformer fn
+- TS implemented components can be easily converted by just changing the data format, providing global fns, inserting merged data
+
+## Combinatoric functionality
+- Components should be easily reuseable (--> provide npm package 'node_modules' search paths for components)
+- Make components from 'data' that are injected in the components. any dependencies should be specifically importable
+--> which provides the option of only tracking the selected dependencies/data/components and only rebuild if they change.
+(as 11ty imports all data as a global item/dependency much of the application is updated when some data/dependency changes)
+- Define isomorphic client code: Write code for component inside component or in included file, but add a
+browser -> nodejs compat layer, so the client code can be executed on the server and client alike
+- Localization Options: 
+    - Text sets that are inserted into the document at the correct location,
+        - works well for auto translate
+        - does not look too good
+    - Abstracting structure and wrappings using components and passing in 1 document for each
+    language that use that component and pass the local texts to it.
+    + **inherit shared data/component functionality** (if only localization changes -> a lot of functionality is shared) (abstract document component)
+    + Abstract document: base class components that expose slots to child components to insert data into
+
+- Multi content: provide object for content (with key-value pairs), provide array of strings as content
+- Variable defining in html
+- Input directory scoped data (should not really be needed --> inherit from defined data = 1 Line more and makes the relationship explicit)
+- Rerouting rules -> processors that modify output directory when matching certain conditions
+
+- Blog STD lib:
+    - post-index component/grid (example for blog articles)
+    - post-table (example for events)

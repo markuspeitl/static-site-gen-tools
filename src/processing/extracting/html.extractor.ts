@@ -1,8 +1,9 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId, IResourceProcessor } from "../i-resource-processor";
+import { addHandlerId } from "../i-resource-processor";
 import { ContentExtraction, extractElement } from '../../utils/cheerio-util';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 function assignAttribsToSelf(dict: any, key: string): any {
 

@@ -1,11 +1,12 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { FalsyString, FalsyStringPromise } from '../../components/helpers/generic-types';
 import { SsgConfig } from '../../config';
-import { addHandlerId, addResourceDocProp, IResourceProcessor } from '../i-resource-processor';
+import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import { isDirPath, isPath } from '../../compilers/resolve-sub-html.runner';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
+import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
