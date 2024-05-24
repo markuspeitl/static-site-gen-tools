@@ -3,7 +3,7 @@ import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { ContentExtraction, extractElement } from '../../utils/cheerio-util';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 function assignAttribsToSelf(dict: any, key: string): any {
 

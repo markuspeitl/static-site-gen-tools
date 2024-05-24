@@ -12,7 +12,7 @@ import { processResource } from '../process-resource';
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
 import { settleValueOrNull } from '../../utils/promise-util';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component';

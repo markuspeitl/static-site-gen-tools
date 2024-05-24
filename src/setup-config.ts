@@ -9,7 +9,8 @@ import { getFsNodeStat } from "./utils/fs-util";
 import { FalsyString } from "./components/helpers/generic-types";
 import { loadDefaultComponents } from "./components/components";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
-import { initializeProcessingNode, IProcessingNodeConfig } from "./pipeline/resource-pipeline";
+import { IProcessingNodeConfig } from "./pipeline/i-processor";
+import { initProcessorInstanceFromConf } from "./pipeline/resource-pipeline";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -116,6 +117,9 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     //const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();
 
     const processingStages: IProcessingNodeConfig = getDefaultProcessingRootNodeConfig();
+    //const configToThisPath: string = path.relative("./ssg-pipeline-conf", __dirname);
+    processingStages.srcDirs = processingStages?.srcDirs?.map((topLevelDirPath: string) => path.resolve('./ssg-pipeline-conf', topLevelDirPath));
+
     config.processingTreeConfig = processingStages;
 
     config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
@@ -197,7 +201,7 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     await loadStageProcessorInstances(config.defaultResourceProcessorDirs, config.processingStages);*/
 
     if (config.processingTreeConfig) {
-        config.processingTree = await initializeProcessingNode(config.processingTreeConfig, null, undefined);
+        config.processingTree = await initProcessorInstanceFromConf(config.processingTreeConfig, undefined);
     }
 
     console.log("Loading default components");

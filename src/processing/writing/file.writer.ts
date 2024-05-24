@@ -1,9 +1,9 @@
 import { DataParsedDocument } from '../../compilers/runners';
 import { SsgConfig } from '../../config';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
 
 export class FileWriter implements IResourceProcessor {
 

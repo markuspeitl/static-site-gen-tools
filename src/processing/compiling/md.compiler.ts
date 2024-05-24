@@ -3,7 +3,7 @@ import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { setHtmlOutputFormat } from './output-format';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 async function compileMarkdownResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {

@@ -6,7 +6,7 @@ import { isDirPath, isPath, possibleDirPath } from '../../compilers/resolve-sub-
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
 import { processFsNodeAtPath, processStage } from '../process-resource';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 
 export function getTargetDirPath(resource: DataParsedDocument): string | null {

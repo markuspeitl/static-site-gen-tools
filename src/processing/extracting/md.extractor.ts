@@ -6,7 +6,7 @@ import { addHandlerId } from "../i-resource-processor";
 import type * as matter from "gray-matter";
 //type MatterType = typeof matter;
 //import matter from "gray-matter";
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export async function parseMarkdownData(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
     const matterInstance: any = await getLibInstance('matter', config);

@@ -1,12 +1,15 @@
-import path from "path";
+import * as lodash from 'lodash';
+import { forkDataScope } from "../manage-scopes";
+import { settleValueOrNull, settleValueOrNullFilter } from "../utils/promise-util";
+import { loadProcessorInstancesFromPaths } from "../load-glob-modules";
 import { SsgConfig } from "../config";
 import { anchorAndGlob } from "../utils/globbing";
-import Module from "module";
 import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";
 import { getKeyFromDict } from "../components/helpers/dict-util";
 import { FalsyAble } from "../components/helpers/generic-types";
 import { getKeyMatches, getKeyMatchValues, MatchedDictKeyRes } from "../utils/regex-match-util";
 import { filterFalsy } from "../components/helpers/array-util";
+import { IProcessingNode, IProcessResource, IResourceProcessor } from '../pipeline/i-processor';
 
 
 
@@ -75,11 +78,8 @@ export async function findChainCanHandleResource(resource: IProcessResource, con
     return null;
 }
 
-import * as lodash from 'lodash';
-import { forkDataScope } from "../manage-scopes";
-import { IProcessingNode, IProcessResource, IResourceProcessor } from "../pipeline/resource-pipeline";
-import { settleValueOrNull, settleValueOrNullFilter } from "../utils/promise-util";
-import { loadProcessorInstancesFromPaths } from "../load-glob-modules";
+
+
 export async function useResourceProcessorMerge(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
 
     if (!processor) {

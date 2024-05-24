@@ -8,7 +8,7 @@ import { settleValueOrNullFilter } from "./utils/promise-util";
 import { anchorAndGlob } from "./utils/globbing";
 import { getFirstInstanceTargetClass, getModuleId } from "./module-loading/ts-modules";
 import Module from "module";
-import { IProcessor } from "./pipeline/resource-pipeline";
+import { IProcessor } from "./pipeline/i-processor";
 
 export async function loadProcessorFromPath<InstanceType extends IProcessor>(modulePath: string, targetDict: Record<string, InstanceType>, nameToIdPostfix: string = ''): Promise<InstanceType> {
 

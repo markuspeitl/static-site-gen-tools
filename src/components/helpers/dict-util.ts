@@ -1,3 +1,4 @@
+import { filterFalsy } from "../../utils/util";
 import { arrayifyFilter } from "./array-util";
 import { ArrNullOrSing, ArrOrSing } from "./generic-types";
 
@@ -189,4 +190,25 @@ export function selectSubset(obj: Record<string, any>, selectedKeys: string[]): 
         },
         {}
     );
+}
+
+export function collectInSelfAndParents<PropItemType>(parentableObject: { parent?: any; }, key: string): PropItemType[] {
+    const selfAndParents: any[] = [];
+    selfAndParents.push(parentableObject);
+
+    let currentObj = parentableObject;
+    while (currentObj.parent) {
+        currentObj = currentObj.parent;
+        selfAndParents.push(currentObj);
+    }
+
+    const results: any[] = [];
+    selfAndParents.reverse();
+
+    for (const node of selfAndParents) {
+        const selectedValue = getKeyFromDict(node, key);
+        results.push(selectedValue);
+    }
+
+    return filterFalsy(results);
 }

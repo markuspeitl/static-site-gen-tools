@@ -12,7 +12,7 @@ import { TsExtractor } from '../extracting/ts.extractor';
 import { setHtmlOutputFormat } from './output-format';
 import * as lodash from 'lodash';
 import { forkResourceScope } from '../../manage-scopes';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class TsCompiler implements IResourceProcessor {
     id: string = 'ts';

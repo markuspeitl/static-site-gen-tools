@@ -1,6 +1,6 @@
 import { DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
-import { IResourceProcessor } from "../processing/i-resource-processor";
+import { IResourceProcessor } from "./i-processor";
 
 export function configureStage(stageConfig: any): any {
 

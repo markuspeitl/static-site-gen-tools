@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { isDirPath, isPath } from '../../compilers/resolve-sub-html.runner';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {

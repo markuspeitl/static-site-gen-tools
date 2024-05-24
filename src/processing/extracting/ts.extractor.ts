@@ -6,7 +6,7 @@ import { FalsyAble } from '../../components/helpers/generic-types';
 import { getComponentFrom } from '../../components/components';
 import { setHtmlOutputFormat } from '../compiling/output-format';
 import { forkResourceScope } from '../../manage-scopes';
-import { IResourceProcessor } from '../../pipeline/resource-pipeline';
+import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class TsExtractor implements IResourceProcessor {
     id: string = 'ts';

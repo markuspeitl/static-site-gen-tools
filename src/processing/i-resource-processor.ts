@@ -1,6 +1,6 @@
 import { DataParsedDocument } from "../compilers/runners";
 import { SsgConfig } from "../config";
-import { IResourceProcessor } from "../pipeline/resource-pipeline";
+import { IResourceProcessor } from "../pipeline/i-processor";
 
 export function addResourceDocProp(resource: DataParsedDocument, newValuesDict: any): DataParsedDocument {
     if (!resource.data) {
