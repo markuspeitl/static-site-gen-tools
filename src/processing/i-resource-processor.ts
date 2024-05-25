@@ -1,8 +1,7 @@
-import { DataParsedDocument } from "../compilers/runners";
-import { SsgConfig } from "../config";
-import { IResourceProcessor } from "../pipeline/i-processor";
+import type { SsgConfig } from "../config";
+import type { IProcessResource, IResourceProcessor } from "../pipeline/i-processor";
 
-export function addResourceDocProp(resource: DataParsedDocument, newValuesDict: any): DataParsedDocument {
+export function addResourceDocProp(resource: IProcessResource, newValuesDict: any): IProcessResource {
     if (!resource.data) {
         resource.data = {};
     }
@@ -13,7 +12,7 @@ export function addResourceDocProp(resource: DataParsedDocument, newValuesDict: 
     return resource;
 }
 
-export function addHandlerId(resource: DataParsedDocument, handlerKey: string, extractorInstance: IResourceProcessor): DataParsedDocument {
+export function addHandlerId(resource: IProcessResource, handlerKey: string, extractorInstance: IResourceProcessor): IProcessResource {
     const docAdd = {};
     docAdd[ handlerKey ] = extractorInstance.id;
 
@@ -24,11 +23,11 @@ export function addHandlerId(resource: DataParsedDocument, handlerKey: string, e
     return resource;
 }
 
-export function addExtractorId(resource: DataParsedDocument, extractorInstance: IResourceProcessor): DataParsedDocument {
+export function addExtractorId(resource: IProcessResource, extractorInstance: IResourceProcessor): IProcessResource {
     return addHandlerId(resource, 'extractor', extractorInstance);
 }
 
-export function resetDocumentSetProp(resource: DataParsedDocument, docPropKey: string, docPropValue: any): DataParsedDocument {
+export function resetDocumentSetProp(resource: IProcessResource, docPropKey: string, docPropValue: any): IProcessResource {
     if (!resource.data) {
         resource.data = {};
     }
@@ -39,6 +38,6 @@ export function resetDocumentSetProp(resource: DataParsedDocument, docPropKey: s
     return resource;
 }
 
-export function resetDocumentSetInputFormat(resource: DataParsedDocument, inputFormat: any): DataParsedDocument {
+export function resetDocumentSetInputFormat(resource: IProcessResource, inputFormat: any): IProcessResource {
     return resetDocumentSetProp(resource, 'inputFormat', inputFormat);
 }

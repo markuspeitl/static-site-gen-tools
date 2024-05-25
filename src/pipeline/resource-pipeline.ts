@@ -1,8 +1,8 @@
 import lodash from "lodash";
 import { collectInSelfAndParents, ensureKeyAtDict, getKeyFromDict } from "../components/helpers/dict-util";
 import { settleValueOrNull } from "../utils/promise-util";
-import { FalsyAble } from "../components/helpers/generic-types";
-import { IProcessingNode, IResourceProcessor, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, ProcessStrategy, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId, InputGuardConfig } from "./i-processor";
+import type { FalsyAble } from "../components/helpers/generic-types";
+import type { IProcessingNode, IResourceProcessor, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, ProcessStrategy, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId, InputGuardConfig } from "./i-processor";
 import path from "path";
 import { loadProcessorArrayFromPaths } from "../load-glob-modules";
 

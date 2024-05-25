@@ -1,14 +1,13 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { setHtmlOutputFormat } from './output-format';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html.compiler';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -27,14 +26,14 @@ export class HtmlCompiler implements IResourceProcessor {
         return false;
 
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
 
         resource.content = resourceContent;
-        const dataResource: DataParsedDocument = resource;
+        const dataResource: IProcessResource = resource;
 
         resource = setHtmlOutputFormat(resource);
         return addHandlerId(dataResource, 'compiler', this);

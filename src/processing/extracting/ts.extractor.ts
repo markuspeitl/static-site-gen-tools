@@ -1,17 +1,16 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IInternalComponent } from '../../components/base-component';
+import type { FalsyAble } from '../../components/helpers/generic-types';
 import { addHandlerId } from "../i-resource-processor";
-import { IInternalComponent } from '../../components/base-component';
-import { FalsyAble } from '../../components/helpers/generic-types';
 import { getComponentFrom } from '../../components/components';
 import { setHtmlOutputFormat } from '../compiling/output-format';
 import { forkResourceScope } from '../../manage-scopes';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class TsExtractor implements IResourceProcessor {
     id: string = 'ts.extractor';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -33,7 +32,7 @@ export class TsExtractor implements IResourceProcessor {
         return true;
         //return false;
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
@@ -46,7 +45,7 @@ export class TsExtractor implements IResourceProcessor {
             return resource;
         }
 
-        let dataResource: DataParsedDocument = await component.data(resource, config);
+        let dataResource: IProcessResource = await component.data(resource, config);
         if (typeof dataResource === 'string') {
             dataResource = Object.assign(forkResourceScope(resource), { content: dataResource });
         }

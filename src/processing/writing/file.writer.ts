@@ -1,7 +1,6 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from '../../config';
-import { IResourceProcessor } from '../../pipeline/i-processor';
-import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import { addHandlerId } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 
@@ -11,7 +10,7 @@ export class FileWriter implements IResourceProcessor {
 
     protected fileWriteCounter: number = 0;
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (!resource.content || typeof resource.content !== 'string') {
             return false;
         }
@@ -27,7 +26,7 @@ export class FileWriter implements IResourceProcessor {
 
         return true;
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
         if (!await this.canHandle(resource, config)) {
             return resource;

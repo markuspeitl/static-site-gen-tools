@@ -1,8 +1,6 @@
 import path from "path";
 import { SsgConfig } from "./config";
-import { GenericRunner, getInstance, IMasterRunner } from './compilers/generic.runner';
 import { anchorAndGlob } from "./utils/globbing";
-import { CompileRunner, CompileRunnerModule, DataParsedDocument, loadDefaultRunners } from "./compilers/runners";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
 import { getFsNodeStat } from "./utils/fs-util";
@@ -11,6 +9,7 @@ import { loadDefaultComponents } from "./components/components";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
 import { IProcessingNodeConfig } from "./pipeline/i-processor";
 import { initProcessorInstanceFromConf } from "./pipeline/resource-pipeline";
+import type { IProcessResource } from './pipeline/i-processor';
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -168,7 +167,7 @@ export async function loadUserConfig(defaultConfig: SsgConfig, configPath?: stri
     return loadOrCallConfigFile(defaultConfig, configPath);
 }
 
-async function setUpMasterRunner(runnerPath: FalsyString, config: SsgConfig): Promise<void> {
+/*async function setUpMasterRunner(runnerPath: FalsyString, config: SsgConfig): Promise<void> {
     if (runnerPath) {
         const absModulePath = path.resolve(runnerPath);
         const masterRunnerModule: CompileRunnerModule = await import(absModulePath);
@@ -177,7 +176,7 @@ async function setUpMasterRunner(runnerPath: FalsyString, config: SsgConfig): Pr
         return;
     }
     config.masterCompileRunner = new GenericRunner();
-}
+}*/
 
 export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
 

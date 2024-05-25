@@ -1,14 +1,9 @@
-
-/*export async function processDir(inputPath: string, outputPath: string, config: SsgConfig): Promise<IProcessResource> {
-
-}*/
-
 import path from "path";
 import { settleValueOrNullFilter } from "./utils/promise-util";
 import { anchorAndGlob } from "./utils/globbing";
 import { getFirstInstanceTargetClass, getModuleId } from "./module-loading/ts-modules";
-import Module from "module";
-import { IProcessor } from "./pipeline/i-processor";
+import type Module from "module";
+import type { IProcessor } from "./pipeline/i-processor";
 
 export async function loadProcessorFromPath<InstanceType extends IProcessor>(modulePath: string, targetDict: Record<string, InstanceType>, nameToIdPostfix: string = ''): Promise<InstanceType> {
 

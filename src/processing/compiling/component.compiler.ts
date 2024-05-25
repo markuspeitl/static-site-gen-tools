@@ -1,10 +1,7 @@
 import lodash from 'lodash';
-import { DeferCompileArgs, getResourceImportsCache, resolveDataFromParentFile, resolveDataFromParentResource, resolveDataFromSrc, resolveResourceImports } from '../../compilers/resolve-sub-html.runner';
-import { DataParsedDocument } from '../../compilers/runners';
-import { BaseComponent, IInternalComponent } from '../../components/base-component';
-import { SsgConfig } from "../../config";
-import { getLibInstance } from "../../dependencies/module-instances";
-import { forkDataScope, forkResourceScope } from '../../manage-scopes';
+import type { IInternalComponent } from '../../components/base-component';
+import type { SsgConfig } from "../../config";
+import { forkResourceScope } from '../../manage-scopes';
 import { cheerioReplaceElem } from '../../utils/cheerio-util';
 import { removeBaseBlockIndent } from '../../utils/string-util';
 import { addHandlerId } from "../i-resource-processor";
@@ -12,16 +9,18 @@ import { processResource } from '../process-resource';
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
 import { settleValueOrNull } from '../../utils/promise-util';
-import { IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component.compiler';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
+    public canHandle = this.htmlCompilerSubject.canHandle;
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+        return this.htmlCompilerSubject.canHandle(resource, config);
+    }*/
 
-        return new HtmlCompiler().canHandle(resource, config);
-    }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
@@ -37,7 +36,7 @@ export class ComponentCompiler implements IResourceProcessor {
         const importScopeSymbols: string[] = Object.keys(selectedDependencies);*/
         //1. Load dependencies/imports and components
         //2. Check if any components are in content
-        //const dataResource: DataParsedDocument = resource;
+        //const dataResource: IProcessResource = resource;
 
         let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
 
@@ -49,8 +48,8 @@ export class ComponentCompiler implements IResourceProcessor {
             (pendingArgs: DeferCompileArgs) => {
                 //const pendingArgs: DeferCompileArgs = pendingCompileArgs;
 
-                //const mergedResource: DataParsedDocument = lodash.merge({}, resource, transformedResource);
-                let componentToCompileResource: DataParsedDocument = forkResourceScope(resource);
+                //const mergedResource: IProcessResource = lodash.merge({}, resource, transformedResource);
+                let componentToCompileResource: IProcessResource = forkResourceScope(resource);
 
                 componentToCompileResource.content = pendingArgs.content;
                 componentToCompileResource.id = undefined;
@@ -78,9 +77,9 @@ export class ComponentCompiler implements IResourceProcessor {
         resource.data.compileAfter = [];
 
 
-        const processSubResourcePromises: Promise<DataParsedDocument>[] = preparedSubComponentResources.map(async (componentResource: DataParsedDocument) => {
-            //const componentResource: DataParsedDocument = await processResource(resource, config, false);
-            //const compiledComponentResource: DataParsedDocument = await processResource(componentResource, config, false);
+        const processSubResourcePromises: Promise<IProcessResource>[] = preparedSubComponentResources.map(async (componentResource: IProcessResource) => {
+            //const componentResource: IProcessResource = await processResource(resource, config, false);
+            //const compiledComponentResource: IProcessResource = await processResource(componentResource, config, false);
 
             const selectedSubComponent: IInternalComponent = selectedDependencies[ componentResource.data?.componentTag ];
 
@@ -94,13 +93,13 @@ export class ComponentCompiler implements IResourceProcessor {
             componentResource.content = removeBaseBlockIndent(componentResource.content);
 
 
-            let dataExtractedDocument: DataParsedDocument = await selectedSubComponent.data(componentResource, config);
+            let dataExtractedDocument: IProcessResource = await selectedSubComponent.data(componentResource, config);
             if (!dataExtractedDocument) {
                 dataExtractedDocument = {};
             }
-            const mergedDataResource: DataParsedDocument = lodash.merge({}, resource, dataExtractedDocument);
+            const mergedDataResource: IProcessResource = lodash.merge({}, resource, dataExtractedDocument);
 
-            //const compiledComponentResource: DataParsedDocument = await selectedSubComponent.render(mergedDataResource, config);
+            //const compiledComponentResource: IProcessResource = await selectedSubComponent.render(mergedDataResource, config);
 
             return selectedSubComponent.render(mergedDataResource, config);
         });
@@ -129,8 +128,8 @@ export class ComponentCompiler implements IResourceProcessor {
         return resource;
 
         /*resource = await substituteComponentsPlaceholder(resource, config);
-        resource = await this.compileRootDocument(resource as DataParsedDocument, config);
-        resource = await compileDeferredInsertToPlaceholder(resource as DataParsedDocument, config);*/
+        resource = await this.compileRootDocument(resource as IProcessResource, config);
+        resource = await compileDeferredInsertToPlaceholder(resource as IProcessResource, config);*/
 
 
         //resource = setHtmlOutputFormat(resource);

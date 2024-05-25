@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import { DocumentCompileData } from './compilers/runners';
+import type { IProcessResource } from './pipeline/i-processor';
 
 export function calcHash(content: any): string {
 
@@ -9,24 +9,24 @@ export function calcHash(content: any): string {
     return crypto.createHash('sha256').update(serializedContent, 'utf-8').digest('base64');
 }
 
-/*export interface DataParsedDocument {
+/*export interface IProcessResource {
     content: string;
     data: any;
 }*/
 
-/*export interface DocumentCompileInput extends DataParsedDocument {
+/*export interface DocumentCompileInput extends IProcessResource {
     dataCtx: DocumentData;
 }
 
-export interface DocumentCompileOutput extends DataParsedDocument {
+export interface DocumentCompileOutput extends IProcessResource {
     passedData: DocumentData;
 }*/
 
 export type HashesDict = Record<string, any> & { hash: string | null; };
 
 export interface CompiledFragment {
-    inputData: DocumentCompileData,
-    outputData: DocumentCompileData,
+    inputData: IProcessResource,
+    outputData: IProcessResource,
 }
 export interface CompiledFragmentHashes {
     inputData: HashesDict,
@@ -62,7 +62,7 @@ export function calcPropHashes(dict: Record<string, any>, addFullHash: boolean =
     return hashes as HashesDict;
 }
 
-export function calcCompileDataHashes(compileData: DocumentCompileData): HashesDict {
+export function calcCompileDataHashes(compileData: IProcessResource): HashesDict {
     /*const documentHashes: any = {
         document: calcHash(compileInputs.contents),
         documentData: calcHash(compileInputs.data),
@@ -104,7 +104,7 @@ export async function readStoredFragmentHashes(fragmentHashesPath: string): Prom
 }
 
 
-export function checkUpdatedCompileInputs(previousHashes: HashesDict, currentInputData: DocumentCompileData): HashesDict | null {
+export function checkUpdatedCompileInputs(previousHashes: HashesDict, currentInputData: IProcessResource): HashesDict | null {
     const updatedCompileHashes: HashesDict = calcCompileDataHashes(currentInputData);
 
     if (hasChanged(previousHashes as HashesDict, updatedCompileHashes as HashesDict)) {
@@ -115,7 +115,7 @@ export function checkUpdatedCompileInputs(previousHashes: HashesDict, currentInp
 
 //export function fragmentNeedsRecompilation(inputs: CompileInputs): Promise<boolean> {
 
-export async function getExistingFragmentFromCache(inputData: DocumentCompileData): Promise<null | DocumentCompileData> {
+export async function getExistingFragmentFromCache(inputData: IProcessResource): Promise<null | IProcessResource> {
     const fragmentHashesPath: string = getFragmentHashesPath();
     const storedFragmentHashes: CompiledFragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
 
@@ -132,7 +132,7 @@ export async function getExistingFragmentFromCache(inputData: DocumentCompileDat
 }
 
 //Check if fragment context has changed and only write if it is different (no unnecessary writes)
-export async function storeUpdatedCompiledFragment(inputData: DocumentCompileData, outputData: DocumentCompileData): Promise<void> {
+export async function storeUpdatedCompiledFragment(inputData: IProcessResource, outputData: IProcessResource): Promise<void> {
 
     const fragmentHashesPath: string = getFragmentHashesPath();
     const storedFragmentHashes: CompiledFragmentHashes = await readStoredFragmentHashes(fragmentHashesPath);
@@ -163,8 +163,8 @@ export async function storeUpdatedCompiledFragment(inputData: DocumentCompileDat
 }
 
 export interface FragmentCache {
-    getExistingFragmentFromCache(inputData: DocumentCompileData): Promise<null | DocumentCompileData>;
-    storeUpdatedCompiledFragment(inputData: DocumentCompileData, outputData: DocumentCompileData): Promise<void>;
+    getExistingFragmentFromCache(inputData: IProcessResource): Promise<null | IProcessResource>;
+    storeUpdatedCompiledFragment(inputData: IProcessResource, outputData: IProcessResource): Promise<void>;
 }
 
 export const defaultFragmentCache: FragmentCache = {

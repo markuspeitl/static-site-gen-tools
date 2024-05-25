@@ -1,4 +1,4 @@
-import { DataParsedDocument } from "../compilers/runners";
+import { IProcessResource } from "../compilers/runners";
 import { SsgConfig } from "../config";
 import { IResourceProcessor } from "./i-processor";
 
@@ -35,10 +35,10 @@ export class PipelineStage implements IConfigInit, IResourceProcessor {
         throw new Error("Method not implemented.");
     }
 
-    canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         throw new Error("Method not implemented.");
     }
 }

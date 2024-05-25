@@ -1,29 +1,29 @@
-import { SsgConfig } from "../config";
-import { IProcessResource } from "../pipeline/i-processor";
+import type { SsgConfig } from "../config";
+import type { IProcessResource } from "../pipeline/i-processor";
 import { processTreeStages } from "../processing-tree-wrapper";
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
-import { IInternalComponent } from "./base-component";
+import type { IInternalComponent } from "./base-component";
 
-/*export function normalizeArgsToDataParsedDocument(dataCtx?: DocumentData | null): DataParsedDocument {
+/*export function normalizeArgsToIProcessResource(dataCtx?: DocumentData | null): IProcessResource {
     if (dataCtx?.content && dataCtx?.data) {
-        return dataCtx as DataParsedDocument;
+        return dataCtx as IProcessResource;
     }
-    const toCompileResource: DataParsedDocument = {
+    const toCompileResource: IProcessResource = {
         content: dataCtx?.content,
         data: dataCtx,
     };
     return toCompileResource;
 }
 
-export async function deferContentCompile(resource: DataParsedDocument, config: SsgConfig, inputFormat: string = 'html'): Promise<DataParsedDocument | DocumentData> {
-    let compileBodyResource: DataParsedDocument = normalizeArgsToDataParsedDocument(resource);
+export async function deferContentCompile(resource: IProcessResource, config: SsgConfig, inputFormat: string = 'html'): Promise<IProcessResource | DocumentData> {
+    let compileBodyResource: IProcessResource = normalizeArgsToIProcessResource(resource);
 
     //const bodyFormat = this.getContentFormat(config);
     compileBodyResource = resetDocumentSetInputFormat(compileBodyResource, inputFormat);
     compileBodyResource.id = undefined;
 
 
-    const dataExtractedDocument: FalsyAble<DataParsedDocument> = await processSubPath(compileBodyResource, config);
+    const dataExtractedDocument: FalsyAble<IProcessResource> = await processSubPath(compileBodyResource, config);
     if (!dataExtractedDocument) {
         return compileBodyResource;
     }

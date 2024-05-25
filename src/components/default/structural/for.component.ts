@@ -54,7 +54,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
 
-            //const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
+            //const renderedIterationResource: FalsyAble<IProcessResource> = await processResource(resource, config, true);
 
             const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
             const renderedIterationResource: IProcessResource = await processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
@@ -63,7 +63,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
 
             renderedIterations.push(renderedBody);
 
-            /*const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith(
+            /*const renderedLoopDocument: FalsyAble<IProcessResource> = await config.masterCompileRunner?.compileWith(
                 'html njk',
                 {
                     content: loopBody,

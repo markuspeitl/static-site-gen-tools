@@ -1,14 +1,15 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IInternalComponent } from '../../components/base-component';
+import type { FalsyAble } from '../../components/helpers/generic-types';
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 //import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 //type MatterType = typeof matter;
 //import matter from "gray-matter";
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
-export async function parseMarkdownData(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+export async function parseMarkdownData(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const matterInstance: any = await getLibInstance('matter', config);
     //const matter = getOverrideOrLocal('matter', config);
 
@@ -29,7 +30,7 @@ export async function parseMarkdownData(resource: DataParsedDocument, config: Ss
 export class MarkdownExtractor implements IResourceProcessor {
     id: string = 'md.extractor';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -47,14 +48,14 @@ export class MarkdownExtractor implements IResourceProcessor {
         return false;
 
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
         console.log(`Extracting ${this.id}: ${resource.data?.document?.src}`);
 
-        const dataResource: DataParsedDocument = await parseMarkdownData(resource, config);
+        const dataResource: IProcessResource = await parseMarkdownData(resource, config);
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 

@@ -1,22 +1,23 @@
 import path from 'path';
-import { getResourceImportsCache, resolveResourceImports, substituteComponentsPlaceholder } from '../../compilers/resolve-sub-html.runner';
-import { DataParsedDocument } from '../../compilers/runners';
-import { BaseComponent, IInternalComponent } from '../../components/base-component';
+import type { SsgConfig } from "../../config";
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IInternalComponent } from '../../components/base-component';
 import { FalsyAble } from '../../components/helpers/generic-types';
-import { SsgConfig } from "../../config";
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
-        return new HtmlCompiler().canHandle(resource, config);
-    }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
+    public canHandle = this.htmlCompilerSubject.canHandle;
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+        return this.htmlCompilerSubject.canHandle(resource, config);
+    }*/
+
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
@@ -38,9 +39,9 @@ export class PlaceholderCompiler implements IResourceProcessor {
 
         //1. Load dependencies/imports and components
         //2. Check if any components are in content
-        //const dataResource: DataParsedDocument = resource;
+        //const dataResource: IProcessResource = resource;
 
-        const componentsSubstitutedRes: FalsyAble<DataParsedDocument> = await substituteComponentsPlaceholder(resource, config);
+        const componentsSubstitutedRes: FalsyAble<IProcessResource> = await substituteComponentsPlaceholder(resource, config);
 
         if (componentsSubstitutedRes) {
             resource = componentsSubstitutedRes;

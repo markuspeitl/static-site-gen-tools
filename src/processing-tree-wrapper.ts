@@ -1,7 +1,6 @@
-import { FalsyAble } from "./components/helpers/generic-types";
-import { SsgConfig } from "./config";
+import type { SsgConfig } from "./config";
 import { forkDataScope } from "./manage-scopes";
-import { CanHandleFunction, IProcessingNode, IProcessor, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
+import type { CanHandleFunction, IProcessingNode, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
 import * as lodash from 'lodash';
 
 export class ProcessingTreeWrapper implements IResourceProcessor {

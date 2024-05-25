@@ -1,12 +1,10 @@
-import { DataParsedDocument } from '../../compilers/runners';
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { FalsyString, FalsyStringPromise } from '../../components/helpers/generic-types';
-import { SsgConfig } from '../../config';
-import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
+import { addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
-import { isDirPath, isPath } from '../../compilers/resolve-sub-html.runner';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
@@ -29,7 +27,7 @@ export class FileReader implements IResourceProcessor {
 
     public id: string = 'file.reader';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return false;
@@ -54,7 +52,7 @@ export class FileReader implements IResourceProcessor {
         return false;
 
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;

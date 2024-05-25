@@ -1,13 +1,12 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { Environment } from 'nunjucks';
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
-import type { Environment } from 'nunjucks';
 import { setHtmlOutputFormat } from './output-format';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
-async function compileMarkdownResource(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+async function compileMarkdownResource(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
         html: true,
         linkify: true,
@@ -15,7 +14,7 @@ async function compileMarkdownResource(resource: DataParsedDocument, config: Ssg
         breaks: true,
     });
 
-    const compiledOutput: DataParsedDocument = {
+    const compiledOutput: IProcessResource = {
         content: markdownRendererInstance.render(resource.content),
 
         //If any from outside accessible data properties or functions get defined within the component evaluated from 
@@ -34,7 +33,7 @@ const njkSyntaxRegexes = [
 export class NunjucksCompiler implements IResourceProcessor {
     id: string = 'njk.compiler';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -55,7 +54,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         return false;
     }
 
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
@@ -67,7 +66,7 @@ export class NunjucksCompiler implements IResourceProcessor {
 
         const nunjucks: Environment = await getLibInstance('nunjucks', config);
         const compiledString: string = nunjucks.renderString(resource.content, resource?.data || {});
-        const dataResource: DataParsedDocument = {
+        const dataResource: IProcessResource = {
             content: compiledString,
             data: resource.data
         };

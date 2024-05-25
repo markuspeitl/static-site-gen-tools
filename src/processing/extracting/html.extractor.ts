@@ -1,9 +1,8 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { ContentExtraction, extractElement } from '../../utils/cheerio-util';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 function assignAttribsToSelf(dict: any, key: string): any {
 
@@ -40,7 +39,7 @@ function assignAllAttribsToSelf(dict: any) {
 }
 
 const dataHtmlTag: string = 'data';
-async function parseHtmlData(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+async function parseHtmlData(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     //const opts: ParserOptions = {}
     //const $: cheerio.Root = loadHtml(resource.content);
 
@@ -84,7 +83,7 @@ async function parseHtmlData(resource: DataParsedDocument, config: SsgConfig): P
 export class HtmlExtractor implements IResourceProcessor {
     id: string = 'html.extractor';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -108,14 +107,14 @@ export class HtmlExtractor implements IResourceProcessor {
         return false;
 
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
         console.log(`Extracting ${this.id}: ${resource.data?.document?.src}`);
 
-        const dataResource: DataParsedDocument = await parseHtmlData(resource, config);
+        const dataResource: IProcessResource = await parseHtmlData(resource, config);
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 

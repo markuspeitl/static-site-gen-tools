@@ -1,22 +1,19 @@
-import { DataParsedDocument } from '../../compilers/runners';
-import { SsgConfig } from '../../config';
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
-import { isDirPath, isPath, possibleDirPath } from '../../compilers/resolve-sub-html.runner';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
-import { processFsNodeAtPath, processStage } from '../process-resource';
-import { IResourceProcessor } from '../../pipeline/i-processor';
 
 
-export function getTargetDirPath(resource: DataParsedDocument): string | null {
+export function getTargetDirPath(resource: IProcessResource): string | null {
     if (!resource.data?.document?.target) {
         return null;
     }
 
     return path.resolve(resource.data.document.target);
 }
-export function getSubPathAtTarget(resource: DataParsedDocument, relativePath: string): string | null {
+export function getSubPathAtTarget(resource: IProcessResource, relativePath: string): string | null {
 
     const targetDirPath: string | null = getTargetDirPath(resource);
     if (!targetDirPath) {
@@ -30,7 +27,7 @@ export class DirReader implements IResourceProcessor {
 
     public id: string = 'dir.reader';
 
-    public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return false;
@@ -54,7 +51,7 @@ export class DirReader implements IResourceProcessor {
 
         return false;
     }
-    public async process(resource: DataParsedDocument, config: SsgConfig): Promise<DataParsedDocument> {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
@@ -72,11 +69,11 @@ export class DirReader implements IResourceProcessor {
         const dirFiles: string[] = await fs.promises.readdir(resolvedPath);
 
 
-        const fsNodeProcessPromises: Promise<DataParsedDocument>[] = dirFiles.map(async (dirFile) => {
+        const fsNodeProcessPromises: Promise<IProcessResource>[] = dirFiles.map(async (dirFile) => {
             const fsNodePath: string = path.join(resolvedPath, dirFile);
             //const targetNodePath: string = path.join(getTargetDirPath(resource), dirFile);
 
-            const processedResource: DataParsedDocument = await processFsNodeAtPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
+            const processedResource: IProcessResource = await processFsNodeAtPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
 
             resource = addResourceDocProp(
                 resource,
@@ -89,7 +86,7 @@ export class DirReader implements IResourceProcessor {
             //processResource();
         });
 
-        const settledProcessPromises: PromiseSettledResult<DataParsedDocument>[] = await Promise.allSettled(fsNodeProcessPromises);
+        const settledProcessPromises: PromiseSettledResult<IProcessResource>[] = await Promise.allSettled(fsNodeProcessPromises);
 
 
         /*for (const dirFile of dirFiles) {

@@ -2,14 +2,14 @@ import * as lodash from 'lodash';
 import { forkDataScope } from "../manage-scopes";
 import { settleValueOrNull, settleValueOrNullFilter } from "../utils/promise-util";
 import { loadProcessorInstancesFromPaths } from "../load-glob-modules";
-import { SsgConfig } from "../config";
+import type { SsgConfig } from "../config";
 import { anchorAndGlob } from "../utils/globbing";
 import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";
 import { getKeyFromDict } from "../components/helpers/dict-util";
-import { FalsyAble } from "../components/helpers/generic-types";
+import type { FalsyAble } from "../components/helpers/generic-types";
 import { getKeyMatches, getKeyMatchValues, MatchedDictKeyRes } from "../utils/regex-match-util";
 import { filterFalsy } from "../components/helpers/array-util";
-import { IProcessingNode, IProcessResource, IResourceProcessor } from '../pipeline/i-processor';
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../pipeline/i-processor';
 
 
 

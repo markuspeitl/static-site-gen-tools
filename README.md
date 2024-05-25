@@ -638,7 +638,7 @@ the caller can then unpack
 
 
 
-TODO: Revamp component interface (force call with "DataParsedDocument and config", possibly expose a ctx with helper functions)
+TODO: Revamp component interface (force call with "IProcessResource and config", possibly expose a ctx with helper functions)
 
 
 ## Component compile flow:
