@@ -201,12 +201,19 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     await loadStageProcessorInstances(config.defaultResourceProcessorDirs, config.processingStages);*/
 
     if (config.processingTreeConfig) {
+        console.time('init_processing_tree');
         config.processingTree = await initProcessorInstanceFromConf(config.processingTreeConfig, undefined);
+        console.timeEnd('init_processing_tree');
     }
+
+    console.time('init_loading_default_components');
 
     console.log("Loading default components");
     await loadDefaultComponents(config);
     const initializedConfig = await loadUserRuntimeConfig(config);
+
+    console.timeEnd('init_loading_default_components');
+
 
     console.timeEnd('init');
 

@@ -93,6 +93,12 @@ export class HtmlExtractor implements IResourceProcessor {
             return false;
         }
 
+
+        if (!resourceContent.startsWith('<data')) {
+            return false;
+        }
+
+
         const mdTokenCount = (resourceContent.match(/<\s*data\s*>|<\s*\/\s*data\s*>/g) || []).length;
 
         if (resourceContent.startsWith('<data>') && mdTokenCount >= 2) {

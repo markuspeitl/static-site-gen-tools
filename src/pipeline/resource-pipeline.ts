@@ -282,15 +282,27 @@ export async function initProcessorInstanceFromConf(nodeConfig: IProcessingNodeC
 
 export type SubProcessorsDict = { [ processorId: string ]: IProcessingNode; };
 
-export async function callProcessMergeResource(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
-
-    if (!processor.canHandle(resource, config)) {
-        return resource;
-    }
-
+export async function getProcessorIfCanHandle(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IResourceProcessor | null> {
     if (!processor) {
+        return null;
+    }
+    if (!resource) {
+        return null;
+    }
+
+    const processorCanHandleResource: boolean = await processor.canHandle(resource, config);
+    if (!processorCanHandleResource) {
+        return null;
+    }
+    return processor;
+}
+
+export async function callProcessMergeResource(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
+    const canHandleProcessor: IResourceProcessor | null = await getProcessorIfCanHandle(resource, config, processor);
+    if (!canHandleProcessor) {
         return resource;
     }
+
     //Process does only return the data that it produces
     //The processor is not themselves resposible for data merging
     const transformedResource: IProcessResource = await processor.process(resource, config);
@@ -311,8 +323,9 @@ export async function passThroughProcessChain(resource: IProcessResource, config
 export async function findFirstProcessorCanHandle(resource: IProcessResource, config: any, chainToProcess: IResourceProcessor[]): Promise<IResourceProcessor | null> {
 
     for (const processor of chainToProcess) {
-        if (await processor.canHandle(resource, config)) {
-            return processor;
+        const canHandleProcessor: IResourceProcessor | null = await getProcessorIfCanHandle(resource, config, processor);
+        if (canHandleProcessor) {
+            return canHandleProcessor;
         }
     }
     return null;
@@ -434,7 +447,7 @@ export function compileSingleRunCanHandleFn(inputGuardConfig?: InputGuardConfig)
 
 export function registerProcessorInResource(resource: IProcessResource, processor: IProcessingNode): void {
     ensureKeyAtDict(resource, 'control.handledProcIds', []);
-    resource.control?.handledProcIds.push(processor.id);
+    resource.control?.handledProcIds?.push(processor.id);
 }
 
 export function isProcessorRegisteredInResource(resource: IProcessResource, processor: IProcessingNode): boolean {

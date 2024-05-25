@@ -59,9 +59,9 @@ export class ComponentCompiler implements IResourceProcessor {
                     componentToCompileResource.data.compileAfter = [];
 
                     //componentToCompileResource.data.importCache = resource.data.importCache;
-                    componentToCompileResource.data.document = {
+                    /*componentToCompileResource.data.document = {
                         inputFormat: 'html'
-                    };
+                    };*/
 
                     componentToCompileResource.data.placeholder = pendingArgs.placeholder;
                     componentToCompileResource.data.componentTag = pendingArgs.name;

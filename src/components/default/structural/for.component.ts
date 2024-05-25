@@ -1,6 +1,7 @@
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { forkDataScope } from "../../../manage-scopes";
+import { IProcessResource } from "../../../pipeline/i-processor";
 import { processSubPath } from "../../../processing-tree-wrapper";
 import { processConfStage, processResource } from "../../../processing/process-resource";
 import { BaseComponent, IInternalComponent } from "../../base-component";
@@ -9,7 +10,7 @@ import { FalsyAble } from "../../helpers/generic-types";
 
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
-    public canCompile(resource: DataParsedDocument, config?: SsgConfig): boolean {
+    public canCompile(resource: IProcessResource, config?: SsgConfig): boolean {
         if (!resource.data) {
             console.error("Can not compile 'for' component -> data needs to be set");
             return false;
@@ -27,11 +28,11 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         return true;
     }
 
-    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
         return resource;
     }
 
-    public async render(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
         if (!this.canCompile(resource, config)) {
             return resource;
         }
@@ -59,10 +60,15 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
 
             //const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
 
-            const forkedResource: DataParsedDocument = forkDataScope(resource);
+            const forkedResource: IProcessResource = forkDataScope(resource);
 
 
-            const renderedIterationResource: FalsyAble<DataParsedDocument> = await processSubPath(forkedResource, config, [ 'extractor', 'compiler' ]);
+            forkedResource.id = forkedResource.id + "__loop-iteration_" + itemValue + "_of_" + listItemName;
+            forkedResource.control = {
+                parent: resource,
+                handledProcIds: [],
+            };
+            const renderedIterationResource: FalsyAble<IProcessResource> = await processSubPath(forkedResource, config, [ 'extractor', 'compiler' ]);
 
             /*let renderedIterationResource: FalsyAble<DataParsedDocument> = await processConfStage('extractor', forkedResource, config);
             renderedIterationResource = await processConfStage('compiler', renderedIterationResource, config);*/

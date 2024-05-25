@@ -11,7 +11,8 @@ async function compileMarkdownResource(resource: DataParsedDocument, config: Ssg
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
         html: true,
         linkify: true,
-        typographer: true
+        typographer: true,
+        breaks: true,
     });
 
     const compiledOutput: DataParsedDocument = {

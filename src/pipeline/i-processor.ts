@@ -1,8 +1,8 @@
 export interface IProcessResource {
     id?: string,
     control?: {
-        parent: IProcessResource,
-        handledProcIds: string[];
+        parent?: IProcessResource,
+        handledProcIds?: string[];
     };
     content?: any,
     data?: any,
