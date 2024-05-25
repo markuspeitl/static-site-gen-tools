@@ -1,12 +1,11 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { FalsyString, FalsyStringPromise } from '../../components/helpers/generic-types';
-import { addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
 import { isDirPath, isPath } from "../../utils/path-util";
-
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
 
@@ -31,6 +30,11 @@ export class FileReader implements IResourceProcessor {
     public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
+            return false;
+        }
+
+        //Resource was already read --> nothing to do here
+        if (resource.content) {
             return false;
         }
 
@@ -69,12 +73,7 @@ export class FileReader implements IResourceProcessor {
             fileExtension = fileExtension.slice(1);
         }
 
-        resource = addResourceDocProp(
-            resource,
-            {
-                inputFormat: fileExtension,
-            }
-        );
+        setKeyInDict(resource, 'data.document.inputFormat', fileExtension);
         resource.content = fileContents;
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore

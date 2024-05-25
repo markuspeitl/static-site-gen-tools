@@ -1,11 +1,11 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
 import { isPath, possibleDirPath } from "../../utils/path-util";
-import { processStagesFromToPath, processStagesOnInputPath, processTreeFromToPath } from "../../processing-tree-wrapper";
+import { processTreeFromToPath } from "../../processing-tree-wrapper";
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 
 export function getTargetDirPath(resource: IProcessResource): string | null {
@@ -77,13 +77,8 @@ export class DirReader implements IResourceProcessor {
 
             const processedResource: IProcessResource = await processTreeFromToPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
 
-            resource = addResourceDocProp(
-                resource,
-                {
-                    processed: dirFile,
-                }
-            );
 
+            setKeyInDict(resource, 'document.processed', dirFile);
             return processedResource;
             //processResource();
         });
@@ -100,15 +95,9 @@ export class DirReader implements IResourceProcessor {
         }*/
 
 
-        resource = addResourceDocProp(
-            resource,
-            {
-                inputFormat: 'dir',
-            }
-        );
+        setKeyInDict(resource, 'data.document.inputFormat', 'dir');
         resource.content = dirFiles;
-
-        resource = addHandlerId(resource, 'reader', this);
+        //resource = addHandlerId(resource, 'reader', this);
 
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
         resource.id = undefined;

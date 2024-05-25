@@ -1,8 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
-import { setHtmlOutputFormat } from './output-format';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html.compiler';
@@ -35,7 +33,9 @@ export class HtmlCompiler implements IResourceProcessor {
         resource.content = resourceContent;
         const dataResource: IProcessResource = resource;
 
-        resource = setHtmlOutputFormat(resource);
-        return addHandlerId(dataResource, 'compiler', this);
+        //resource = setHtmlOutputFormat(resource);
+        setKeyInDict(dataResource, 'data.document.outputFormat', 'html');
+        return dataResource;
+        //return addHandlerId(dataResource, 'compiler', this);
     }
 }

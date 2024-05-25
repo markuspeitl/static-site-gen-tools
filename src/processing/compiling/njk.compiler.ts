@@ -2,9 +2,8 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { Environment } from 'nunjucks';
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
-import { setHtmlOutputFormat } from './output-format';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 async function compileMarkdownResource(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
@@ -71,7 +70,9 @@ export class NunjucksCompiler implements IResourceProcessor {
             data: resource.data
         };
 
-        resource = setHtmlOutputFormat(resource);
-        return addHandlerId(dataResource, 'compiler', this);
+        //resource = setHtmlOutputFormat(resource);
+        setKeyInDict(dataResource, 'data.document.outputFormat', 'html');
+        return dataResource;
+        //return addHandlerId(dataResource, 'compiler', this);
     }
 }

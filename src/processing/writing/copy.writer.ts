@@ -1,7 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { FalsyStringPromise } from '../../components/helpers/generic-types';
-import { addHandlerId } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 
@@ -40,7 +39,7 @@ export class CopyWriter implements IResourceProcessor {
         }
         console.log(`Writing ${this.id}: ${resource.data?.document?.target}`);
 
-        resource = addHandlerId(resource, 'writer', this);
+        //resource = addHandlerId(resource, 'writer', this);
 
         const targetPath: string | null = resource.data?.document?.target;
         const srcPath: string | null = resource.data?.document?.src;

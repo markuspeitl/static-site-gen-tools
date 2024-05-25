@@ -77,15 +77,10 @@ export function getKeyFromDict(dict: Object, key?: string): any | undefined {
     return currentLevelDict;
 }
 
-export function ensureKeyAtDict(dict: Object, key: string, setValue: any): any | undefined {
+export function setKeyInDict(dict: Object, key: string, targetValue: any): void {
     if (!key) {
-        return dict;
+        return;
     }
-
-    if (getKeyFromDict(dict, key)) {
-        return dict;
-    }
-
     const keyParts = key.split(keySeperationToken);
 
     let lastLevelDict: Object = dict;
@@ -99,8 +94,20 @@ export function ensureKeyAtDict(dict: Object, key: string, setValue: any): any |
 
     const lastKeyPart = keyParts.at(-1);
     if (lastLevelDict && lastKeyPart) {
-        lastLevelDict[ lastKeyPart ] = setValue;
+        lastLevelDict[ lastKeyPart ] = targetValue;
     }
+}
+
+export function ensureKeyAtDict(dict: Object, key: string, setValue: any): any | undefined {
+    if (!key) {
+        return dict;
+    }
+
+    if (getKeyFromDict(dict, key)) {
+        return dict;
+    }
+
+    setKeyInDict(dict, key, setValue);
 
     return dict;
 }

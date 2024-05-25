@@ -2,13 +2,11 @@ import type { SsgConfig } from "../../config";
 import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from '../../components/helpers/generic-types';
-import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
-import { setHtmlOutputFormat } from './output-format';
 import { getResourceImportsCache, resolveResourceImports } from '../../components/component-imports';
 import { findReplaceTopLevelDetectedComponents } from '../../components/components-to-placeholders';
 import path from 'path';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
@@ -49,7 +47,9 @@ export class PlaceholderCompiler implements IResourceProcessor {
             resource = componentsSubstitutedRes;
         }
 
-        resource = setHtmlOutputFormat(resource);
-        return addHandlerId(resource, 'compiler', this);
+        //resource = setHtmlOutputFormat(resource);
+        //return addHandlerId(resource, 'compiler', this);
+        setKeyInDict(resource, 'data.document.outputFormat', 'html');
+        return resource;
     }
 }

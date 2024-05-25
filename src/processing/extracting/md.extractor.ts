@@ -1,9 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import type { IInternalComponent } from '../../components/base-component';
-import type { FalsyAble } from '../../components/helpers/generic-types';
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
 //import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";
 //type MatterType = typeof matter;
@@ -58,7 +55,7 @@ export class MarkdownExtractor implements IResourceProcessor {
         const dataResource: IProcessResource = await parseMarkdownData(resource, config);
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
-
-        return addHandlerId(dataResource, 'extractor', this);
+        return dataResource;
+        //return addHandlerId(dataResource, 'extractor', this);
     }
 }

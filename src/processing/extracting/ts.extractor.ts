@@ -2,10 +2,9 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from '../../components/helpers/generic-types';
-import { addHandlerId } from "../i-resource-processor";
 import { getComponentFrom } from '../../components/components';
-import { setHtmlOutputFormat } from '../compiling/output-format';
 import { forkResourceScope } from '../../manage-scopes';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export class TsExtractor implements IResourceProcessor {
     id: string = 'ts.extractor';
@@ -53,7 +52,11 @@ export class TsExtractor implements IResourceProcessor {
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 
-        dataResource = setHtmlOutputFormat(dataResource);
-        return addHandlerId(dataResource, 'extractor', this);
+        //dataResource = setHtmlOutputFormat(dataResource);
+        setKeyInDict(resource, 'data.document.outputFormat', 'html');
+
+        return dataResource;
+
+        //return addHandlerId(dataResource, 'extractor', this);
     }
 }

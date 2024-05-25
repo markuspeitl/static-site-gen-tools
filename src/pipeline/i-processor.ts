@@ -1,8 +1,11 @@
+import { DeferCompileArgs } from "../components/deferred-component-compiling";
+
 export interface IProcessResource {
     id?: string,
     control?: {
         parent?: IProcessResource,
         handledProcIds?: string[];
+        pendingChildren?: DeferCompileArgs[];
     };
     content?: any,
     data?: any,

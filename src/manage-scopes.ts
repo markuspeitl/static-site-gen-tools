@@ -30,6 +30,20 @@ export function mergeResourceScopes(parentScope: IProcessResource, passDataScope
     return forkedScope;
 }
 
+export function forkResourceChild(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource {
+    const childForkedResource: IProcessResource = {
+        id: childResourceId || resource.id,
+        content: childResourceContent,
+        control: {
+            parent: resource,
+            handledProcIds: [],
+        },
+        data: lodash.cloneDeep(resource.data),
+    };
+    return childForkedResource;
+}
+
+
 //Some props would need to be merged in the sub component instead:
 //data.import + data.importCache: should be available is sub component, but additional imports might be added (if the component depends on this)
 
@@ -41,6 +55,4 @@ export function mergeResourceScopes(parentScope: IProcessResource, passDataScope
 
 //data.compileRunner: should be scoped and shadowed (sub components should have to define their own compile chain/ format)
 //data.extractRunner: should be scoped and shadowed (sub components should have to define their own data extract chain/ format)
-
-
 //When to fork??

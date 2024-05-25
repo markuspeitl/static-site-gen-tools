@@ -1,3 +1,4 @@
+import { ensureKeyAtDict } from "../components/helpers/dict-util";
 import type { SsgConfig } from "../config";
 import type { IProcessResource, IResourceProcessor } from "../pipeline/i-processor";
 
@@ -40,4 +41,18 @@ export function resetDocumentSetProp(resource: IProcessResource, docPropKey: str
 
 export function resetDocumentSetInputFormat(resource: IProcessResource, inputFormat: any): IProcessResource {
     return resetDocumentSetProp(resource, 'inputFormat', inputFormat);
+}
+
+export function setOutputFormat(resource: IProcessResource, format: string): IProcessResource {
+    resource = addResourceDocProp(
+        resource,
+        {
+            outputFormat: format,
+        }
+    );
+    return resource;
+}
+
+export function setHtmlOutputFormat(resource: IProcessResource): IProcessResource {
+    return setOutputFormat(resource, 'html');
 }

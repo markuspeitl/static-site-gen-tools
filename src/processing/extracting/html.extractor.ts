@@ -1,7 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
 import { ContentExtraction, extractElement } from '../../utils/cheerio-util';
 
 function assignAttribsToSelf(dict: any, key: string): any {
@@ -118,6 +117,7 @@ export class HtmlExtractor implements IResourceProcessor {
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 
-        return addHandlerId(dataResource, 'extractor', this);
+        return dataResource;
+        //return addHandlerId(dataResource, 'extractor', this);
     }
 }

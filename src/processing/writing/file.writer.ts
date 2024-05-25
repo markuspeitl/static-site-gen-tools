@@ -1,6 +1,5 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { addHandlerId } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 
@@ -45,7 +44,8 @@ export class FileWriter implements IResourceProcessor {
         await fs.promises.mkdir(targetDir, { recursive: true });
         await fs.promises.writeFile(targetFilePath, resource.content);
 
-        resource = addHandlerId(resource, 'writer', this);
+        //resource = addHandlerId(resource, 'writer', this);
+        //return resource;
         return resource;
     }
 }

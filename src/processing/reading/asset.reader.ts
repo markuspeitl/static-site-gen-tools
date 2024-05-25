@@ -1,9 +1,9 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export class FileReader implements IResourceProcessor {
 
@@ -32,15 +32,10 @@ export class FileReader implements IResourceProcessor {
         //const resolvedPath: string = path.resolve(resourceId);
         //const parsedPath: path.ParsedPath = path.parse(resolvedPath);
 
-        resource = addResourceDocProp(
-            resource,
-            {
-                inputFormat: 'asset',
-                outputFormat: 'asset',
-            }
-        );
-        resource = addHandlerId(resource, 'reader', this);
+        setKeyInDict(resource, 'data.document.inputFormat', 'asset');
+        setKeyInDict(resource, 'data.document.outputFormat', 'asset');
 
+        //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
         resource.id = undefined;
         return resource;

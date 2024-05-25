@@ -1,8 +1,7 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/module-instances";
-import { addHandlerId } from "../i-resource-processor";
-import { setHtmlOutputFormat } from './output-format';
+import { setKeyInDict } from "../../components/helpers/dict-util";
 
 async function compileMarkdownResource(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {
@@ -47,7 +46,9 @@ export class MarkdownCompiler implements IResourceProcessor {
         resource.content = resourceContent;
         const dataResource: IProcessResource = await compileMarkdownResource(resource, config);
 
-        resource = setHtmlOutputFormat(resource);
-        return addHandlerId(dataResource, 'compiler', this);
+        setKeyInDict(dataResource, 'data.document.outputFormat', 'html');
+        return dataResource;
+        //resource = setHtmlOutputFormat(resource);
+        //return addHandlerId(dataResource, 'compiler', this);
     }
 }
