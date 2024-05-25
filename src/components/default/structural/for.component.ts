@@ -1,10 +1,8 @@
-import { SsgConfig } from "../../../config";
-import { forkDataScope } from "../../../manage-scopes";
-import { IProcessResource } from "../../../pipeline/i-processor";
-import { processSubPath, processTreeStages } from "../../../processing-tree-wrapper";
+import type { SsgConfig } from "../../../config";
+import type { IProcessResource } from "../../../pipeline/i-processor";
+import { processTreeStages } from "../../../processing-tree-wrapper";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { getKeyFromDict } from "../../helpers/dict-util";
-import { FalsyAble } from "../../helpers/generic-types";
 
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
@@ -92,8 +90,8 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
     }
 }
 
-`
-<for it="tag" of="tags">
+
+/*<for it="tag" of="tags">
     <tag bind="tag-component"></tag>
     <tag-component>{ tag }</tag-component>
 
@@ -101,5 +99,4 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         Condition that item tag is 'education' was met
     </e-if>
 
-</for>
-`;
+</for>*/

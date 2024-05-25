@@ -1,11 +1,10 @@
-import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
-import { SsgConfig } from "../../../config";
-import { getScopedEvalFn } from "../../../utils/fn-apply";
-import { BaseComponent } from "../../base-component";
+import type { SsgConfig } from "../../../config";
+import type { IProcessResource } from "../../../pipeline/i-processor";
+import { BaseComponent, DocumentData } from "../../base-component";
 
 export abstract class ImportComponent implements BaseComponent {
 
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | DocumentData> {
+    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<IProcessResource | DocumentData> {
 
         if (!dataCtx) {
             return {};
@@ -35,7 +34,7 @@ export abstract class ImportComponent implements BaseComponent {
 
         return dataCtx || {};
     }
-    public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
+    public async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | string> {
         return {
             content: '',
             data: dataCtx

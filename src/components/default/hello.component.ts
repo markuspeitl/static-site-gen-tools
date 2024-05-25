@@ -1,10 +1,10 @@
-import { DocumentData, DataParsedDocument } from "../../compilers/runners";
-import { SsgConfig } from "../../config";
+import type { SsgConfig } from "../../config";
+import type { IProcessResource } from "../../pipeline/i-processor";
 import { BaseComponent, IInternalComponent } from "../base-component";
 
 export class HelloWorldComponent implements BaseComponent, IInternalComponent {
 
-    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
 
         if (!resource.data) {
             resource.data = {};
@@ -12,7 +12,7 @@ export class HelloWorldComponent implements BaseComponent, IInternalComponent {
         resource.data.message = "Hello world from component subrenderer";
         return resource;
     }
-    public async render(resource: DataParsedDocument, config?: SsgConfig): Promise<DataParsedDocument> {
+    public async render(resource: IProcessResource, config?: SsgConfig): Promise<IProcessResource> {
 
         const message = `\
 ${resource?.content}

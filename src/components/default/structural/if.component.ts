@@ -1,10 +1,10 @@
-import { DataParsedDocument } from "../../../compilers/runners";
-import { SsgConfig } from "../../../config";
+import type { SsgConfig } from "../../../config";
+import type { IProcessResource } from "../../../pipeline/i-processor";
 import { getScopedEvalFn } from "../../../utils/fn-apply";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 
 export abstract class IfComponent implements BaseComponent, IInternalComponent {
-    public canCompile(resource: DataParsedDocument, config?: SsgConfig): boolean {
+    public canCompile(resource: IProcessResource, config?: SsgConfig): boolean {
         if (!resource.data) {
             console.error("Can not compile 'if' component -> data needs to be set");
             return false;
@@ -18,11 +18,11 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
         return true;
     }
 
-    public async data(resource: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
         return resource;
     }
 
-    public async render(resource: DataParsedDocument, config?: SsgConfig): Promise<DataParsedDocument> {
+    public async render(resource: IProcessResource, config?: SsgConfig): Promise<IProcessResource> {
         if (!this.canCompile(resource, config)) {
             return resource;
         }
