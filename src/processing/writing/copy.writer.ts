@@ -26,7 +26,7 @@ export async function readFileAsString(filePath: string): FalsyStringPromise {
 
 export class CopyWriter implements IResourceProcessor {
 
-    public id: string = 'copy';
+    public id: string = 'copy.writer';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
 

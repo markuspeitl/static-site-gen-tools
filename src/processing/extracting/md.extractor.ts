@@ -27,7 +27,7 @@ export async function parseMarkdownData(resource: DataParsedDocument, config: Ss
 
 
 export class MarkdownExtractor implements IResourceProcessor {
-    id: string = 'md';
+    id: string = 'md.extractor';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

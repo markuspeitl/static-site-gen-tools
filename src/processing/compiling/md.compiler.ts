@@ -23,7 +23,7 @@ async function compileMarkdownResource(resource: DataParsedDocument, config: Ssg
 }
 
 export class MarkdownCompiler implements IResourceProcessor {
-    id: string = 'md';
+    id: string = 'md.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

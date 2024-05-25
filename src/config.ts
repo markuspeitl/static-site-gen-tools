@@ -2,9 +2,9 @@ import Module from "module";
 import { FragmentCache } from "./fragement-cache";
 import { CompileRunner } from "./compilers/runners";
 import { IMasterRunner } from "./compilers/generic.runner";
-import { BaseComponent, IInternalComponent } from "./components/base-component";
-import { ProcessingStagesInfo } from "./processing/process-resource";
-import { IProcessingNode, IProcessingNodeConfig } from './pipeline/resource-pipeline';
+import { IInternalComponent } from "./components/base-component";
+import { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
+import { ProcessingTreeWrapper } from "./processing-tree-wrapper";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -15,6 +15,8 @@ export interface SsgConfig {
 
     processingTreeConfig?: IProcessingNodeConfig;
     processingTree?: IProcessingNode;
+    //processingTreeWrapper?: ProcessingTreeWrapper;
+    subTreePathCache?: Record<string, IResourceProcessor>;
 
     defaultResourceProcessorDirs?: string[];
     //defaultResourceProcessorDirsMatchGlobs?: string[]; --> depend on stage name --> 'reader' -> file.reader.ts within 'defaultResourceProcessorDirs'

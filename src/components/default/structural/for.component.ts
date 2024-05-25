@@ -1,6 +1,7 @@
 import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { forkDataScope } from "../../../manage-scopes";
+import { processSubPath } from "../../../processing-tree-wrapper";
 import { processConfStage, processResource } from "../../../processing/process-resource";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { getKeyFromDict } from "../../helpers/dict-util";
@@ -60,9 +61,15 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
 
             const forkedResource: DataParsedDocument = forkDataScope(resource);
 
-            let renderedIterationResource: FalsyAble<DataParsedDocument> = await processConfStage('extractor', forkedResource, config);
-            renderedIterationResource = await processConfStage('compiler', renderedIterationResource, config);
+
+            const renderedIterationResource: FalsyAble<DataParsedDocument> = await processSubPath(forkedResource, config, [ 'extractor', 'compiler' ]);
+
+            /*let renderedIterationResource: FalsyAble<DataParsedDocument> = await processConfStage('extractor', forkedResource, config);
+            renderedIterationResource = await processConfStage('compiler', renderedIterationResource, config);*/
             const renderedBody = renderedIterationResource?.content || '';
+
+            //const renderedBody = forkedResource.content;
+
             renderedIterations.push(renderedBody);
 
             /*const renderedLoopDocument: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compileWith(

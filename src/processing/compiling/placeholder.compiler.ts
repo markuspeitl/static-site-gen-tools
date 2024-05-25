@@ -11,7 +11,7 @@ import { setHtmlOutputFormat } from './output-format';
 import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class PlaceholderCompiler implements IResourceProcessor {
-    id: string = 'placeholder';
+    id: string = 'placeholder.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         return new HtmlCompiler().canHandle(resource, config);

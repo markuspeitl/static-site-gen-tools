@@ -9,7 +9,7 @@ import { forkResourceScope } from '../../manage-scopes';
 import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class TsExtractor implements IResourceProcessor {
-    id: string = 'ts';
+    id: string = 'ts.extractor';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

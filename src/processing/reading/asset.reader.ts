@@ -8,7 +8,7 @@ import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class FileReader implements IResourceProcessor {
 
-    public id: string = 'asset';
+    public id: string = 'asset.reader';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;

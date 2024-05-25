@@ -28,7 +28,7 @@ export function getSubPathAtTarget(resource: DataParsedDocument, relativePath: s
 
 export class DirReader implements IResourceProcessor {
 
-    public id: string = 'dir';
+    public id: string = 'dir.reader';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;

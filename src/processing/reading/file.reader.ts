@@ -27,7 +27,7 @@ export async function readFileAsString(filePath: string): FalsyStringPromise {
 
 export class FileReader implements IResourceProcessor {
 
-    public id: string = 'file';
+    public id: string = 'file.reader';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
@@ -77,11 +77,9 @@ export class FileReader implements IResourceProcessor {
             }
         );
         resource.content = fileContents;
-
-        resource = addHandlerId(resource, 'reader', this);
-
+        //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
-        resource.id = undefined;
+        //resource.id = undefined;
         return resource;
     }
 }

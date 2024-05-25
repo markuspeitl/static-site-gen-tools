@@ -6,7 +6,7 @@ import { setHtmlOutputFormat } from './output-format';
 import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class HtmlCompiler implements IResourceProcessor {
-    id: string = 'html';
+    id: string = 'html.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

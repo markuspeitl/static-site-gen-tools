@@ -82,7 +82,7 @@ async function parseHtmlData(resource: DataParsedDocument, config: SsgConfig): P
 
 
 export class HtmlExtractor implements IResourceProcessor {
-    id: string = 'html';
+    id: string = 'html.extractor';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

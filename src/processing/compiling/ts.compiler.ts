@@ -15,7 +15,7 @@ import { forkResourceScope } from '../../manage-scopes';
 import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class TsCompiler implements IResourceProcessor {
-    id: string = 'ts';
+    id: string = 'ts.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
 

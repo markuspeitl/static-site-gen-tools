@@ -31,7 +31,7 @@ const njkSyntaxRegexes = [
 ];
 
 export class NunjucksCompiler implements IResourceProcessor {
-    id: string = 'njk';
+    id: string = 'njk.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {

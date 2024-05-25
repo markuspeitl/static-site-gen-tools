@@ -2,7 +2,7 @@ import lodash from "lodash";
 import { collectInSelfAndParents, ensureKeyAtDict, getKeyFromDict } from "../components/helpers/dict-util";
 import { settleValueOrNull } from "../utils/promise-util";
 import { FalsyAble } from "../components/helpers/generic-types";
-import { IProcessingNode, IResourceProcessor, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, ProcessStrategy, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId } from "./i-processor";
+import { IProcessingNode, IResourceProcessor, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, ProcessStrategy, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId, InputGuardConfig } from "./i-processor";
 import path from "path";
 import { loadProcessorArrayFromPaths } from "../load-glob-modules";
 
@@ -19,11 +19,12 @@ export function convertCurrentShallowConfigToNode(nodeConfig: IProcessingNodeCon
     if (!processingFn) {
         processingFn = async (resource: IProcessResource) => resource;
     }
-    let canHandleFn: CanHandleFunction | undefined = singleRunCanHandleFn();
+    let canHandleFn: CanHandleFunction | undefined = compileSingleRunCanHandleFn(nodeConfig.inputGuard);
     if (!canHandleFn) {
         canHandleFn = async (resource: IProcessResource) => true;
     }
 
+    //const parentNodeIdPrefix: string = parentNode?.id + "." || '';
     const processingNodeInstance: IProcessingNode = {
         id: nodeConfig.id,
         parent: parentNode as IProcessingNode | undefined,
@@ -206,8 +207,9 @@ export async function initFileChildProcessors(subProcessorsConfig: SubProcessors
     for (const key in targetProcessorChainsConfigs) {
 
         //const chainParentProcessor: IProcessingNode = {};
+        const parentNodeIdPrefix: string = currentNode?.id + "_" || '';
         const chainParentProcessorConfig: IProcessingNodeConfig = {
-            id: key,
+            id: parentNodeIdPrefix + "chain_" + key,
             inputGuard: {
                 matchProp: fileProcessorChainsConfig.matchProp,
                 matchCondition: key,
@@ -366,9 +368,7 @@ export function processWithStrategyFn(strategy: FalsyAble<ProcessStrategy>): Pro
 
         //resource = await this.processInternal(resource, config);
         resource = await processStrategyFunction.call(this, resource, config);
-
-        ensureKeyAtDict(resource, 'control.handledProcIds', []);
-        resource.control?.handledProcIds.push(this.id);
+        registerProcessorInResource(resource, this);
 
         if (this.postProcess) {
             resource = await this.postProcess(resource, config);
@@ -380,42 +380,68 @@ export function processWithStrategyFn(strategy: FalsyAble<ProcessStrategy>): Pro
 
 export const selfReferenceKey: string = '.';
 
-export function singleRunCanHandleFn(): CanHandleFunction {
+//Could be optimized (does a few unnecessary operations at runtime, like type checking of 'matchCondition')
+export function compileSingleRunCanHandleFn(inputGuardConfig?: InputGuardConfig): CanHandleFunction {
+
     return async function (resource: IProcessResource, config: any): Promise<boolean> {
 
         console.log(`Check can handle resource with '${this.id}': ${resource.id}`);
 
         //Oneshot check
+        if (isProcessorRegisteredInResource(resource, this)) {
+            return false;
+        }
+
         const previousHandlers: string[] | undefined = resource.control?.handledProcIds;
         if (previousHandlers && previousHandlers.includes(this.id)) {
             return false;
         }
 
-        if (!this.matchProp) {
+        if (!inputGuardConfig) {
             return true;
         }
-        if (!this.matchCondition) {
+        if (!inputGuardConfig.matchProp) {
+            return true;
+        }
+        if (!inputGuardConfig.matchCondition) {
             return true;
         }
 
-        let unpackedResourceVal: any = null;
-        if (this.matchProp === selfReferenceKey) {
-            unpackedResourceVal = resource;
+        let toMatchPropValue: any = null;
+        if (inputGuardConfig.matchProp === selfReferenceKey) {
+            toMatchPropValue = resource;
         } else {
-            unpackedResourceVal = getKeyFromDict(resource, this.matchProp);
+            toMatchPropValue = getKeyFromDict(resource, inputGuardConfig.matchProp);
         }
 
-        if (this.matchCondition === unpackedResourceVal) {
+        if (inputGuardConfig.matchCondition === toMatchPropValue) {
             return true;
         }
-        if (typeof this.matchCondition === 'string') {
-            const matchRegex = new RegExp(this.matchCondition);
-            return matchRegex.test(this.matchProp);
+        if (typeof inputGuardConfig.matchCondition === 'boolean' && inputGuardConfig.matchCondition === Boolean(toMatchPropValue)) {
+            return true;
         }
-        if (typeof this.matchCondition === 'function') {
-            return this.matchCondition(this.matchProp);
+        else if (typeof inputGuardConfig.matchCondition === 'string') {
+            const matchRegex = new RegExp(inputGuardConfig.matchCondition);
+            return matchRegex.test(toMatchPropValue);
+        }
+        else if (typeof inputGuardConfig.matchCondition === 'function') {
+            return inputGuardConfig.matchCondition(toMatchPropValue);
         }
 
         return false;
     };
+}
+
+export function registerProcessorInResource(resource: IProcessResource, processor: IProcessingNode): void {
+    ensureKeyAtDict(resource, 'control.handledProcIds', []);
+    resource.control?.handledProcIds.push(processor.id);
+}
+
+export function isProcessorRegisteredInResource(resource: IProcessResource, processor: IProcessingNode): boolean {
+    //Oneshot check
+    const previousHandlers: string[] | undefined = resource.control?.handledProcIds;
+    if (previousHandlers && previousHandlers.includes(processor.id)) {
+        return true;
+    }
+    return false;
 }

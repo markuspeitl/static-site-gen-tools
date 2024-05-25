@@ -7,7 +7,7 @@ import path from 'path';
 
 export class FileWriter implements IResourceProcessor {
 
-    public id: string = 'file';
+    public id: string = 'file.writer';
 
     protected fileWriteCounter: number = 0;
 
@@ -49,5 +49,4 @@ export class FileWriter implements IResourceProcessor {
         resource = addHandlerId(resource, 'writer', this);
         return resource;
     }
-
 }

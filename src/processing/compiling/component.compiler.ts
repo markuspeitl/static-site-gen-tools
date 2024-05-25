@@ -15,7 +15,7 @@ import { settleValueOrNull } from '../../utils/promise-util';
 import { IResourceProcessor } from '../../pipeline/i-processor';
 
 export class ComponentCompiler implements IResourceProcessor {
-    id: string = 'component';
+    id: string = 'component.compiler';
 
     public async canHandle(resource: DataParsedDocument, config: SsgConfig): Promise<boolean> {
 

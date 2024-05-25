@@ -82,6 +82,10 @@ export function ensureKeyAtDict(dict: Object, key: string, setValue: any): any |
         return dict;
     }
 
+    if (getKeyFromDict(dict, key)) {
+        return dict;
+    }
+
     const keyParts = key.split(keySeperationToken);
 
     let lastLevelDict: Object = dict;
