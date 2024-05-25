@@ -7,9 +7,6 @@ import { BaseComponent, IInternalComponent } from "./base-component";
 import { FalsyAble } from "./helpers/generic-types";
 import { filterFalsy } from "./helpers/array-util";
 import { PassthroughComponent } from "./default/passthrough.component";
-import { EHtmlComponent } from "./default/ehtml.component";
-import { processConfStage, processResource } from "../processing/process-resource";
-import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
 import { getFsNodeStat } from "../utils/fs-util";
 import fs from 'fs';
 import { FileComponent } from "./default/file.component";
@@ -95,65 +92,8 @@ export function moduleToComponentInstance(module: any): FalsyAble<IInternalCompo
     //be available during runtime and the compiled document string is printed to std.out
 
     return componentInstance as FalsyAble<IInternalComponent>;
-
-    /*if (loadedModule.default && typeof loadedModule.default === 'function') {
-        componentInstance = new PassthroughComponent();
-        componentInstance.render = loadedModule.default;
-    }
-    if (loadedModule.data || loadedModule.render) {
-        componentInstance = new PassthroughComponent();
-        componentInstance.data = loadedModule.data;
-        componentInstance.render = loadedModule.render;
-    }
-
-    componentInstance = getFirstInstanceTargetClass(loadedModule, '.+Component.*', [ 'render' ]);
-    //const testCompare = new EHtmlComponent();
-    let instance: EHtmlComponent = new EHtmlComponent();
-    instance.checkThis();
-    instance.checkRunnerThis();
-    return instance;*/
 }
 
-
-
-/*export async function getComponentFromPath(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
-    //Also load other file formats (.md, .njk, .html, based on available readers & extractor/compilers)
-    //If no reader exists or if no compiler exists, then the component would not be compileable -> do not load as component
-
-    return new FileComponent(documentPath);
-
-    const internalDocumentComponent: PassthroughComponent = new PassthroughComponent();
-    //let dataExtractedContent: string | null = null;
-    let dataExtractedResource: DataParsedDocument | null = null;
-    internalDocumentComponent.data = async (resource: DataParsedDocument, config: SsgConfig) => {
-
-        const readResource: FalsyAble<DataParsedDocument> = await getFileResource(documentPath, config);
-        if (!readResource) {
-            return resource;
-        }
-        resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
-        resource.content = readResource.content;
-
-        dataExtractedResource = await processConfStage('extractor', resource, config);
-        //dataExtractedContent = dataExtractedResource.content;
-
-        return dataExtractedResource;
-    };
-    internalDocumentComponent.render = async (resource: DataParsedDocument, config: SsgConfig) => {
-        //resource.data.document.src = componentPath;
-        //resource.content = readResource.content;
-        const readResource: FalsyAble<DataParsedDocument> = await getFileResource(documentPath, config);
-        if (!readResource) {
-            return resource;
-        }
-        //resource.content = dataExtractedContent || readResource.content || resource.content;
-        return processConfStage('compiler', resource || dataExtractedResource || readResource, config);
-
-        //return processConfStage('compiler', resource, config);
-    };
-
-    return internalDocumentComponent;
-}*/
 
 export async function getComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
 

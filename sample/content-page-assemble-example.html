@@ -1,0 +1,28 @@
+<data>
+    <target-dir>./dist</target-dir>
+</data>
+<content-page>
+    <data>
+        <content>./content-to-insert.md</content>
+        <parent>./frame-to-wrap.md</parent>
+    </data>
+    <!--
+    <target-dir>{{data.targetDir}}</target-dir>
+    <target>{{document.target}}</target>
+    -->
+</content-page>
+
+<!-- 
+    I a real website you probably would not make an document contains a single 'content-page' only, but instead would 
+    do these in bulk for a category/tag or the whole website.
+
+    If you only need 1 page combined with a parent, just import the layout and pass the contents as a body, no additional assembly file necessary.
+    Though the main component (for compiling the website) would need to then import the `content piece` and render it as a page to the output dir.
+-->
+<content-page
+    content="./content-to-insert.md" 
+    parent="./frame-to-wrap.md"
+    target="./dist/content-page-sample.html" />
+
+<!--target-dir="./dist"
+</content-page>-->

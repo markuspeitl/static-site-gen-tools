@@ -1,15 +1,14 @@
-import { DocumentData, DataParsedDocument } from "../compilers/runners";
-import { SsgConfig } from "../config";
-import { getFnFromParam, getTsModule, loadTsModuleFromPath } from "../module-loading/ts-modules";
-import { FalsyAble } from "./helpers/generic-types";
-
+import type { SsgConfig } from "../config";
+import type { IProcessResource } from "../pipeline/i-processor";
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
 
-export type DataToParsedDocumentFn = (resource: DocumentData | DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument | string>;
-export type DataToParsedDocumentOrString = DataToParsedDocumentFn | DataParsedDocument | string;
+export type DocumentData = Record<string, any>;
 
-export type DataFunction = (resource: DocumentData | DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument | DocumentData>;
+export type DataToParsedDocumentFn = (resource: DocumentData | IProcessResource, config?: SsgConfig) => Promise<IProcessResource | string>;
+export type DataToParsedDocumentOrString = DataToParsedDocumentFn | IProcessResource | string;
+
+export type DataFunction = (resource: DocumentData | IProcessResource, config?: SsgConfig) => Promise<IProcessResource | DocumentData>;
 //export type RenderFunction = DataToParsedDocumentFn;
 
 //Possible formats of Component on disk (before the component is loaded into memory)
@@ -25,13 +24,13 @@ export interface BaseComponent {
 
 //Format the components after loading them into memory (normalized internal component)
 export interface IInternalComponent {
-    data: (resource: DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument>;
-    render: (resource: DataParsedDocument, config?: SsgConfig) => Promise<DataParsedDocument>;
+    data: (resource: IProcessResource, config?: SsgConfig) => Promise<IProcessResource>;
+    render: (resource: IProcessResource, config?: SsgConfig) => Promise<IProcessResource>;
 }
 
 /*export interface FnBaseComponent {
-    data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData>;
-    render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string>;
+    data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | DocumentData>;
+    render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | string>;
 }*/
 
 //export type StyleFunction = DataToParsedDocumentFn;
@@ -47,7 +46,7 @@ export interface ExtensiveComponent extends BaseComponent {
     'clientCode'
 ];
 
-export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument> {
+export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config?: SsgConfig): Promise<IProcessResource> {
 
     if (!dataCtx) {
         dataCtx = {};
@@ -57,7 +56,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
         if (componentModule[ key ]) {
             const extendedRenderFn: DataToParsedDocumentOrString = getFnFromParam(componentModule[ key ]);
 
-            const renderedExtension: DataParsedDocument | string = await extendedRenderFn(dataCtx, config);
+            const renderedExtension: IProcessResource | string = await extendedRenderFn(dataCtx, config);
 
             dataCtx[ key ] = renderedExtension;
         }
@@ -65,7 +64,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
 
 
     const renderFn = getFnFromParam(componentModule.render);
-    const renderedComponent: DataParsedDocument | string = await renderFn(dataCtx, config);
+    const renderedComponent: IProcessResource | string = await renderFn(dataCtx, config);
 
     if (typeof renderedComponent === 'string') {
         return {
@@ -80,7 +79,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
     };
 }
 
-export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: SsgConfig = {}): Promise<DataParsedDocument | null> {
+export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: SsgConfig = {}): Promise<IProcessResource | null> {
 
     if (config && !config.tsComponentsCache) {
         config.tsComponentsCache = {};

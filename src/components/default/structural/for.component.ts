@@ -1,9 +1,7 @@
-import { DocumentData, DataParsedDocument } from "../../../compilers/runners";
 import { SsgConfig } from "../../../config";
 import { forkDataScope } from "../../../manage-scopes";
 import { IProcessResource } from "../../../pipeline/i-processor";
-import { processSubPath } from "../../../processing-tree-wrapper";
-import { processConfStage, processResource } from "../../../processing/process-resource";
+import { processSubPath, processTreeStages } from "../../../processing-tree-wrapper";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { getKeyFromDict } from "../../helpers/dict-util";
 import { FalsyAble } from "../../helpers/generic-types";
@@ -60,20 +58,9 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
 
             //const renderedIterationResource: FalsyAble<DataParsedDocument> = await processResource(resource, config, true);
 
-            const forkedResource: IProcessResource = forkDataScope(resource);
-
-
-            forkedResource.id = forkedResource.id + "__loop-iteration_" + itemValue + "_of_" + listItemName;
-            forkedResource.control = {
-                parent: resource,
-                handledProcIds: [],
-            };
-            const renderedIterationResource: FalsyAble<IProcessResource> = await processSubPath(forkedResource, config, [ 'extractor', 'compiler' ]);
-
-            /*let renderedIterationResource: FalsyAble<DataParsedDocument> = await processConfStage('extractor', forkedResource, config);
-            renderedIterationResource = await processConfStage('compiler', renderedIterationResource, config);*/
+            const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
+            const renderedIterationResource: IProcessResource = await processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
             const renderedBody = renderedIterationResource?.content || '';
-
             //const renderedBody = forkedResource.content;
 
             renderedIterations.push(renderedBody);

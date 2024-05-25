@@ -809,3 +809,162 @@ browser -> nodejs compat layer, so the client code can be executed on the server
 - Blog STD lib:
     - post-index component/grid (example for blog articles)
     - post-table (example for events)
+
+## Layout content component insertion:
+
+--> name property as `parent` instead of `layout`, as it is more generic, as it does define
+a relationship structure instead of naming a visual or semantic arrangement of content.
+
+`parent` for a single parent and
+`parents` for multiple parents
+
+
+#### Options:
+1. Insert into parent without compile as plaintext (splitting a document into parts that are assembled)
+    --> simple and plain way to build pages
+    --> only works if there is no relevant (non structural) data defined in the content document (possibilities are that data is discarded, or 
+    that the data is added to the parent context --> basically it is inserted without any scoping of the element/component and
+    is effectively equivalent to taking the body and pasting it into the parent)
+
+2. Insert into parent and attach information about how to compile this component/content as a sub component of
+the parent. Is inserted as a sub component that needs to be compiled by the parent (maybe compile self to placeholder, and add
+compile data to compileAfter and define processing steps to go through for compiling component)
+    - Defer compiling of document to parent document
+    - Fork scope from parent when compiling
+
+3. Insert into parent and fork subscope. Similar to (2.) but instead of forking the whole scope only request specific properties.
+    (Mainly to insulate/isolate contexts only passing the data we need --> this can be used for effective caching later, as we can
+    track the requested parent scope properties and only recompile the sub component if they have changed)
+
+Though **Is this even needed** --> why not just inherit instead.
+The purpose of defining these relationships in the `parent` -> insert -> `content` way, is to
+avoid too much syntax for a common operation.
+Blog like SSGs need to be content centric:
+1. Create file/document
+2. Start writing text & throughts
+3. Wire the piece of content into the page and add metadata
+
+Both are needed:
+- If we assemble a page and like to keep things compartmentalized by using components for different parts of the page 
+then using `parent & content` is unwieldy (we always would need to add the content as a component to some kind of dynamic
+collection and then unpacking in the parent or be able to add the component as a variable to the parent scope and the parent
+scope just has to `know` the name of the variable using it).
+Better is to just import the subcomponent as a component and use it from the parent --> which is more explicit and easier to follow.
+
+- While still providing ways to insert documents as `content` when it makes sense.
+Maybe instead of using the content keyword provide more generically `slots` which are ignored if not defined,
+and into which content may be inserted if the content defines the `parent` path and the name of the slot to insert into.
+
+When using components, then converting content/component documents to pages becomes an issue, as each piece of content would
+need another page component that assembles the html together with the content to form a page.
+Which requires either a form a dynamic page creation based on content pieces (eg a component that generates pages out of contents)
+or generating one page for each piece of content, utilizing a `parent & content` system, where the page creation is
+defined implicitly by the program.
+
+
+### content-page component
+```html
+<content-page 
+parent="./path/to/parent-frame.html" 
+content="./path/to/content.md"
+target="content-page.html"
+>
+</content-page>
+```
+
+~~Should provide a `content` slot and read the `slot` property of the content document~~
+1. Read `slot` property of content path
+2. Insert into the content defined slot in frame component
+3. Render assembled frame, set the target file and write to target
+
+The contents of the resources `data` should be irrelevant to the processing pipeline, but
+might be relevant to the functionality of specific components, therefore we use
+a component `content-page` that reads the data of the target content and
+assembles the page based on this data.
+If the properties (parents, parent, target, .etc) are passed into the component then those variable are used,
+if not then the component attempts to read the properties from the content document.
+
+```html
+<data>
+   <import path="/content/articlesdir/**.md" as="articles"></import> 
+</data>
+<article-pages>
+
+    <for it="article" of="articles">
+        <content-page>{{article}}</content-page>
+    </for>
+
+</article-pages>
+```
+
+> How to handle tags?? (a piece of content can have multiple tags)
+
+Need to keep track of compiled resources and their data scopes after compilation.
+
+1. Compile self contained components
+
+``// self == <all-pages></all-pages>``
+```html blog-website.html
+<data>
+   <import path="/article-pages.html" as="article-pages">
+        <data>
+            <src>./src/content/posts/**.md</src>
+        </data>
+   </import> 
+   <import path="/home-pages.html" as="home-pages"></import> 
+   <target>./dist</target>
+</data>
+
+
+<article-pages></article-pages>
+<home-pages>
+    <data>
+        <article-pages>article-pages.pages</article-pages>
+    </data>
+</home-pages>
+```
+
+article-pages.pages === rendered resources/article pages:
+```json
+[
+   {
+        "content": "<html><body><h1>I am</h1> a programming article</body></html>",
+        "data": {
+            "tags": [
+                "science",
+                "programming",
+                "typescript"
+            ]
+        }
+   },
+   {
+        "content": "<html><body><h1>I think</h1> therefore i am</body></html>",
+        "data": {
+            "tags": [
+                "philosophy",
+                "freud",
+                "ego"
+            ]
+        }
+   }
+]
+```
+
+Then we could compile the site by calling:
+```
+node better-ssg/cli.ts myblog/blog-website.html
+node better-ssg/cli.ts default/blog-website.html --src ./myblog
+```
+
+This way there is no complete inversion of control to the content document,
+as the what happens to it when it is read is not predefined, it simply represents
+`data` with which something can be done with (not a page per se).
+The page generator is in essence what then reads/compiles and pagifies the piece of content
+based on said data.
+Though this making a page out of the content is not a program hardcoded operation, but rather
+a function of the component that loads and uses the piece of content/data.
+
+That makes the program also easier to follow, as the page document props are not magic
+variables that define the control flow.
+Instead we can follow the compilation of the whole website incrementally,
+where each subcomponent is defined/imported by its parent.
