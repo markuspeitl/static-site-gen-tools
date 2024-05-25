@@ -1,7 +1,8 @@
 import * as cheerio from 'cheerio';
-import { AttrDict, isEmpty } from './util';
+import { type AttrDict, isEmpty } from './util';
 import * as path from 'path';
 import * as fs from 'fs';
+import type { FalsyAble } from '../components/helpers/generic-types';
 
 
 export function loadHtml(html: string, noHtmlEntities: boolean = true): cheerio.Root {
@@ -754,4 +755,40 @@ export function cheerioReplaceElem(html: string, id: string, replaceHtml: string
     const $: cheerio.Root = loadHtml(html);
     $(`#${id}`).replaceWith(replaceHtml);
     return unparseHtml($);
+}
+
+export type CheerioNodeFn<ReturnType> = ($: cheerio.Root, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
+export type TaggedCheerioNodeFn<ReturnType> = ($: cheerio.Root, currentTag: string, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
+export function cheerioDfsWalkFirstTop<ReturnType>($: cheerio.Root, currentCursor: cheerio.Cheerio, handleFork: CheerioNodeFn<ReturnType>, handleLeaf: CheerioNodeFn<ReturnType>): ReturnType[] {
+
+    const currentElement = $(currentCursor);
+    let currentChildren: cheerio.Cheerio = currentElement.children();
+    if (currentChildren.length <= 0) {
+        const leafProcessingResult: FalsyAble<ReturnType> = handleLeaf($, $(currentCursor));
+        if (!leafProcessingResult) {
+            return [];
+        }
+
+        return [ leafProcessingResult ];
+    }
+    const forkProcessResult: FalsyAble<ReturnType> = handleFork($, currentCursor);
+
+    //NON standard control flow! --> early exit branch if fork was successfully processed
+    if (forkProcessResult) {
+        return [ forkProcessResult ];
+    }
+
+    currentChildren = $(currentCursor).children();
+
+    const flatDescendantResults: ReturnType[] = [];
+
+    if (currentChildren.length > 0) {
+        for (const child of currentChildren) {
+            const processingResults: ReturnType[] = cheerioDfsWalkFirstTop($, $(child), handleFork, handleLeaf);
+
+            flatDescendantResults.push(...processingResults);
+        }
+    }
+
+    return flatDescendantResults;
 }

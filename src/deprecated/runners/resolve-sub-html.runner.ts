@@ -41,46 +41,7 @@ export function normalizeToDataParsedDoc(renderOutPut: string | DataParsedDocume
 }
 
 
-export function isDirPath(value: any): boolean {
-    return isPath(value) && value.endsWith('/');
-}
 
-export function possibleDirPath(value: any): boolean {
-    return isPath(value);
-}
-
-export function isPath(value: any): boolean {
-    if (typeof value === 'string') {
-        const hasSeperator = value.includes(path.sep);
-        if (!hasSeperator) {
-            return false;
-        }
-        return true;
-    }
-    return false;
-}
-
-export function isRelativePath(value: any): boolean {
-
-    if (isPath(value) && (value.startsWith('./') || value.startsWith('../'))) {
-        return true;
-    }
-    return false;
-}
-
-export function detectResolveRelativePath(relPath: string, rootPath: string): string | undefined {
-
-    if (isRelativePath(relPath)) {
-        const joinedPath = path.join(rootPath, relPath);
-        return path.resolve(joinedPath);
-    }
-    return undefined;
-
-}
-
-export function resolveRelativePaths(dict: any, rootPath: string): any {
-    return resolvePrimitiveLeaves(dict, (value) => detectResolveRelativePath(value, rootPath));
-}
 
 export function resolveImportPropToPath(importObj: any): string {
     /*if (typeof importObj === 'string') {
@@ -202,8 +163,7 @@ export async function extractMergePrepareData(
 }
 
 export type CheerioNodeFn<ReturnType> = ($: cheerio.Root, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
-
-export function cheerioDfsWalk<ReturnType>($: cheerio.Root, currentCursor: cheerio.Cheerio, handleFork: CheerioNodeFn<ReturnType>, handleLeaf: CheerioNodeFn<ReturnType>): ReturnType[] {
+export function cheerioDfsWalkFirstTop<ReturnType>($: cheerio.Root, currentCursor: cheerio.Cheerio, handleFork: CheerioNodeFn<ReturnType>, handleLeaf: CheerioNodeFn<ReturnType>): ReturnType[] {
 
     const currentElement = $(currentCursor);
     let currentChildren: cheerio.Cheerio = currentElement.children();
@@ -228,12 +188,11 @@ export function cheerioDfsWalk<ReturnType>($: cheerio.Root, currentCursor: cheer
 
     if (currentChildren.length > 0) {
         for (const child of currentChildren) {
-            const processingResults: ReturnType[] = cheerioDfsWalk($, $(child), handleFork, handleLeaf);
+            const processingResults: ReturnType[] = cheerioDfsWalkFirstTop($, $(child), handleFork, handleLeaf);
 
             flatDescendantResults.push(...processingResults);
         }
     }
-
 
     return flatDescendantResults;
 }

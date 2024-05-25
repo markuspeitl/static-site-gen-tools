@@ -6,8 +6,8 @@ import { setDefaultFragmentCache } from './defaults';
 import { defaultFragmentCache, FragmentCache } from '../fragement-cache';
 import { SsgConfig } from '../config';
 import { loadTsModuleFromPath } from '../module-loading/ts-modules';
-import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, getRunnerInstance } from '../compilers/runners';
-import { readFileAsString } from '../compilers/file.runner';
+import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, getRunnerInstance } from './compilers/runners';
+import { readFileAsString } from './compilers/file.runner';
 import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helpers/generic-types';
 
 

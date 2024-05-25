@@ -4,12 +4,12 @@ import type { SsgConfig } from "../../config";
 import { forkResourceScope } from '../../manage-scopes';
 import { cheerioReplaceElem } from '../../utils/cheerio-util';
 import { removeBaseBlockIndent } from '../../utils/string-util';
-import { addHandlerId } from "../i-resource-processor";
-import { processResource } from '../process-resource';
 import { HtmlCompiler } from './html.compiler';
-import { setHtmlOutputFormat } from './output-format';
 import { settleValueOrNull } from '../../utils/promise-util';
 import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import { resolveDataFromParentResource } from '../../components/resolve-component-path-refs';
+import { getResourceImportsCache } from '../../components/component-imports';
+import { DeferCompileArgs } from '../../components/deferred-component-compiling';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component.compiler';

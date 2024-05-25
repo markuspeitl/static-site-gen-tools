@@ -1,11 +1,11 @@
 import Module from "module";
-import { BaseComponent } from "../../components/base-component";
-import { FalsyAble } from "../../components/helpers/generic-types";
-import { SsgConfig } from "../../config";
-import { anchorAndGlob } from "../../utils/globbing";
+import { BaseComponent } from "../../../components/base-component";
+import { FalsyAble } from "../../../components/helpers/generic-types";
+import { SsgConfig } from "../../../config";
+import { anchorAndGlob } from "../../../utils/globbing";
 import * as fs from 'fs';
-import { loadTsModuleFromPath } from "../../module-loading/ts-modules";
-import { filterFalsy } from "../../components/helpers/array-util";
+import { loadTsModuleFromPath } from "../../../module-loading/ts-modules";
+import { filterFalsy } from "../../../components/helpers/array-util";
 
 export function detectComponentFiles(componentCandidatePaths: string[], config: SsgConfig): string[] {
     return componentCandidatePaths;

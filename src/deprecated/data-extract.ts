@@ -1,5 +1,5 @@
 import { SsgConfig } from '../config';
-import { DataExtractor, DataParsedDocument, DocumentData, getRunnerInstance } from '../compilers/runners';
+import { DataExtractor, DataParsedDocument, DocumentData, getRunnerInstance } from './compilers/runners';
 import { FalsyAble } from '../components/helpers/generic-types';
 
 export function getDataExtractedDocOfData(documentData: DocumentData | DataParsedDocument | null, docContent?: string | null): DataParsedDocument {

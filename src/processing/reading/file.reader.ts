@@ -5,6 +5,7 @@ import { addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
+import { isDirPath, isPath } from "../../utils/path-util";
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {

@@ -1,4 +1,4 @@
-import { IProcessResource } from "../compilers/runners";
+import { IProcessResource } from "./compilers/runners";
 import { SsgConfig } from "../config";
 import { IResourceProcessor } from "./i-processor";
 

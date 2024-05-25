@@ -102,13 +102,13 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         //'/**/*.component.ts',
     ];
 
-    config.defaultRunnerDirs = [
+    /*config.defaultRunnerDirs = [
         './src/compilers'
     ];
     config.defaultRunnersMatchGlobs = [
         '**.runner.ts',
         '*.runner.ts'
-    ];
+    ];*/
 
     config.defaultResourceProcessorDirs = [
         './src/processing'
@@ -121,7 +121,7 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
 
     config.processingTreeConfig = processingStages;
 
-    config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
+    //config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
 
     config.outDir = './dist';
     config.cacheDir = path.join(config.outDir, '/cache');
@@ -182,7 +182,7 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
 
     console.time('init');
 
-    if (!config.idCompileRunnersDict) {
+    /*if (!config.idCompileRunnersDict) {
         config.idCompileRunnersDict = {};
     }
     if (!config.resMatchCompileRunnersDict) {
@@ -190,7 +190,7 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     }
     if (!config.resMatchDataExtractorsDict) {
         config.resMatchDataExtractorsDict = {};
-    }
+    }*/
     //await setUpMasterRunner(config.masterCompileRunnerPath, config);
     //await loadDefaultRunners(config);
 

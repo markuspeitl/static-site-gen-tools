@@ -4,6 +4,8 @@ import { addHandlerId, addResourceDocProp } from '../i-resource-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from '../../utils/fs-util';
+import { isPath, possibleDirPath } from "../../utils/path-util";
+import { processStagesFromToPath, processStagesOnInputPath, processTreeFromToPath } from "../../processing-tree-wrapper";
 
 
 export function getTargetDirPath(resource: IProcessResource): string | null {
@@ -73,7 +75,7 @@ export class DirReader implements IResourceProcessor {
             const fsNodePath: string = path.join(resolvedPath, dirFile);
             //const targetNodePath: string = path.join(getTargetDirPath(resource), dirFile);
 
-            const processedResource: IProcessResource = await processFsNodeAtPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
+            const processedResource: IProcessResource = await processTreeFromToPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
 
             resource = addResourceDocProp(
                 resource,

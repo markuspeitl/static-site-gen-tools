@@ -1,12 +1,14 @@
-import path from 'path';
 import type { SsgConfig } from "../../config";
 import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
-import { FalsyAble } from '../../components/helpers/generic-types';
+import type { FalsyAble } from '../../components/helpers/generic-types';
 import { getLibInstance } from "../../dependencies/module-instances";
 import { addHandlerId } from "../i-resource-processor";
 import { HtmlCompiler } from './html.compiler';
 import { setHtmlOutputFormat } from './output-format';
+import { getResourceImportsCache, resolveResourceImports } from '../../components/component-imports';
+import { findReplaceTopLevelDetectedComponents } from '../../components/components-to-placeholders';
+import path from 'path';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
@@ -35,13 +37,13 @@ export class PlaceholderCompiler implements IResourceProcessor {
 
         resource = await resolveResourceImports(currentDocumentDir, resource, config);
         let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
-        const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+        //const importScopeSymbols: string[] = Object.keys(selectedDependencies);
 
         //1. Load dependencies/imports and components
         //2. Check if any components are in content
         //const dataResource: IProcessResource = resource;
 
-        const componentsSubstitutedRes: FalsyAble<IProcessResource> = await substituteComponentsPlaceholder(resource, config);
+        const componentsSubstitutedRes: FalsyAble<IProcessResource> = await findReplaceTopLevelDetectedComponents(resource, config);
 
         if (componentsSubstitutedRes) {
             resource = componentsSubstitutedRes;

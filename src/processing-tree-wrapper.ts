@@ -42,7 +42,7 @@ export async function processSubPath(resource: IProcessResource, config: SsgConf
     return processSubPath(resource, config, stagesToProcess);
 }
 
-export async function processTreeStages(stagesToProcess: string[], resource: IProcessResource, config: SsgConfig, processRunId?: string): Promise<IProcessResource> {
+export async function processTreeStages(stagesToProcess: string[] | undefined, resource: IProcessResource, config: SsgConfig, processRunId?: string): Promise<IProcessResource> {
     const forkedResource: IProcessResource = forkDataScope(resource);
 
     processRunId = "_" + processRunId || '';
@@ -56,7 +56,7 @@ export async function processTreeStages(stagesToProcess: string[], resource: IPr
 }
 
 //Example: Use process stage to read resource to memory
-export async function processStagesOnInputPath(stagesToProcess: string[], documentPath: string, config: SsgConfig): Promise<IProcessResource> {
+export async function processStagesOnInputPath(stagesToProcess: string[] | undefined, documentPath: string, config: SsgConfig): Promise<IProcessResource> {
 
     const toReadResource = {
         id: documentPath,
@@ -69,3 +69,21 @@ export async function processStagesOnInputPath(stagesToProcess: string[], docume
 
     return processSubPath(toReadResource, config, stagesToProcess);
 }
+
+export async function processStagesFromToPath(stagesToProcess: string[] | undefined, inputPath: string, outputPath: string | null, config: SsgConfig): Promise<IProcessResource> {
+
+    const toProcessResource: IProcessResource = {
+        id: inputPath,
+        content: null,
+        data: {
+            document: {
+                src: inputPath,
+                target: outputPath
+            }
+        }
+    };
+
+    return processSubPath(toProcessResource, config, stagesToProcess);
+}
+
+export const processTreeFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(undefined, inputPath, outputPath, config);

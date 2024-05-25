@@ -1,4 +1,4 @@
-import { CompileRunner, DataParsedDocument, DocumentData } from "../compilers/runners";
+import { CompileRunner, DataParsedDocument, DocumentData } from "./compilers/runners";
 import { SsgConfig } from "../config";
 import { BaseComponent, FnBaseComponent } from "./base-component";
 import { FalsyAble } from "./helpers/generic-types";

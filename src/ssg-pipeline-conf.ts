@@ -1,6 +1,4 @@
-import { children } from "cheerio/lib/api/traversing";
-import { resolveDataFromSrc } from "./compilers/resolve-sub-html.runner";
-import { IProcessingNodeConfig } from "./pipeline/i-processor";
+import type { IProcessingNodeConfig } from "./pipeline/i-processor";
 
 export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
@@ -8,6 +6,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
     //(not as good as general graph, but easier to maintain, visualize)
     //Each resource can only processed once by each subProcessor (unless the processorId is removed from handledProcIds)
 
+    //Is a serializeable data structure (can be simply written in a .json file)
     const ssgProcessorConfiguration: IProcessingNodeConfig = {
         id: 'ssg-process',
         inputGuard: undefined,

@@ -1,7 +1,5 @@
 import Module from "module";
 import { FragmentCache } from "./fragement-cache";
-import { CompileRunner } from "./compilers/runners";
-import { IMasterRunner } from "./compilers/generic.runner";
 import { IInternalComponent } from "./components/base-component";
 import { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
 import { ProcessingTreeWrapper } from "./processing-tree-wrapper";
@@ -41,16 +39,16 @@ export interface SsgConfig {
 
     //<deprecated>
     //Generic compile runner that selects a target runner from src data
-    masterCompileRunner?: IMasterRunner;
-    resMatchCompileRunnersDict?: Record<string, string[]>;
-    resMatchDataExtractorsDict?: Record<string, string[]>;
-    idCompileRunnersDict?: Record<string, CompileRunner>;
+    //masterCompileRunner?: IMasterRunner;
+    //resMatchCompileRunnersDict?: Record<string, string[]>;
+    //resMatchDataExtractorsDict?: Record<string, string[]>;
+    //idCompileRunnersDict?: Record<string, CompileRunner>;
 
-    masterCompileRunnerPath?: string;
+    //masterCompileRunnerPath?: string;
     //Autoload runners from these dirs, by their file names and remove '-runner' (could be detected with the 'getInstance' method existance on the module)
     //Default: [./src/compilers]
-    defaultRunnerDirs?: string[];
-    defaultRunnersMatchGlobs?: string[];
+    //defaultRunnerDirs?: string[];
+    //defaultRunnersMatchGlobs?: string[];
     //</deprecated>
 
 

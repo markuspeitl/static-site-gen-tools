@@ -1,5 +1,5 @@
 import path from "path";
-import { CompileRunner, DataParsedDocument, DocumentData, ResourceRunner, ResourceWriter } from "../compilers/runners";
+import { CompileRunner, DataParsedDocument, DocumentData, ResourceRunner, ResourceWriter } from "./compilers/runners";
 import { SsgConfig } from "../config";
 import { FalsyAble, FalsyString, FalsyStringPromise } from '../components/helpers/generic-types';
 import * as fs from 'fs';

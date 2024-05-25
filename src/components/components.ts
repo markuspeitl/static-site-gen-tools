@@ -314,22 +314,3 @@ export async function getImportComponentsPool(importPaths: string[], config: Ssg
     return Object.assign({}, defaultComponentsCache, currentImportComponentsPool);
     //return currentImportComponentsPool;
 }
-
-export async function getResourceImports(resource: IProcessResource, config: SsgConfig): Promise<Record<string, IInternalComponent>> {
-
-    if (!resource) {
-        return {};
-    }
-    if (!resource.data) {
-        resource.data = {};
-    }
-    if (!resource.data.import) {
-        resource.data.import = [];
-    }
-    const importPaths: string[] = resource.data.import;
-    const currentImportComponentsPool: Record<string, IInternalComponent> = await getImportComponentsPool(importPaths, config);
-
-    resource.data.importCache = currentImportComponentsPool;
-
-    return currentImportComponentsPool;
-}
