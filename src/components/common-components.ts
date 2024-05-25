@@ -1,7 +1,6 @@
-import { DocumentData } from "../compilers/runners";
-import { SsgConfig } from "../config";
-import { DataFunction, DataToParsedDocumentOrString, ExtensiveComponent } from "./base-component";
+import type { SsgConfig } from "../config";
 import * as fs from 'fs';
+import { DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "./base-component";
 import { curvyTemplate } from "./helpers/pre-process";
 
 export function readFileFn(filePath: string): () => Promise<string> {

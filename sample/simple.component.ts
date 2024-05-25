@@ -1,9 +1,9 @@
-import { DataParsedDocument, DocumentData } from "../src/compilers/runners";
-import { BaseComponent, DataFunction, DataToParsedDocumentOrString, ExtensiveComponent } from "../src/components/base-component";
+import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "../src/components/base-component";
 import { dataTemplateFn, StaticAssembledFileComponent } from "../src/components/common-components";
 import { css, curvyTemplate, html, ts } from "../src/components/helpers/pre-process";
 import { SsgConfig } from "../src/config";
 import * as fs from 'fs';
+import { IProcessResource } from "../src/pipeline/i-processor";
 
 export class PropStyleComponent implements ExtensiveComponent {
 
@@ -51,14 +51,14 @@ export class FileComponent extends StaticAssembledFileComponent {
 }
 
 class FunctionStyleDynamicComponent implements BaseComponent {
-    async data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | DocumentData> {
+    async data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | DocumentData> {
         return {
             title: 'prop style test',
             description: 'setting component contents through simplified style',
             content: '<div><span><img src="assets/test.png" /></span></div>'
         };
     }
-    async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<DataParsedDocument | string> {
+    async render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | string> {
 
         if (!dataCtx) {
             dataCtx = {};

@@ -1,4 +1,3 @@
-import { DataParsedDocument } from "./compilers/runners";
 import * as lodash from 'lodash';
 
 export function forkDataScope(resource: any): any {
@@ -16,7 +15,7 @@ export function forkResourceScope(resource: any): any {
 //passDataScope: Things like html attributes or data specifically passed to component. (data passed into component)
 //extractedScope: Data defined within the component (extractData, or component.data()) --> extractedScope.content should the component body without the data
 
-export function mergeResourceScopes(parentScope: DataParsedDocument, passDataScope: DataParsedDocument, extractedScope: DataParsedDocument): DataParsedDocument {
+export function mergeResourceScopes(parentScope: IProcessResource, passDataScope: IProcessResource, extractedScope: IProcessResource): IProcessResource {
 
     const forkedScope = forkDataScope(parentScope);
 

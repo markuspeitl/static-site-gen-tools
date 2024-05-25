@@ -1,13 +1,13 @@
-import { DataParsedDocument, DocumentData } from "../../src/compilers/runners";
 import { wrapContent } from "../../src/components/helpers/wrap-html";
-import { SsgConfig } from "../../src/config";
+import type { SsgConfig } from "../../src/config";
+import type { IProcessResource } from "../../src/pipeline/i-processor";
 import { splitStringPreserve } from "../../src/utils/string-util";
 
 function renderSpan(content: string): string {
     return `<span>${content}</span>`;
 }
 
-export async function render(resouce: DataParsedDocument, config: SsgConfig = {}): Promise<DataParsedDocument> {
+export async function render(resouce: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
     let data = resouce.data;
     const content: string = resouce.content;
 

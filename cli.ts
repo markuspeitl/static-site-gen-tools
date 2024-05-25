@@ -1,8 +1,7 @@
-import { SsgConfig } from './src/config';
+import type { SsgConfig } from './src/config';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
-import { DataParsedDocument } from './src/compilers/runners';
-import { FalsyAble } from './src/components/helpers/generic-types';
 import { processFsNodeAtPath } from './src/processing/process-resource';
+import type { IProcessResource } from './src/pipeline/i-processor';
 
 async function main() {
     /*const parser = new ArgumentParser({
@@ -71,7 +70,7 @@ async function main() {
         throw new Error('Source and target path need to be specified to compile component');
     }
 
-    const toCompileResource: DataParsedDocument = {
+    const toCompileResource: IProcessResource = {
         content: null,
         data: {
             src: config.sourcePath,
@@ -111,7 +110,7 @@ async function main() {
 
 
     //TODO seperate file and buffer compile
-    /*const resultDoc: FalsyAble<DataParsedDocument> = await config.masterCompileRunner?.compile(toCompileResource, config);
+    /*const resultDoc: FalsyAble<IProcessResource> = await config.masterCompileRunner?.compile(toCompileResource, config);
     if (resultDoc) {
         console.log("Compiled doc Content:");
         console.log(resultDoc.content);

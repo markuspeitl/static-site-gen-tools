@@ -53,11 +53,20 @@ export async function processTreeStages(stagesToProcess: string[], resource: IPr
         parent: resource,
         handledProcIds: [],
     };
-    const renderedIterationResource: FalsyAble<IProcessResource> = await processSubPath(forkedResource, config, stagesToProcess);
+    return processSubPath(forkedResource, config, stagesToProcess);
+}
 
-    if (!renderedIterationResource) {
-        return resource;
-    }
+//Example: Use process stage to read resource to memory
+export async function processStagesOnInputPath(stagesToProcess: string[], documentPath: string, config: SsgConfig): Promise<IProcessResource> {
 
-    return renderedIterationResource;
+    const toReadResource = {
+        id: documentPath,
+        data: {
+            document: {
+                src: documentPath
+            }
+        }
+    };
+
+    return processSubPath(toReadResource, config, stagesToProcess);
 }

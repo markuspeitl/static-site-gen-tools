@@ -1,15 +1,17 @@
+import type { SsgConfig } from "../config";
+import type { FalsyAble } from "./helpers/generic-types";
+import type { IProcessResource } from "../pipeline/i-processor";
 import path from "path";
-import { SsgConfig } from "../config";
+import fs from 'fs';
 import { anchorAndGlob } from "../utils/globbing";
-import { DataParsedDocument, DocumentData } from "../compilers/runners";
 import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
-import { BaseComponent, IInternalComponent } from "./base-component";
-import { FalsyAble } from "./helpers/generic-types";
+import { BaseComponent, DocumentData, IInternalComponent } from "./base-component";
 import { filterFalsy } from "./helpers/array-util";
 import { PassthroughComponent } from "./default/passthrough.component";
 import { getFsNodeStat } from "../utils/fs-util";
-import fs from 'fs';
+
 import { FileComponent } from "./default/file.component";
+
 
 export function getComponentIdFromPath(runnerPath: string): string {
     return getModuleId(runnerPath, '.component');
@@ -313,7 +315,7 @@ export async function getImportComponentsPool(importPaths: string[], config: Ssg
     //return currentImportComponentsPool;
 }
 
-export async function getResourceImports(resource: DataParsedDocument, config: SsgConfig): Promise<Record<string, IInternalComponent>> {
+export async function getResourceImports(resource: IProcessResource, config: SsgConfig): Promise<Record<string, IInternalComponent>> {
 
     if (!resource) {
         return {};

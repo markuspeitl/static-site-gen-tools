@@ -2,8 +2,8 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource } from "../../pipeline/i-processor";
 import type { IInternalComponent } from "../base-component";
 import type { FalsyAble } from "../helpers/generic-types";
-import { processConfStage, useReaderStageToRead } from "../../processing/process-resource";
 import { resetDocumentSetInputFormat } from "../../processing/i-resource-processor";
+import { processStagesOnInputPath, processSubPath } from "../../processing-tree-wrapper";
 
 /*const cachedFileResources: Record<string, IProcessResource> = {};
 export async function getFileResource(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IProcessResource>> {
@@ -41,7 +41,7 @@ export class FileComponent implements IInternalComponent {
         return this.path;
     }
 
-    private async getFileResource(resource?: IProcessResource, config?: SsgConfig): Promise<FalsyAble<IProcessResource>> {
+    private async getFileResource(resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IProcessResource>> {
 
         if (this.readFileResource) {
             return this.readFileResource;
@@ -55,7 +55,7 @@ export class FileComponent implements IInternalComponent {
             return null;
         }
 
-        let readResource: IProcessResource = await useReaderStageToRead(documentPath, config);
+        let readResource: IProcessResource = await processStagesOnInputPath([ 'extractor', 'compiler' ], documentPath, config);
 
         if (!readResource.content || !readResource.data?.document?.inputFormat) {
             return null;
@@ -77,8 +77,7 @@ export class FileComponent implements IInternalComponent {
         resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
 
         resource.content = readResource.content;
-        this.dataExtractedResource = await processConfStage('extractor', resource, config);
-        //dataExtractedContent = dataExtractedResource.content;
+        this.dataExtractedResource = await processSubPath(resource, config, [ 'extractor' ]);
 
         if (!this.dataExtractedResource) {
             this.dataExtractedResource = readResource;
@@ -92,19 +91,8 @@ export class FileComponent implements IInternalComponent {
             this.data(resource, config);
         }
 
-        /*resource = await resolveDataFromSrc(resource, config);
-
-        const readResource: FalsyAble<IProcessResource> = await this.getFileResource(resource, config);
-        if (!readResource) {
-            return resource;
-        }*/
-
-        //resource.data.document.src = componentPath;
-        //resource.content = readResource.content;
-        //resource.content = dataExtractedContent || readResource.content || resource.content;
-        return processConfStage('compiler', this.dataExtractedResource || resource, config);
-
-        //return processConfStage('compiler', resource, config);
+        const resourceToCompile: IProcessResource = this.dataExtractedResource || resource;
+        return await processSubPath(resourceToCompile, config, [ 'compiler' ]);
     }
 
 }
