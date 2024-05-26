@@ -21,25 +21,40 @@ export async function getProcessorIfCanHandle(resource: IProcessResource, config
     return processor;
 }
 
-export async function callProcessMergeResource(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
-    const canHandleProcessor: IResourceProcessor | null = await getProcessorIfCanHandle(resource, config, processor);
-    if (!canHandleProcessor) {
-        return resource;
-    }
-
-    //Process does only return the data that it produces
-    //The processor is not themselves resposible for data merging
-    const transformedResource: IProcessResource = await processor.process(resource, config);
+export async function callProcessFnMergeResource(resource: IProcessResource, config: any, processFn: ProcessFunction, thisObj?: any): Promise<IProcessResource> {
+    const transformedResource: IProcessResource = await processFn.call(thisObj, resource, config);
 
     const mergedResource: IProcessResource = lodash.merge({}, resource, transformedResource);
     return mergedResource;
 }
 
-export async function passThroughProcessChain(resource: IProcessResource, config: any, chainToProcess: IResourceProcessor[]): Promise<IProcessResource> {
+export async function callProcessorMergeResource(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
+    return callProcessFnMergeResource(resource, config, (resource, config) => checkAndProcessWith(resource, config, processor));
+}
 
+export async function checkAndProcessWith(resource: IProcessResource, config: any, processor: IResourceProcessor): Promise<IProcessResource> {
+    const canHandleProcessor: IResourceProcessor | null = await getProcessorIfCanHandle(resource, config, processor);
+    if (!canHandleProcessor) {
+        return resource;
+    }
+    //Process does only return the data that it produces
+    //The processor is not themselves resposible for data merging
+    const transformedResource: IProcessResource = await processor.process(resource, config);
+    return transformedResource;
+}
+
+export async function passThroughProcessChain(resource: IProcessResource, config: any, chainToProcess: IResourceProcessor[]): Promise<IProcessResource> {
     let resultResource: IProcessResource = resource;
     for (const processor of chainToProcess) {
-        resultResource = await callProcessMergeResource(resultResource, config, processor);
+        resultResource = await callProcessorMergeResource(resultResource, config, processor);
+    }
+    return resultResource;
+}
+
+export async function passThroughFnChain(resource: IProcessResource, config: any, processFunctions: ProcessFunction[], thisObj: any): Promise<IProcessResource> {
+    let resultResource: IProcessResource = resource;
+    for (const processFn of processFunctions) {
+        resultResource = await callProcessFnMergeResource(resultResource, config, processFn, thisObj);
     }
     return resultResource;
 }
@@ -62,7 +77,7 @@ export const processStrategyConfigMapper: Record<ProcessStrategy, ProcessFunctio
     },
     'parallel': async function (resource: IProcessResource, config: any) {
         const subProcessors: IProcessingNode[] = this.processors;
-        const promises = subProcessors.map((processor) => callProcessMergeResource(resource, config, processor));
+        const promises = subProcessors.map((processor) => callProcessorMergeResource(resource, config, processor));
         const resultResources: Array<IProcessResource | null> = await settleValueOrNull(promises);
         return lodash.merge({}, ...resultResources);
     },
@@ -72,7 +87,7 @@ export const processStrategyConfigMapper: Record<ProcessStrategy, ProcessFunctio
         if (!firstCanHandleProcessor) {
             return resource;
         }
-        return callProcessMergeResource(resource, config, firstCanHandleProcessor);
+        return callProcessorMergeResource(resource, config, firstCanHandleProcessor);
     },
     'lastMatch': async function (resource: IProcessResource, config: any) {
         const subProcessors: IProcessingNode[] = this.processors;
@@ -80,7 +95,7 @@ export const processStrategyConfigMapper: Record<ProcessStrategy, ProcessFunctio
         if (!firstCanHandleProcessor) {
             return resource;
         }
-        return callProcessMergeResource(resource, config, firstCanHandleProcessor);
+        return callProcessorMergeResource(resource, config, firstCanHandleProcessor);
     },
 };
 

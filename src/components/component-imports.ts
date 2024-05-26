@@ -2,11 +2,9 @@ import { resolveDataRefs } from "./resolve-component-path-refs";
 import type { SsgConfig } from "../config";
 import type { IProcessResource } from "../pipeline/i-processor";
 import type { IInternalComponent } from "./base-component";
-import { getImportComponentsPool } from "./components";
-import { isEmpty } from "./helpers/array-util";
 import path from "path";
 
-export function getResourceImportsCache(resource: IProcessResource, config: SsgConfig): Record<string, IInternalComponent> {
+/*export function getResourceImportsCache(resource: IProcessResource, config: SsgConfig): Record<string, IInternalComponent> {
     let selectedDependencies: Record<string, IInternalComponent> = {};
     if (resource.data?.importCache && !isEmpty(resource.data?.importCache)) {
         selectedDependencies = resource.data?.importCache;
@@ -57,4 +55,17 @@ export async function resolveImportsFromDocDir(resource: IProcessResource, confi
     }
 
     return resolveResourceImports(currentDocumentDir, resource, config);
+}*/
+
+export async function resolveDataRefPathsFromDocDir(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+    if (!resource.data) {
+        return resource;
+    }
+    let currentDocumentDir: string = "";
+    if (resource.data.document.src) {
+        currentDocumentDir = path.parse(resource.data.document.src).dir;
+    }
+
+    resource = resolveDataRefs(currentDocumentDir, resource, config);
+    return resource;
 }

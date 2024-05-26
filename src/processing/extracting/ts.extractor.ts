@@ -2,9 +2,8 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from '../../components/helpers/generic-types';
-import { getComponentFrom } from '../../components/components';
-import { forkResourceScope } from '../../manage-scopes';
 import { setKeyInDict } from "../../components/helpers/dict-util";
+import { getTsComponentFromResource } from "../../components/components";
 
 export class TsExtractor implements IResourceProcessor {
     id: string = 'ts.extractor';
@@ -23,13 +22,11 @@ export class TsExtractor implements IResourceProcessor {
             return true;
         }*/
 
-        const component: FalsyAble<IInternalComponent> = await getComponentFrom(null, config, resourceContent);
+        const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (component) {
             return true;
         }
-
-        return true;
-        //return false;
+        return false;
     }
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
@@ -38,8 +35,7 @@ export class TsExtractor implements IResourceProcessor {
         }
         console.log(`Extracting ${this.id}: ${resource.data?.document?.src}`);
 
-
-        const component: FalsyAble<IInternalComponent> = await getComponentFrom(null, config, resourceContent);
+        const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (!component) {
             return resource;
         }

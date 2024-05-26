@@ -1,32 +1,33 @@
 import type { SsgConfig } from "../config";
 import type { FalsyAble } from "./helpers/generic-types";
-import type { IProcessResource } from "../pipeline/i-processor";
-import path from "path";
-import fs from 'fs';
-import { anchorAndGlob, globInDirsCollectFlat } from "../utils/globbing";
 import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
 import { BaseComponent, DocumentData, IInternalComponent } from "./base-component";
-import { filterFalsy } from "./helpers/array-util";
 import { PassthroughComponent } from "./default/passthrough.component";
-import { getFsNodeStat } from "../utils/fs-util";
-
 import { FileComponent } from "./default/file.component";
+import type Module from "module";
+import type { IProcessResource } from "../pipeline/i-processor";
 
 
 export function getComponentIdFromPath(runnerPath: string): string {
     return getModuleId(runnerPath, '.component');
 }
 
-export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble<string> {
+/*export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble<string> {
     if (!dataCtx) {
         return null;
     }
     const componentModulePath: string = dataCtx?.inputPath || dataCtx?.path || dataCtx?.src;
     return componentModulePath;
+}*/
+
+export interface IExternalComponentModule extends Module {
+    default?: any,
+    data?: any,
+    render?: any;
 }
 
 //Only 1 component per file is allowed right now
-export function moduleToComponentInstance(module: any): FalsyAble<IInternalComponent> {
+export function moduleToComponentInstance(module: IExternalComponentModule): FalsyAble<IInternalComponent> {
 
     let componentInstance: BaseComponent | null = null;
     const passThroughComponent: PassthroughComponent = new PassthroughComponent();
@@ -96,23 +97,8 @@ export function moduleToComponentInstance(module: any): FalsyAble<IInternalCompo
     return componentInstance as FalsyAble<IInternalComponent>;
 }
 
-
-export async function getComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
-
-    if ((componentPath && componentPath.endsWith('.ts')) || moduleContent) {
-        return getTsComponentFrom(componentPath, config, moduleContent);
-    }
-
-    if (componentPath) {
-
-        return new FileComponent(componentPath);
-        //return getComponentFromPath(componentPath, config);
-    }
-    return null;
-}
-
-export async function getTsComponentFrom(componentPath: FalsyAble<string>, config?: SsgConfig, moduleContent?: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
-    let loadedModule: any = await getTsModule(moduleContent, componentPath, config?.tsModulesCache);
+export async function getTsComponentFrom(componentPath: FalsyAble<string>, config: SsgConfig, moduleBuffer: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
+    let loadedModule: any = await getTsModule(moduleBuffer, componentPath, config?.tsModulesCache);
     if (!loadedModule) {
         return null;
     }
@@ -129,124 +115,49 @@ export async function getTsComponentFrom(componentPath: FalsyAble<string>, confi
     //return componentInstance;
 }
 
-export async function getComponent(dataCtx?: DocumentData | null, moduleContent?: FalsyAble<string>, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+export async function getTsComponentFromBuffer(moduleBuffer: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
 
+    if (!moduleBuffer) {
+        return null;
+    }
+    return getTsComponentFrom(null, config, moduleBuffer);
+}
+
+export async function getComponentFromPath(componentPath: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+
+    if (!componentPath) {
+        return null;
+    }
+
+    if (componentPath.endsWith('.ts')) {
+        return getTsComponentFrom(componentPath, config, null);
+    }
+
+    return new FileComponent(componentPath);
+    //return getComponentFromPath(componentPath, config);
+}
+
+/*export async function getComponent(dataCtx?: DocumentData | null, moduleContent?: FalsyAble<string>, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
     const modulePath: FalsyAble<string> = getTargetModulePath(dataCtx);
     return getComponentFrom(modulePath, config, moduleContent);
-}
-
-export function getCachesValue(key: string, caches: Record<string, any>[]): any {
-    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
-    for (const cache of truthyCaches) {
-        if (cache[ key ]) {
-            return cache[ key ];
-        }
-    }
-    return null;
-}
-export function setCachesValue(key: string, value: any, caches: Record<string, any>[]): void {
-    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
-    for (const cache of truthyCaches) {
-        cache[ key ] = value;
-    }
-}
-export function syncCachesValue(key: string, value: any, caches: Record<string, any>[]): any {
-    const truthyCaches: Record<string, IInternalComponent>[] = filterFalsy(caches);
-    for (const cache of truthyCaches) {
-        if (!cache[ key ]) {
-            cache[ key ] = value;
-        }
-    }
-    return value;
-}
-
-export async function loadComponentToCaches(modulePath: string, config: SsgConfig, caches: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
-    const componentId: string = getComponentIdFromPath(modulePath);
-    const foundVal: IInternalComponent = getCachesValue(componentId, caches);
-    if (foundVal) {
-        return syncCachesValue(componentId, foundVal, caches);
-    }
-    const loadedComponent: FalsyAble<IInternalComponent> = await getComponentFrom(modulePath, config, null);
-    if (!loadedComponent) {
-        return null;
-    }
-    setCachesValue(componentId, loadedComponent, caches);
-    return loadedComponent;
-}
-
-export async function loadComponents(searchAnchorPaths: string[], componentMatchGlobs: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
-    if (!config.defaultComponentsCache) {
-        config.defaultComponentsCache = {};
-    }
-    if (!config.componentsCache) {
-        config.componentsCache = {};
-    }
-    if (!searchAnchorPaths || !componentMatchGlobs) {
-        return null;
-    }
-
-    return globInDirsCollectFlat(searchAnchorPaths, componentMatchGlobs, loadComponentToCaches, config, caches);
-}
-
-export async function loadDefaultComponents(config: SsgConfig): Promise<FalsyAble<BaseComponent[]>> {
-    if (!config.defaultComponentsCache) {
-        config.defaultComponentsCache = {};
-    }
-    if (!config.componentsCache) {
-        config.componentsCache = {};
-    }
-    if (!config.defaultComponentImportDirs || !config.defaultComponentsMatchGlobs) {
-        return null;
-    }
-
-    return loadComponents(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, config, [
-        config.defaultComponentsCache, config.componentsCache
-    ]);
-}
-
-export function getCachedDefaultComponent(componentId: string, config: SsgConfig): FalsyAble<IInternalComponent> {
-    if (config.defaultComponentsCache && config.defaultComponentsCache[ componentId ]) {
-        return config.defaultComponentsCache[ componentId ];
-    }
-    return null;
-}
-
-export async function getImportComponentsPool(importPaths: string[], config: SsgConfig): Promise<Record<string, IInternalComponent>> {
-    const currentImportComponentsPool: Record<string, IInternalComponent> = {};
-
-    if (!config.defaultComponentsMatchGlobs) {
-        config.defaultComponentsMatchGlobs = [];
-    }
-    if (!config.defaultComponentsCache) {
-        config.defaultComponentsCache = {};
-    }
-
-    const loadComponentsPromises: Promise<any>[] = [
-        loadDefaultComponents(config),
-        loadComponents(importPaths, config.defaultComponentsMatchGlobs, config, [ currentImportComponentsPool ]),
-    ];
-
-    await Promise.all(loadComponentsPromises);
-
-    const defaultComponentsCache: Record<string, IInternalComponent> = config.defaultComponentsCache;
-    return Object.assign({}, defaultComponentsCache, currentImportComponentsPool);
-    //return currentImportComponentsPool;
-}
-
-/*export async function loadComponentToCache(modulePath: string, config: SsgConfig, cacheKey: string = 'componentsCache'): Promise<FalsyAble<BaseComponent>> {
-    const componentId: string = getComponentIdFromPath(modulePath);
-    if (!config[ cacheKey ]) {
-        config[ cacheKey ] = {};
-    }
-    if (config[ cacheKey ][ componentId ]) {
-        return config[ cacheKey ][ componentId ];
-    }
-
-    const loadedComponent: FalsyAble<BaseComponent> = await getComponentFrom(modulePath, config, null);
-    if (!loadedComponent) {
-        return null;
-    }
-    config[ cacheKey ][ componentId ] = loadedComponent;
-
-    return loadedComponent;
 }*/
+
+export async function getTsComponentFromResource(resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+    if (resource.data?.document?.inputFormat !== 'ts') {
+        return null;
+    }
+
+    if (resource.content) {
+        const bufferComponent: FalsyAble<IInternalComponent> = await getTsComponentFromBuffer(resource.content, config);
+        if (bufferComponent) {
+            return bufferComponent;
+        }
+    }
+
+    const inputPath: string | undefined = resource.data?.document?.src;
+    if (inputPath) {
+        const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
+        return filePathComponent;
+    }
+    return null;
+}

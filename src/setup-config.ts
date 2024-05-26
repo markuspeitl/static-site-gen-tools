@@ -1,15 +1,16 @@
 import path from "path";
 import { SsgConfig } from "./config";
-import { anchorAndGlob } from "./utils/globbing";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
 import { getFsNodeStat } from "./utils/fs-util";
-import { loadDefaultComponents } from "./components/components";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
 import { IProcessingNodeConfig } from "./pipeline/i-processor";
 import type { IProcessResource } from './pipeline/i-processor';
 import { defaultScopeManager } from "./data/scope-manager";
 import { initProcessorInstanceFromConf } from "./pipeline/init-processing-node";
+import { initDefaultImportSymbols } from "./module-loading/imports-loading";
+import { resolveDataFromParentFile } from "./components/resolve-component-path-refs";
+import { resolveRelativePaths } from "./utils/path-util";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -86,7 +87,7 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         config = {};
     }
 
-    config.defaultComponentImportDirs = [
+    `config.defaultComponentImportDirs = [
         './src/components/default/'
     ];
     config.defaultComponentsMatchGlobs = [
@@ -95,12 +96,18 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
         '.component.*',
         '**/*.component.*',
         '/**/*.component.*',
-        //'**.component.ts',
-        //'*.component.ts',
-        //'.component.ts',
-        //'**/*.component.ts',
-        //'/**/*.component.ts',
+        '**.component.ts',
+        '*.component.ts',
+        '.component.ts',
+        '**/*.component.ts',
+        '/**/*.component.ts',
+    ];`;
+
+    config.defaultImportsDirs = [
+        './src/components/default/'
     ];
+
+    config.defaultImportsDirs = resolveRelativePaths(config.defaultImportsDirs, path.dirname(__dirname));
 
     /*config.defaultRunnerDirs = [
         './src/compilers'
@@ -115,11 +122,11 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     ];
     //const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();
 
-    const processingStages: IProcessingNodeConfig = getDefaultProcessingRootNodeConfig();
+    const processingTreeRootNode: IProcessingNodeConfig = getDefaultProcessingRootNodeConfig();
     //const configToThisPath: string = path.relative("./ssg-pipeline-conf", __dirname);
-    processingStages.srcDirs = processingStages?.srcDirs?.map((topLevelDirPath: string) => path.resolve('./ssg-pipeline-conf', topLevelDirPath));
+    processingTreeRootNode.srcDirs = processingTreeRootNode?.srcDirs?.map((topLevelDirPath: string) => path.resolve('./ssg-pipeline-conf', topLevelDirPath));
 
-    config.processingTreeConfig = processingStages;
+    config.processingTreeConfig = processingTreeRootNode;
 
     //config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
 
@@ -201,6 +208,10 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     config.processingStages = config.processingStages || {};
     await loadStageProcessorInstances(config.defaultResourceProcessorDirs, config.processingStages);*/
 
+    //Any non absolute path at this point gets resolved relative to the application directory
+    //config = resolveRelativePaths(config, path.join('..', __dirname));
+    //config = resolveRelativePaths(config, process.cwd());
+
     if (config.processingTreeConfig) {
         console.time('init_processing_tree');
         config.processingTree = await initProcessorInstanceFromConf(config.processingTreeConfig, undefined);
@@ -210,7 +221,8 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     console.time('init_loading_default_components');
 
     console.log("Loading default components");
-    await loadDefaultComponents(config);
+    //await loadDefaultComponents(config);
+    await initDefaultImportSymbols(config);
     const initializedConfig = await loadUserRuntimeConfig(config);
 
     console.timeEnd('init_loading_default_components');

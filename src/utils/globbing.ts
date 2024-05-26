@@ -7,6 +7,11 @@ import { getFsNodeStat } from './fs-util';
 import { filterFalsy } from './util';
 
 export function anchorGlobs(globPatterns: string[], atPath: string, pathJoinAnchor: boolean = false): string[] {
+
+    if (!globPatterns || globPatterns.length === 0) {
+        return [ atPath ];
+    }
+
     const rootedGlobs = globPatterns.map((inPathGlob) => {
         if (!pathJoinAnchor) {
             return atPath + inPathGlob;

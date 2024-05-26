@@ -1,7 +1,7 @@
 import type { SsgConfig } from './src/config';
-import { parseArgsSetupInitializeConfig } from './src/setup-config';
-import { processFsNodeAtPath } from './src/processing/process-resource';
 import type { IProcessResource } from './src/pipeline/i-processor';
+import { parseArgsSetupInitializeConfig } from './src/setup-config';
+import { processTreeFromToPath } from './src/processing-tree-wrapper';
 
 async function main() {
     /*const parser = new ArgumentParser({
@@ -106,7 +106,7 @@ async function main() {
     }
     await Promise.all(tryMultiFileCompilePromises);*/
 
-    await processFsNodeAtPath(config.sourcePath, config.targetPath, config);
+    await processTreeFromToPath(config.sourcePath, config.targetPath, config);
 
 
     //TODO seperate file and buffer compile

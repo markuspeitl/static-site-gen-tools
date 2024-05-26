@@ -1,5 +1,5 @@
 
-import type { IProcessResource } from "../pipeline/i-processor";
+import type { IProcessor, IProcessResource, ProcessFunction } from "../pipeline/i-processor";
 import type { FalsyAble } from "./helpers/generic-types";
 import type { SsgConfig } from "../config";
 import type { IInternalComponent } from "./base-component";
@@ -7,10 +7,10 @@ import { calcHash } from "../fragement-cache";
 import { cheerioReplaceIdsWithUpdatesHtml } from "../utils/cheerio-util";
 import { settleValueOrNull } from "../utils/promise-util";
 import { removeBaseBlockIndent } from "../utils/string-util";
-import { getResourceImportsCache } from "./component-imports";
 import { setKeyInDict } from "./helpers/dict-util";
 import { resolveDataFromParentResource } from "./resolve-component-path-refs";
-import lodash from "lodash";
+import { getImportInstance, IImportInstance } from "../module-loading/imports-loading";
+import { passThroughFnChain } from "../pipeline/processing-strategy-fns";
 
 export interface DeferCompileArgs {
     name?: string,
@@ -106,11 +106,40 @@ export function convertDeferCompileArgsToResource(parentResource: IProcessResour
     };*/
 }
 
-export async function processWithResourceTargetComponent(resource: IProcessResource, config: SsgConfig, availableComponentsCache: Record<string, IInternalComponent>): Promise<IProcessResource> {
+export async function processWithResourceTargetComponent(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     //const componentResource: IProcessResource = await processResource(resource, config, false);
     //const compiledComponentResource: IProcessResource = await processResource(componentResource, config, false);
 
-    const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
+    if (!resource.data?.componentTag) {
+        return resource;
+    }
+    const componentRefSymbol: string = resource.data?.componentTag;
+
+    const selectedImportedInstance: FalsyAble<IImportInstance> = await getImportInstance(componentRefSymbol, resource, config);
+    if (!selectedImportedInstance) {
+        return resource;
+    }
+
+    resource.content = removeBaseBlockIndent(resource.content);
+
+    const toProcessResourceFunctions: ProcessFunction[] = [];
+
+    if ((selectedImportedInstance as IInternalComponent).data) {
+        toProcessResourceFunctions.push((selectedImportedInstance as IInternalComponent).data);
+    }
+    if ((selectedImportedInstance as IInternalComponent).render) {
+        toProcessResourceFunctions.push((selectedImportedInstance as IInternalComponent).render);
+    }
+    if ((selectedImportedInstance as IProcessor).process) {
+        toProcessResourceFunctions.push((selectedImportedInstance as IProcessor).process);
+    }
+
+    return passThroughFnChain(resource, config, toProcessResourceFunctions, selectedImportedInstance);
+
+
+    //const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
+    /*const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
+
 
     if (!selectedSubComponent) {
         return resource;
@@ -123,8 +152,6 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
     //its mainly necessary if wanting to render a different syntax -> render njk brackets, render md encoded text to html, detect and render sub components
     //
 
-    resource.content = removeBaseBlockIndent(resource.content);
-
     let dataExtractedDocument: IProcessResource = await selectedSubComponent.data(resource, config);
     if (!dataExtractedDocument) {
         dataExtractedDocument = {};
@@ -135,7 +162,7 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
 
     const renderedResource: IProcessResource = await selectedSubComponent.render(mergedDataResource, config);
 
-    return lodash.merge({}, mergedDataResource, renderedResource);
+    return lodash.merge({}, mergedDataResource, renderedResource);*/
 }
 
 export function replacePlaceholdersWithCompiledResources(targetResource: IProcessResource, componentResources: IProcessResource[], config: SsgConfig): IProcessResource {
@@ -158,7 +185,7 @@ export function replacePlaceholdersWithCompiledResources(targetResource: IProces
 }
 
 export async function compilePendingChildren(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+    //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
 
     if (!resource.control?.pendingChildren || !config.scopeManager) {
         return resource;
@@ -167,7 +194,7 @@ export async function compilePendingChildren(resource: IProcessResource, config:
         (pendingArgs: DeferCompileArgs) => convertDeferCompileArgsToResource(resource, pendingArgs, config)
     );
     const processSubResourcePromises: Promise<IProcessResource>[] = toProcessSubComponentResources.map(
-        (componentResource: IProcessResource) => processWithResourceTargetComponent(componentResource, config, selectedDependencies)
+        (componentResource: IProcessResource) => processWithResourceTargetComponent(componentResource, config)
     );
     const compiledComponentResources: Array<any | null> = await settleValueOrNull(processSubResourcePromises);
     return replacePlaceholdersWithCompiledResources(resource, compiledComponentResources, config);

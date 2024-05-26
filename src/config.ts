@@ -3,7 +3,7 @@ import type { FragmentCache } from "./fragement-cache";
 import type { IInternalComponent } from "./components/base-component";
 import type { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
 import type { IScopeManager } from "./data/scope-manager";
-import type { IImportInstance, IImportLoader } from "./module-loading/imports-loading";
+import type { IImportInstance } from "./module-loading/imports-loading";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -26,16 +26,22 @@ export interface SsgConfig {
 
     //Detected Components matching in those paths should be automatically loaded as dependencies
     //Default: [./src/components/default]
-    defaultComponentImportDirs?: string[];
-    defaultComponentsMatchGlobs?: string[];
+    //defaultComponentImportDirs?: string[];
+    //defaultComponentsMatchGlobs?: string[];
 
-    defaultImportSymbols?: string[];
+
+    /*defaultImportSymbols?: string[];
     //defaultImportLoaders?: Record<string, IImportLoader>;
-
     importLoadersCache?: Record<string, IImportLoader>;
     importInstancesCache?: Record<string, IImportInstance>;
     defaultImportsDirs?: string[];
-    defaultImportsMatchGlobs?: string[];
+    defaultImportsMatchGlobs?: string[];*/
+
+    globalImportsCache?: Record<string, IImportInstance>;
+    //globalImportLoadersCache?: Record<string, IImportLoader>;
+    //symbol/alias --> file path
+    defaultImportsDirs?: string[];
+    defaultImportSymbolPaths?: Record<string, string>;
 
 
     //defaultComponentsCache?: Record<string, IInternalComponent>;

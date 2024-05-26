@@ -81,7 +81,8 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                     processors: {
                         'html': [
                             'placeholder',
-                            'component'
+                            'component',
+                            'njk'
                         ], // or 'placeholder', 'component' instead of component
                         'md': [
                             'placeholder',

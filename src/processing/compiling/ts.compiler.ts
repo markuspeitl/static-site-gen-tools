@@ -2,7 +2,7 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from '../../components/helpers/generic-types';
-import { getComponentFrom } from '../../components/components';
+import { getTsComponentFromResource } from '../../components/components';
 import { TsExtractor } from '../extracting/ts.extractor';
 import { forkResourceScope } from '../../manage-scopes';
 import { setKeyInDict } from "../../components/helpers/dict-util";
@@ -22,7 +22,7 @@ export class TsCompiler implements IResourceProcessor {
         }
         console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
 
-        const component: FalsyAble<IInternalComponent> = await getComponentFrom(null, config, resourceContent);
+        const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (!component) {
             return resource;
         }

@@ -18,6 +18,8 @@ import: './frame-to-wrap.html'
 
 ---
 
+<p>Before frame wrap</p>
+
 <frame-to-wrap>
 
 ### Hello Content

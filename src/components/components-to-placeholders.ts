@@ -3,8 +3,7 @@ import type { IProcessResource } from "../pipeline/i-processor";
 import type { IInternalComponent } from "./base-component";
 import { registerCompileArgsResource, type DeferCompileArgs } from "./deferred-component-compiling";
 import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "../utils/cheerio-util";
-import { getResourceImportsCache, resolveImportsFromDocDir } from "./component-imports";
-
+import { getFlatResourceImportSymbols } from "../module-loading/imports-loading";
 
 export async function processTopLevelNodesOfSymbols(html: string, symbolsToDetect: string[], processNodeFn: TaggedCheerioNodeFn<any>): Promise<string> {
 
@@ -40,8 +39,7 @@ export async function findReplaceTopLevelDetectedComponents(
     config: SsgConfig
 ): Promise<IProcessResource> {
 
-    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
-    const importScopeSymbols: string[] = Object.keys(selectedDependencies);
+    const availableImportSymbolsInScope: string[] = await getFlatResourceImportSymbols(resource, config);
 
     const processComponentHtmlNode: TaggedCheerioNodeFn<DeferCompileArgs> = ($: cheerio.Root, currentTag: string, currentCursor: cheerio.Cheerio) => {
         const body = $(currentCursor).html();
@@ -56,7 +54,7 @@ export async function findReplaceTopLevelDetectedComponents(
         return deferCompileArgs;
     };
 
-    resource.content = await processTopLevelNodesOfSymbols(resource.content, importScopeSymbols, processComponentHtmlNode);
+    resource.content = await processTopLevelNodesOfSymbols(resource.content, availableImportSymbolsInScope, processComponentHtmlNode);
     return resource;
 }
 
@@ -69,6 +67,6 @@ export async function detectReplaceComponentsToPlaceholders(
         return resource;
     }
     resource.content = resourceContent;
-    resource = await resolveImportsFromDocDir(resource, config);
+    //resource = await resolveImportsFromDocDir(resource, config);
     return findReplaceTopLevelDetectedComponents(resource, config);
 }

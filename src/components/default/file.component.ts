@@ -28,13 +28,13 @@ export class FileComponent implements IInternalComponent {
     protected readFileResource: IProcessResource | null = null;
     protected dataExtractedResource: IProcessResource | null = null;
 
-    constructor (path?: string) {
+    constructor (path: string) {
         if (path) {
             this.path = path;
         }
     }
 
-    private getTargetPath(resource?: IProcessResource): string | null {
+    /*private getTargetPath(resource?: IProcessResource): string | null {
         if (resource?.data?.path) {
             return resource.data.path;
         }
@@ -64,26 +64,36 @@ export class FileComponent implements IInternalComponent {
         this.readFileResource = readResource;
 
         return readResource;
-    }
+    }*/
 
 
     public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
-        const readResource: FalsyAble<IProcessResource> = await this.getFileResource(resource, config);
+        if (!this.path) {
+            return resource;
+        }
+        const readResource: FalsyAble<IProcessResource> = await processStagesOnInputPath([ 'reader' ], this.path, config);
         if (!readResource) {
             return resource;
         }
 
-        //make sure the resource.data.document state is reset before establishing pre conditions for extraction
-        resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
+        /*const readResource: FalsyAble<IProcessResource> = await this.getFileResource(resource, config);
+        if (!readResource) {
+            return resource;
+        }*/
 
-        resource.content = readResource.content;
-        this.dataExtractedResource = await processSubPath(resource, config, [ 'extractor' ]);
+        //make sure the resource.data.document state is reset before establishing pre conditions for extraction
+        //resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
+
+        //resource.content = readResource.content;
+        this.dataExtractedResource = await processSubPath(readResource, config, [ 'extractor' ]);
 
         if (!this.dataExtractedResource) {
             this.dataExtractedResource = readResource;
         }
 
-        return this.dataExtractedResource;
+        return {
+            data: this.dataExtractedResource.data
+        };
     }
     public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
 
@@ -92,6 +102,9 @@ export class FileComponent implements IInternalComponent {
         }
 
         const resourceToCompile: IProcessResource = this.dataExtractedResource || resource;
+
+        resourceToCompile.data.content = resource.content;
+
         return await processSubPath(resourceToCompile, config, [ 'compiler' ]);
     }
 
