@@ -108,7 +108,11 @@ export function addItemMakeArray(dict, key, item) {
 }
 
 
-export function removeArrayItem<ItemType>(array: ItemType[], itemToRemove: ItemType): ItemType[] {
+export function removeArrayItem<ItemType>(array: ItemType[] | undefined, itemToRemove: ItemType): ItemType[] | undefined {
+
+    if (!array) {
+        return undefined;
+    }
 
     if (!itemToRemove) {
         return array || [];

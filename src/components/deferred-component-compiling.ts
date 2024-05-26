@@ -5,6 +5,7 @@ import type { FalsyAble } from "./helpers/generic-types";
 import { removeArrayItem } from "./helpers/array-util";
 import { calcHash } from "../fragement-cache";
 import { processTreeStages } from "../processing-tree-wrapper";
+import { ensureKeyAtDict } from "./helpers/dict-util";
 
 
 export interface DeferCompileArgs {
@@ -37,7 +38,6 @@ export function getDeferCompileArgs(componentName: string, componentBody: FalsyA
     };
     const componentArgsId = hashObjGetHtmlId(deferCompileArgs);
     deferCompileArgs.id = componentArgsId;
-    //resource.data.compileAfter.push(deferCompileArgs);
 
     const placeholderName: string = `${componentName}-placeholder`;
     const placeholderFull = `<${placeholderName} id="${deferCompileArgs.id}"/>`;
@@ -50,12 +50,15 @@ export function registerCompileArgsResource(resource: IProcessResource, componen
     if (!resource.data) {
         resource.data = {};
     }
-    if (!resource.data.compileAfter) {
-        resource.data.compileAfter = [];
+    if (!resource.control) {
+        resource.control = {};
+    }
+    if (!resource.control?.pendingChildren) {
+        resource.control.pendingChildren = [];
     }
 
     const deferCompileArgs: DeferCompileArgs = getDeferCompileArgs(componentName, componentBody, attrs);
-    resource.data.compileAfter.push(deferCompileArgs);
+    resource.control.pendingChildren.push(deferCompileArgs);
     return deferCompileArgs;
 }
 
@@ -141,7 +144,7 @@ export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], r
         const deferCompiledArgs: DeferCompileArgs = args;
 
         if (resource.data) {
-            resource.data.compileAfter = removeArrayItem(resource?.data?.compileAfter, deferCompiledArgs);
+            removeArrayItem(resource.control?.pendingChildren, deferCompiledArgs);
         }
 
         return failSafeCompileDeferredComponent(args, parentData, config);
@@ -152,7 +155,12 @@ export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], r
 
 
 export async function compileDeferredInsertToPlaceholder(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-    const compiledSubComponents: DeferCompileArgs[] | null = await compileDeferred(resource?.data?.compileAfter, resource, config);
+
+    if (!resource.control?.pendingChildren) {
+        return resource;
+    }
+
+    const compiledSubComponents: DeferCompileArgs[] | null = await compileDeferred(resource.control.pendingChildren, resource, config);
     if (!compiledSubComponents) {
         return resource;
     }

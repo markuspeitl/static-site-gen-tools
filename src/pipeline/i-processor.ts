@@ -1,4 +1,5 @@
-import { DeferCompileArgs } from "../components/deferred-component-compiling";
+import type { IInternalComponent } from "../components/base-component";
+import type { DeferCompileArgs } from "../components/deferred-component-compiling";
 
 export interface IProcessResource {
     id?: string,
@@ -6,6 +7,7 @@ export interface IProcessResource {
         parent?: IProcessResource,
         handledProcIds?: string[];
         pendingChildren?: DeferCompileArgs[];
+        importCache?: Record<string, IInternalComponent>;
     };
     content?: any,
     data?: any,

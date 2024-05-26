@@ -85,7 +85,7 @@ export function moduleToComponentInstance(module: any): FalsyAble<IInternalCompo
         componentInstance.data = async (dataCtx?: DocumentData | null, config?: SsgConfig) => {
             return {
                 content: '',
-                data: Object.assign(staticData, dataCtx),
+                data: staticData //Object.assign(staticData, dataCtx),
             };
         };
     }

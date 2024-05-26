@@ -3,6 +3,7 @@ import { FragmentCache } from "./fragement-cache";
 import { IInternalComponent } from "./components/base-component";
 import { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
 import { ProcessingTreeWrapper } from "./processing-tree-wrapper";
+import { IScopeManager } from "./data/scope-manager";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -35,6 +36,8 @@ export interface SsgConfig {
     data?: any;
     outDir?: string;
     outFile?: string;
+
+    scopeManager?: IScopeManager;
 
 
     //<deprecated>

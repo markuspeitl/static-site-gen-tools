@@ -44,10 +44,10 @@ export class TsExtractor implements IResourceProcessor {
             return resource;
         }
 
-        let dataResource: IProcessResource = await component.data(resource, config);
-        if (typeof dataResource === 'string') {
+        const dataResource: IProcessResource = await component.data(resource, config);
+        /*if (typeof dataResource === 'string') {
             dataResource = Object.assign(forkResourceScope(resource), { content: dataResource });
-        }
+        }*/
 
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!

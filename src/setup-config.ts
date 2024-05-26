@@ -4,12 +4,12 @@ import { anchorAndGlob } from "./utils/globbing";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
 import { getFsNodeStat } from "./utils/fs-util";
-import { FalsyString } from "./components/helpers/generic-types";
 import { loadDefaultComponents } from "./components/components";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
 import { IProcessingNodeConfig } from "./pipeline/i-processor";
-import { initProcessorInstanceFromConf } from "./pipeline/resource-pipeline";
 import type { IProcessResource } from './pipeline/i-processor';
+import { defaultScopeManager } from "./data/scope-manager";
+import { initProcessorInstanceFromConf } from "./pipeline/init-processing-node";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -126,6 +126,8 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
     config.outDir = './dist';
     config.cacheDir = path.join(config.outDir, '/cache');
     config.outFile = 'index.html';
+
+    config.scopeManager = defaultScopeManager;
 
     return config;
 }
