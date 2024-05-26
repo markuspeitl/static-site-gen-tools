@@ -1,5 +1,6 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
+import { processTreeStages } from "../../../processing-tree-wrapper";
 import { getScopedEvalFn } from "../../../utils/fn-apply";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 
@@ -22,7 +23,7 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
         return resource;
     }
 
-    public async render(resource: IProcessResource, config?: SsgConfig): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
         if (!this.canCompile(resource, config)) {
             return resource;
         }
@@ -34,7 +35,8 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
         const truthyValue: boolean = Boolean(conditionFn());
 
         if (truthyValue) {
-            return resource;
+            const stagesRunId: string = "__if-body_" + conditionExpression;
+            return processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
         }
 
         resource.content = '';
