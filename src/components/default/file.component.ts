@@ -68,9 +68,13 @@ export class FileComponent implements IInternalComponent {
 
 
     public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
-        if (!this.path) {
+
+        const dataPath: string | undefined = this.path || resource.data?.path;
+        if (!dataPath) {
             return resource;
         }
+        this.path = dataPath;
+
         const readResource: FalsyAble<IProcessResource> = await processStagesOnInputPath([ 'reader' ], this.path, config);
         if (!readResource) {
             return resource;

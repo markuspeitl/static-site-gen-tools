@@ -90,7 +90,7 @@ class FunctionStyleDynamicComponent implements BaseComponent {
 
         `, dataCtx);
 
-        htmlContent = htmlContent + "\n\n Try njk compile: {{ description }}";
+        htmlContent = htmlContent + "\n\n Try njk compile:";
         htmlContent = htmlContent + `\n\n beforenjk <njk> {{ title }} {{ description }} </njk> afternjk`;
 
         return {

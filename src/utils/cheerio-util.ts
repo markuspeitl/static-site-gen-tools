@@ -780,7 +780,7 @@ export function cheerioReplaceIdsWithUpdatesHtml(html: string, idToUpdatedHtmls:
         const currentId: string = $(element).prop('id');
 
         const selectedReplaceHtml: string = idToUpdatedHtmls[ currentId ];
-        if (selectedReplaceHtml) {
+        if (selectedReplaceHtml !== undefined && selectedReplaceHtml !== null) {
             $(element).replaceWith(selectedReplaceHtml);
         }
     });

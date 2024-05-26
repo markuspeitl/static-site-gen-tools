@@ -96,9 +96,9 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                             'component'
                         ],
                         'ts': [
+                            'ts',
                             'placeholder',
                             'component',
-                            'ts',
                             'html'
                         ],
                         /*'scss': [
