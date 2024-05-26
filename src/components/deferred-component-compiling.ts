@@ -1,12 +1,16 @@
-import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../pipeline/i-processor";
-import type { IInternalComponent } from "./base-component";
-import type { FalsyAble } from "./helpers/generic-types";
-import { removeArrayItem } from "./helpers/array-util";
-import { calcHash } from "../fragement-cache";
-import { processTreeStages } from "../processing-tree-wrapper";
-import { ensureKeyAtDict } from "./helpers/dict-util";
 
+import type { IProcessResource } from "../pipeline/i-processor";
+import type { FalsyAble } from "./helpers/generic-types";
+import type { SsgConfig } from "../config";
+import type { IInternalComponent } from "./base-component";
+import { calcHash } from "../fragement-cache";
+import { cheerioReplaceIdsWithUpdatesHtml } from "../utils/cheerio-util";
+import { settleValueOrNull } from "../utils/promise-util";
+import { removeBaseBlockIndent } from "../utils/string-util";
+import { getResourceImportsCache } from "./component-imports";
+import { setKeyInDict } from "./helpers/dict-util";
+import { resolveDataFromParentResource } from "./resolve-component-path-refs";
+import lodash from "lodash";
 
 export interface DeferCompileArgs {
     name?: string,
@@ -62,8 +66,116 @@ export function registerCompileArgsResource(resource: IProcessResource, componen
     return deferCompileArgs;
 }
 
+export function convertDeferCompileArgsToResource(parentResource: IProcessResource, pendingArgs: DeferCompileArgs, config: SsgConfig): IProcessResource {
 
-export async function compileDeferredComponent(args: DeferCompileArgs, data: any, config: SsgConfig): Promise<DeferCompileArgs> {
+    if (!config.scopeManager) {
+        return {};
+    }
+
+    let parentForkedResource: IProcessResource = config.scopeManager.forkChildResource(parentResource);
+    if (!parentForkedResource.data) {
+        parentForkedResource.data = {};
+    }
+    //As this is a child resource it should not inherit getting written to disk (unless specified through its own properties)
+    setKeyInDict(parentForkedResource, 'data.document.outputFormat', undefined);
+    setKeyInDict(parentForkedResource, 'data.document.target', undefined);
+
+    const deferInfoResource: IProcessResource = {
+        id: pendingArgs.name + "_" + pendingArgs.id,
+        content: pendingArgs.content,
+        data: {
+            placeholder: pendingArgs.placeholder,
+            componentTag: pendingArgs.name,
+            componentId: pendingArgs.id,
+        }
+    };
+    Object.assign(deferInfoResource, pendingArgs.attrs);
+    parentForkedResource = config.scopeManager.combineResources(parentForkedResource, deferInfoResource);
+    Object.assign(parentForkedResource.data, pendingArgs.attrs);
+
+    return resolveDataFromParentResource(parentResource, parentForkedResource, config);
+
+    //return parentForkedResource;
+
+    //componentToCompileResource = resolveDataFromParentResource(resource, componentToCompileResource, config);
+    //componentToCompileResource.data.compileAfter = [];
+
+    //componentToCompileResource.data.importCache = resource.data.importCache;
+    /*componentToCompileResource.data.document = {
+        inputFormat: 'html'
+    };*/
+}
+
+export async function processWithResourceTargetComponent(resource: IProcessResource, config: SsgConfig, availableComponentsCache: Record<string, IInternalComponent>): Promise<IProcessResource> {
+    //const componentResource: IProcessResource = await processResource(resource, config, false);
+    //const compiledComponentResource: IProcessResource = await processResource(componentResource, config, false);
+
+    const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
+
+    if (!selectedSubComponent) {
+        return resource;
+    }
+
+    //TODO merge data from component
+    //selectedSubComponent.data();
+
+    //component should call 'processResource' if necessary
+    //its mainly necessary if wanting to render a different syntax -> render njk brackets, render md encoded text to html, detect and render sub components
+    //
+
+    resource.content = removeBaseBlockIndent(resource.content);
+
+    let dataExtractedDocument: IProcessResource = await selectedSubComponent.data(resource, config);
+    if (!dataExtractedDocument) {
+        dataExtractedDocument = {};
+    }
+    const mergedDataResource: IProcessResource = lodash.merge({}, resource, dataExtractedDocument);
+
+    //const compiledComponentResource: IProcessResource = await selectedSubComponent.render(mergedDataResource, config);
+
+    const renderedResource: IProcessResource = await selectedSubComponent.render(mergedDataResource, config);
+
+    return lodash.merge({}, mergedDataResource, renderedResource);
+}
+
+export function replacePlaceholdersWithCompiledResources(targetResource: IProcessResource, componentResources: IProcessResource[], config: SsgConfig): IProcessResource {
+
+    if (!componentResources) {
+        return targetResource;
+    }
+
+    const placeholderIdReplaceMap: Record<string, string> = {};
+    for (let compiledComponentResource of componentResources) {
+        if (compiledComponentResource && compiledComponentResource.data?.componentId) {
+            placeholderIdReplaceMap[ compiledComponentResource.data?.componentId ] = compiledComponentResource.content;
+        }
+    }
+
+    const componentReplacedContent: string = cheerioReplaceIdsWithUpdatesHtml(targetResource.content, placeholderIdReplaceMap);
+    targetResource.content = componentReplacedContent;
+
+    return targetResource;
+}
+
+export async function compilePendingChildren(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+    let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
+
+    if (!resource.control?.pendingChildren || !config.scopeManager) {
+        return resource;
+    }
+    const toProcessSubComponentResources = resource.control.pendingChildren.map(
+        (pendingArgs: DeferCompileArgs) => convertDeferCompileArgsToResource(resource, pendingArgs, config)
+    );
+    const processSubResourcePromises: Promise<IProcessResource>[] = toProcessSubComponentResources.map(
+        (componentResource: IProcessResource) => processWithResourceTargetComponent(componentResource, config, selectedDependencies)
+    );
+    const compiledComponentResources: Array<any | null> = await settleValueOrNull(processSubResourcePromises);
+    return replacePlaceholdersWithCompiledResources(resource, compiledComponentResources, config);
+}
+
+
+
+/*export async function compileDeferredComponent(args: DeferCompileArgs, data: any, config: SsgConfig): Promise<DeferCompileArgs> {
 
     //Shallow copy --> note currently there is no seperation between "parent data scope and child data scope"
     //Modifications to data might bleed to siblings or parent document
@@ -133,12 +245,14 @@ export async function failSafeCompileDeferredComponent(args: DeferCompileArgs, d
 
 export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], resource: IProcessResource, config: SsgConfig): Promise<DeferCompileArgs[] | null> {
 
-    const parentData: any = resource.data;
-    if (!parentData.importCache || !deferredCompileArgs) {
+    if (!deferredCompileArgs) {
+        return null;
+    }
+    if (!resource.control?.importedComponents) {
         return null;
     }
 
-
+    const parentData: any = resource.data;
 
     const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => {
         const deferCompiledArgs: DeferCompileArgs = args;
@@ -182,4 +296,4 @@ export async function compileDeferredInsertToPlaceholder(resource: IProcessResou
     }
 
     return resource;
-}
+}*/

@@ -7,7 +7,7 @@ export interface IProcessResource {
         parent?: IProcessResource,
         handledProcIds?: string[];
         pendingChildren?: DeferCompileArgs[];
-        importCache?: Record<string, IInternalComponent>;
+        importScope?: Record<string, IInternalComponent | IProcessor>;
     };
     content?: any,
     data?: any,

@@ -1,9 +1,9 @@
-import Module from "module";
-import { FragmentCache } from "./fragement-cache";
-import { IInternalComponent } from "./components/base-component";
-import { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
-import { ProcessingTreeWrapper } from "./processing-tree-wrapper";
-import { IScopeManager } from "./data/scope-manager";
+import type Module from "module";
+import type { FragmentCache } from "./fragement-cache";
+import type { IInternalComponent } from "./components/base-component";
+import type { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
+import type { IScopeManager } from "./data/scope-manager";
+import type { IImportInstance, IImportLoader } from "./module-loading/imports-loading";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -29,8 +29,17 @@ export interface SsgConfig {
     defaultComponentImportDirs?: string[];
     defaultComponentsMatchGlobs?: string[];
 
-    defaultComponentsCache?: Record<string, IInternalComponent>;
-    componentsCache?: Record<string, IInternalComponent>;
+    defaultImportSymbols?: string[];
+    //defaultImportLoaders?: Record<string, IImportLoader>;
+
+    importLoadersCache?: Record<string, IImportLoader>;
+    importInstancesCache?: Record<string, IImportInstance>;
+    defaultImportsDirs?: string[];
+    defaultImportsMatchGlobs?: string[];
+
+
+    //defaultComponentsCache?: Record<string, IInternalComponent>;
+    //componentsCache?: Record<string, IInternalComponent>;
 
     //global data available to all compile runs
     data?: any;

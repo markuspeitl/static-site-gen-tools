@@ -968,3 +968,33 @@ That makes the program also easier to follow, as the page document props are not
 variables that define the control flow.
 Instead we can follow the compilation of the whole website incrementally,
 where each subcomponent is defined/imported by its parent.
+
+
+## What can be imported?:
+- Components
+- Processors??
+- Functions in files
+- Documents
+- Data
+
+Default components should be imported in any case.
+(unless a `disableDefaultImports` property is set)
+
+Components should be loaded on demand:
+1. Load imported symbols (in that case the file names of detected components in the search dirs)
+2. If any of the symbols is detected when compiling resource.content -> detect as subcomponent -> defer compile
+3. When compiling components, load any pending/unloaded detected components or get them from cache
+4. Compile the subcomponent
+5. Replace placeholder with compiled component
+
+
+## Forking types:
+- Full parent fork (while resetting control info):
+all data properties of parent are inherited by child and can be use in such.
+Problem: Tightly couples parent/child -> when any of the parent data context changes, then the child needs to be recomputed.
+(Unless we keep track of what information the child actually accesses of the parent,
+like the child is observing some props of the parent and when they change then the child needs to be recomputed)
+Probably necessary to manually define the interface of what the child needs of the parent,
+as detecting this automatically has many edge cases 
+- what happens if the requirements change in code -> incremental compilation
+- need to go to deepest child first and recursively collect used parent properties from there, before compiling

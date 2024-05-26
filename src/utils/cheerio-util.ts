@@ -757,6 +757,38 @@ export function cheerioReplaceElem(html: string, id: string, replaceHtml: string
     return unparseHtml($);
 }
 
+export function cheerioReplaceIdsWithUpdatesHtml(html: string, idToUpdatedHtmls: Record<string, string>): string {
+    if (!idToUpdatedHtmls) {
+        return html;
+    }
+    /*if (!ids || !replaceHtmls || ids.length !== replaceHtmls.length) {
+        console.error(`Can not replace empty ids, replaceHtmls or arrays of mismatching lengths: ${ids} -- ${replaceHtmls}`);
+        return html;
+    }*/
+    const $: cheerio.Root = loadHtml(html);
+
+    const ids: string[] = Object.keys(idToUpdatedHtmls);
+    if (ids.length <= 0) {
+        return html;
+    }
+
+    const idSelectors: string[] = ids.map((id: string) => '#' + id);
+    const allIdsSelector: string = orSelector(idSelectors);
+
+    $(allIdsSelector).each((index: number, element: cheerio.Element) => {
+
+        const currentId: string = $(element).prop('id');
+
+        const selectedReplaceHtml: string = idToUpdatedHtmls[ currentId ];
+        if (selectedReplaceHtml) {
+            $(element).replaceWith(selectedReplaceHtml);
+        }
+    });
+
+    return unparseHtml($);
+}
+
+
 export type CheerioNodeFn<ReturnType> = ($: cheerio.Root, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
 export type TaggedCheerioNodeFn<ReturnType> = ($: cheerio.Root, currentTag: string, element: cheerio.Cheerio) => FalsyAble<ReturnType>;
 export function cheerioDfsWalkFirstTop<ReturnType>($: cheerio.Root, currentCursor: cheerio.Cheerio, handleFork: CheerioNodeFn<ReturnType>, handleLeaf: CheerioNodeFn<ReturnType>): ReturnType[] {

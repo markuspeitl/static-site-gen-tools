@@ -3,7 +3,7 @@ import type { FalsyAble } from "./helpers/generic-types";
 import type { IProcessResource } from "../pipeline/i-processor";
 import path from "path";
 import fs from 'fs';
-import { anchorAndGlob } from "../utils/globbing";
+import { anchorAndGlob, globInDirsCollectFlat } from "../utils/globbing";
 import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
 import { BaseComponent, DocumentData, IInternalComponent } from "./base-component";
 import { filterFalsy } from "./helpers/array-util";
@@ -174,44 +174,6 @@ export async function loadComponentToCaches(modulePath: string, config: SsgConfi
     return loadedComponent;
 }
 
-/*export async function loadComponentToCache(modulePath: string, config: SsgConfig, cacheKey: string = 'componentsCache'): Promise<FalsyAble<BaseComponent>> {
-    const componentId: string = getComponentIdFromPath(modulePath);
-    if (!config[ cacheKey ]) {
-        config[ cacheKey ] = {};
-    }
-    if (config[ cacheKey ][ componentId ]) {
-        return config[ cacheKey ][ componentId ];
-    }
-
-    const loadedComponent: FalsyAble<BaseComponent> = await getComponentFrom(modulePath, config, null);
-    if (!loadedComponent) {
-        return null;
-    }
-    config[ cacheKey ][ componentId ] = loadedComponent;
-
-    return loadedComponent;
-}*/
-
-/*export async function loadDefaultComponent(modulePath: string, config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent>> {
-    if (!config.defaultComponentsCache) {
-        config.defaultComponentsCache = {};
-    }
-    if (!config.componentsCache) {
-        config.componentsCache = {};
-    }
-    if (!caches) {
-        caches = [];
-    }
-
-    return loadComponentToCaches(modulePath, config, [ config.componentsCache, config.defaultComponentsCache, ...caches ]);
-}*/
-
-/*export async function loadFileComponentsRemovePath(paths: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
-    for (const path of paths) {
-        
-    }
-}*/
-
 export async function loadComponents(searchAnchorPaths: string[], componentMatchGlobs: string[], config: SsgConfig, caches?: Record<string, IInternalComponent>[]): Promise<FalsyAble<IInternalComponent[]>> {
     if (!config.defaultComponentsCache) {
         config.defaultComponentsCache = {};
@@ -223,20 +185,7 @@ export async function loadComponents(searchAnchorPaths: string[], componentMatch
         return null;
     }
 
-    /*const validFilePaths: string[] = searchAnchorPaths.map((rootPath: string) => {
-        getFsNodeStat(rootPath);
-    });*/
-
-
     return globInDirsCollectFlat(searchAnchorPaths, componentMatchGlobs, loadComponentToCaches, config, caches);
-
-    /*for (const componentDir of searchAnchorPaths) {
-        const componentModulePaths: string[] = await anchorAndGlob(componentMatchGlobs, path.resolve(componentDir), true);
-        const loadComponentPromises: Promise<FalsyAble<BaseComponent>>[] = componentModulePaths.map((runnerModulePath) => loadComponentToCache(runnerModulePath, config));
-
-        const loadedComponents: FalsyAble<BaseComponent>[] = await Promise.all(loadComponentPromises);
-        return filterFalsy(loadedComponents);
-    }*/
 }
 
 export async function loadDefaultComponents(config: SsgConfig): Promise<FalsyAble<BaseComponent[]>> {
@@ -253,37 +202,6 @@ export async function loadDefaultComponents(config: SsgConfig): Promise<FalsyAbl
     return loadComponents(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, config, [
         config.defaultComponentsCache, config.componentsCache
     ]);
-
-    //return globInDirsCollectFlat(config.defaultComponentImportDirs, config.defaultComponentsMatchGlobs, loadDefaultComponent, config);
-
-    /*for (const componentDir of config.defaultComponentImportDirs) {
-        const componentModulePaths: string[] = await anchorAndGlob(config.defaultComponentsMatchGlobs, path.resolve(componentDir), true);
-        const loadComponentPromises: Promise<FalsyAble<BaseComponent>>[] = componentModulePaths.map((runnerModulePath) => loadDefaultComponent(runnerModulePath, config));
-
-        const loadedComponents: FalsyAble<BaseComponent>[] = await Promise.all(loadComponentPromises);
-        return filterFalsy(loadedComponents);
-    }*/
-}
-
-export async function globInDirsCollectFlat(anchorDirs: string[], subGlobs: string[], processPathFn: (filePath: string, ...fnArgs: any[]) => Promise<any>, ...fnArgs: any[]): Promise<any> {
-
-    const results: any[] = [];
-    for (const anchorDir of anchorDirs) {
-
-        const nodeStat: fs.Stats | null = await getFsNodeStat(anchorDir);
-        if (nodeStat && nodeStat.isFile()) {
-            results.push(await processPathFn(anchorDir, ...fnArgs));
-        }
-        else {
-            const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), false);
-
-            const processingResultPromises: Promise<FalsyAble<BaseComponent>>[] = globMatchedPaths.map((matchedPath: string) => processPathFn(matchedPath, ...fnArgs));
-            const processingResults: FalsyAble<BaseComponent>[] = await Promise.all(processingResultPromises);
-            const truthyResults: any[] = filterFalsy(processingResults);
-            results.push(truthyResults);
-        }
-    }
-    return results.flat();
 }
 
 export function getCachedDefaultComponent(componentId: string, config: SsgConfig): FalsyAble<IInternalComponent> {
@@ -314,3 +232,21 @@ export async function getImportComponentsPool(importPaths: string[], config: Ssg
     return Object.assign({}, defaultComponentsCache, currentImportComponentsPool);
     //return currentImportComponentsPool;
 }
+
+/*export async function loadComponentToCache(modulePath: string, config: SsgConfig, cacheKey: string = 'componentsCache'): Promise<FalsyAble<BaseComponent>> {
+    const componentId: string = getComponentIdFromPath(modulePath);
+    if (!config[ cacheKey ]) {
+        config[ cacheKey ] = {};
+    }
+    if (config[ cacheKey ][ componentId ]) {
+        return config[ cacheKey ][ componentId ];
+    }
+
+    const loadedComponent: FalsyAble<BaseComponent> = await getComponentFrom(modulePath, config, null);
+    if (!loadedComponent) {
+        return null;
+    }
+    config[ cacheKey ][ componentId ] = loadedComponent;
+
+    return loadedComponent;
+}*/

@@ -1,5 +1,10 @@
 import fastglob from 'fast-glob';
 import path from 'path';
+import fs from 'fs';
+import { BaseComponent } from '../components/base-component';
+import { FalsyAble } from '../components/helpers/generic-types';
+import { getFsNodeStat } from './fs-util';
+import { filterFalsy } from './util';
 
 export function anchorGlobs(globPatterns: string[], atPath: string, pathJoinAnchor: boolean = false): string[] {
     const rootedGlobs = globPatterns.map((inPathGlob) => {
@@ -70,4 +75,25 @@ export async function findWithAnyExt(dirPath: string, basefileName: string, incl
         dot: true,
     });
     return matchedPaths;
+}
+
+export async function globInDirsCollectFlat(anchorDirs: string[], subGlobs: string[], processPathFn: (filePath: string, ...fnArgs: any[]) => Promise<any>, ...fnArgs: any[]): Promise<any> {
+
+    const results: any[] = [];
+    for (const anchorDir of anchorDirs) {
+
+        const nodeStat: fs.Stats | null = await getFsNodeStat(anchorDir);
+        if (nodeStat && nodeStat.isFile()) {
+            results.push(await processPathFn(anchorDir, ...fnArgs));
+        }
+        else {
+            const globMatchedPaths: string[] = await anchorAndGlob(subGlobs, path.resolve(anchorDir), false);
+
+            const processingResultPromises: Promise<FalsyAble<BaseComponent>>[] = globMatchedPaths.map((matchedPath: string) => processPathFn(matchedPath, ...fnArgs));
+            const processingResults: FalsyAble<BaseComponent>[] = await Promise.all(processingResultPromises);
+            const truthyResults: any[] = filterFalsy(processingResults);
+            results.push(truthyResults);
+        }
+    }
+    return results.flat();
 }

@@ -4,6 +4,7 @@ import type { IProcessResource } from "../pipeline/i-processor";
 import type { IInternalComponent } from "./base-component";
 import { getImportComponentsPool } from "./components";
 import { isEmpty } from "./helpers/array-util";
+import path from "path";
 
 export function getResourceImportsCache(resource: IProcessResource, config: SsgConfig): Record<string, IInternalComponent> {
     let selectedDependencies: Record<string, IInternalComponent> = {};
@@ -44,4 +45,16 @@ export async function resolveResourceImports(fromRootDirPath: string, resource: 
     }
     resource.data.importCache = await getResourceImports(resource, config);
     return resource;
+}
+
+export async function resolveImportsFromDocDir(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+    if (!resource.data) {
+        return resource;
+    }
+    let currentDocumentDir: string = "";
+    if (resource.data.document.src) {
+        currentDocumentDir = path.parse(resource.data.document.src).dir;
+    }
+
+    return resolveResourceImports(currentDocumentDir, resource, config);
 }

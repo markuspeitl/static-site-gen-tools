@@ -1,12 +1,8 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
-import type { FalsyAble } from '../../components/helpers/generic-types';
 import { HtmlCompiler } from './html.compiler';
-import { getResourceImportsCache, resolveResourceImports } from '../../components/component-imports';
-import { findReplaceTopLevelDetectedComponents } from '../../components/components-to-placeholders';
-import path from 'path';
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { detectReplaceComponentsToPlaceholders } from '../../components/components-to-placeholders';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
@@ -23,33 +19,6 @@ export class PlaceholderCompiler implements IResourceProcessor {
             return resource;
         }
         resource.content = resourceContent;
-        if (!resource.data) {
-            return resource;
-        }
-
-
-        let currentDocumentDir: string = "";
-        if (resource.data.document.src) {
-            currentDocumentDir = path.parse(resource.data.document.src).dir;
-        }
-
-        resource = await resolveResourceImports(currentDocumentDir, resource, config);
-        let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
-        //const importScopeSymbols: string[] = Object.keys(selectedDependencies);
-
-        //1. Load dependencies/imports and components
-        //2. Check if any components are in content
-        //const dataResource: IProcessResource = resource;
-
-        const componentsSubstitutedRes: FalsyAble<IProcessResource> = await findReplaceTopLevelDetectedComponents(resource, config);
-
-        if (componentsSubstitutedRes) {
-            resource = componentsSubstitutedRes;
-        }
-
-        //resource = setHtmlOutputFormat(resource);
-        //return addHandlerId(resource, 'compiler', this);
-        setKeyInDict(resource, 'data.document.outputFormat', 'html');
-        return resource;
+        return detectReplaceComponentsToPlaceholders(resource, config);
     }
 }
