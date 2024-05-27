@@ -7,7 +7,7 @@ export class FileWriter implements IResourceProcessor {
 
     public id: string = 'file.writer';
 
-    protected fileWriteCounter: number = 0;
+    protected static fileWriteCounter: number = 0;
 
     public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (!resource.content || typeof resource.content !== 'string') {
@@ -32,16 +32,31 @@ export class FileWriter implements IResourceProcessor {
         }
 
 
-        const targetFilePath = resource.data?.document?.target;
+        let targetFilePath = resource.data?.document?.target;
         if (!targetFilePath) {
             return resource;
         }
 
-        console.log(`Writing ${this.id}: resource: ${resource?.id} -- n-th: ${this.fileWriteCounter} to path ${targetFilePath}`);
-        this.fileWriteCounter++;
+        console.log(`Writing ${this.id}: resource: ${resource?.id} -- n-th: ${FileWriter.fileWriteCounter} to path ${targetFilePath}`);
+        FileWriter.fileWriteCounter++;
 
-        const targetDir: string = path.dirname(targetFilePath);
+
+        const parsedTargetPath: path.ParsedPath = path.parse(targetFilePath);
+        const targetDir: string = parsedTargetPath.dir;
+
+        let cleanExtension = parsedTargetPath.ext;
+        if (cleanExtension) {
+            cleanExtension = cleanExtension.slice(1);
+        }
+        const outputFormat = resource.data?.document?.outputFormat;
+
+        if (outputFormat && outputFormat !== cleanExtension) {
+            targetFilePath = path.join(targetDir, parsedTargetPath.name + '.' + outputFormat);
+        }
+
+
         await fs.promises.mkdir(targetDir, { recursive: true });
+
         await fs.promises.writeFile(targetFilePath, resource.content);
 
         //resource = addHandlerId(resource, 'writer', this);

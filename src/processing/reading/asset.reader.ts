@@ -37,7 +37,7 @@ export class FileReader implements IResourceProcessor {
 
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
-        resource.id = undefined;
+        //resource.id = undefined;
         return resource;
     }
 }

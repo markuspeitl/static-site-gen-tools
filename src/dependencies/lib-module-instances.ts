@@ -26,7 +26,7 @@ const defaultLibConstructors = {
         const nunjucks = nunjucksModule.default;
         //const { Environment } = nunjucks;
 
-        return nunjucks.configure({ autoescape: true });
+        return nunjucks.configure({ autoescape: false });
         //const njkEnvironment: nunjucks.Environment = nunjucks.configure({ autoescape: true });
         //return nunjucks;
     },

@@ -17,7 +17,11 @@ tags:
 - peach
 - markdown
 
+import: ../frame.njk
+
 ---
+
+<frame>
 
 <md>
 # Markdown Title
@@ -101,12 +105,11 @@ export default () => {
 export default () => {
     return `Hello world inline from outer typescript component`;
 }
-
-    <ts>
-        export default () => {
-            return `Hello world inline nested from typescript nested`;
-        }
-    </ts>
+</ts>
+<ts>
+    export default () => {
+        return `Hello world inline nested from typescript nested`;
+    }
 </ts>
 
 <hello>
@@ -124,3 +127,5 @@ Maybe option for parsing top level special blocks
 ! code
   console.log("test")  
 !
+
+</frame>

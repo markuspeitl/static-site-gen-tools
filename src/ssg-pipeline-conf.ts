@@ -35,11 +35,11 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.njk': [ 'file' ],
                         '.+\.ts': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        '.+/.+.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         '.+\.scss': [ 'file' ],
+                        '.+\.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
                         '.+\/': [ 'dir' ],
                         '.+': [ 'dir' ],
-                        '.+.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
                         //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
                 }
@@ -93,7 +93,9 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'njk': [
                             'placeholder',
                             'njk',
-                            'component'
+                            'component',
+                            'placeholder',
+                            'component',
                         ],
                         'ts': [
                             'ts',
@@ -126,7 +128,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.njk': [ 'file' ],
                         '.+\.ts': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        '.+/.+.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         //'.+\.scss': [ 'file' ],
                         //'.+\/': [ 'dir' ],
                         //'.+': [ 'dir' ],

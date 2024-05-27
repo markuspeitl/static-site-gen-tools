@@ -998,3 +998,11 @@ Probably necessary to manually define the interface of what the child needs of t
 as detecting this automatically has many edge cases 
 - what happens if the requirements change in code -> incremental compilation
 - need to go to deepest child first and recursively collect used parent properties from there, before compiling
+
+
+### TODO:
+
+Add options for compiling component contents with current syntax and
+evaluating the sub subcomponents, BEFORE passing the compiled content
+to the component (for example for a frame, as the frame component might not properly
+compile subcomponents)

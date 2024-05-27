@@ -65,7 +65,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         const combinedIterRenderBody2: string = renderedContents.join('\n');
         console.timeEnd('parrallel_for');*/
 
-        console.time('sequential_for');
+        console.time('sequential_for' + resource.id);
 
         const renderedIterations: string[] = [];
         for (const itemValue of selectedArray) {
@@ -82,7 +82,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             renderedIterations.push(renderedBody);
         }
 
-        console.timeEnd('sequential_for');
+        console.timeEnd('sequential_for' + resource.id);
 
         const combinedIterRenderBody: string = renderedIterations.join('\n');
 

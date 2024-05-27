@@ -1,7 +1,7 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { Environment } from 'nunjucks';
-import { getLibInstance } from "../../dependencies/module-instances";
+import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { HtmlCompiler } from './html.compiler';
 import { setKeyInDict } from "../../components/helpers/dict-util";
 

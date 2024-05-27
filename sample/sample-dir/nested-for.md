@@ -9,18 +9,24 @@ somevalue: hello from somevalue
 
 <file path="./subdir/hello-file-comp-md.md"></file>
 
+<if cond="false">
+    Non Truthy if first
+</if>
+
+
 {{somevalue}}
 
 <for it="tag" of="tags">
     
-    {{somevalue}}
+    ------------------------S
 
-    The fruit:
-    <span>{{tag}}</span>
-    was eaten.
+    Current tag: "<span>{{tag}}</span>"
 
     <if cond="this.tag">
-        Tag NAME is defined
+        <p>Tag NAME is defined</p>
+        <if cond="this.tag">
+            If nested in if
+        </if>
     </if>
     <if cond="!this.tag">
         Tag NAME is not defined
@@ -42,12 +48,28 @@ somevalue: hello from somevalue
         IF CONDITION MATCHED: I am a fruit: PEACH
     </if>
 
-    {{somevalue}}
+    E------------------------
 
 </for>
 
-{{somevalue}}
+<if cond="this.somevalue">
+    Truthy if 1
+</if>
+<if cond="this.somevalue">
+    Truthy if 2
+</if>
+<if cond="this.somevalue">
+    Truthy if 3
+</if>
+<if cond="this.somevalue">
+    Truthy if 4
+</if>
+<if cond="false">
+    Non Truthy if 5
+</if>
 
+
+{{somevalue}}
 # Some markdown
 
 - text to be compiled to

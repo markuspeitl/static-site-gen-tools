@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { getLibInstance } from "../../dependencies/module-instances";
+import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { ContentExtraction, extractElement } from '../../utils/cheerio-util';
 
 function assignAttribsToSelf(dict: any, key: string): any {
