@@ -101,12 +101,11 @@ export default () => {
 export default () => {
     return `Hello world inline from outer typescript component`;
 }
-
-    <ts>
-        export default () => {
-            return `Hello world inline nested from typescript nested`;
-        }
-    </ts>
+</ts>
+<ts>
+    export default () => {
+        return `Hello world inline nested from typescript nested - or not -> nested ts blocks disallowed`;
+    }
 </ts>
 
 <hello>

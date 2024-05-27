@@ -4,6 +4,11 @@ tags:
 - apple
 - peach
 - markdown
+- test
+- apple
+- peach
+- markdown
+- test
 somevalue: hello from somevalue
 ---
 

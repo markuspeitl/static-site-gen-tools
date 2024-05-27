@@ -1,7 +1,9 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
 import { processTreeStages } from "../../../processing-tree-wrapper";
+import { settleValueOrNull } from "../../../utils/promise-util";
 import { BaseComponent, IInternalComponent } from "../../base-component";
+import { filterFalsy } from "../../helpers/array-util";
 import { getKeyFromDict } from "../../helpers/dict-util";
 
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
@@ -48,43 +50,42 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             return resource;
         }
 
+        /*console.time('parrallel_for');
+        const renderLoopItPromises: Promise<IProcessResource>[] = selectedArray.map((itemValue: any) => {
+            //Set local variable for current iteration
+            (resource.data as any)[ iteratorItemName ] = itemValue;
+            const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
+            return processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
+            //const renderedBody = renderedIterationResource?.content || '';
+            //const renderedBody = forkedResource.content;
+        });
+
+        const renderedLoopResources: IProcessResource[] = filterFalsy(await settleValueOrNull(renderLoopItPromises));
+        const renderedContents: string[] = renderedLoopResources.map((resource: IProcessResource) => resource?.content || '');
+        const combinedIterRenderBody2: string = renderedContents.join('\n');
+        console.timeEnd('parrallel_for');*/
+
+        console.time('sequential_for');
+
         const renderedIterations: string[] = [];
         for (const itemValue of selectedArray) {
 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
-
-            //const renderedIterationResource: FalsyAble<IProcessResource> = await processResource(resource, config, true);
-
             const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
-            const renderedIterationResource: IProcessResource = await processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
+
+            let renderedIterationResource: IProcessResource | null = await processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
             const renderedBody = renderedIterationResource?.content || '';
+            renderedIterationResource = null;
             //const renderedBody = forkedResource.content;
 
             renderedIterations.push(renderedBody);
-
-            /*const renderedLoopDocument: FalsyAble<IProcessResource> = await config.masterCompileRunner?.compileWith(
-                'html njk',
-                {
-                    content: loopBody,
-                    data: subDataCtx
-                },
-                config
-            );*/
-
-            //const htmlComponent: BaseComponent = getComponent('html', config);
-            //TODO improve + update
-            /*const htmlRunner: HtmlRunner = new HtmlRunner();
-            htmlRunner.extractData(
-                {
-                    content: loopBody,
-                    data: subDataCtx
-                },
-                config
-            );*/
         }
 
-        const combinedIterRenderBody = renderedIterations.join('\n');
+        console.timeEnd('sequential_for');
+
+        const combinedIterRenderBody: string = renderedIterations.join('\n');
+
         resource.content = combinedIterRenderBody;
         return resource;
     }

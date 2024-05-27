@@ -87,3 +87,9 @@ export async function processStagesFromToPath(stagesToProcess: string[] | undefi
 }
 
 export const processTreeFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(undefined, inputPath, outputPath, config);
+
+export async function renderComponentBodyContent(resource: IProcessResource, config: SsgConfig, processRunId?: string): Promise<IProcessResource> {
+    //forkedResource.id = forkedResource.id + processRunId;
+    //const stagesRunId: string = processRunId;
+    return processTreeStages([ 'extractor', 'compiler' ], resource, config, processRunId);
+}

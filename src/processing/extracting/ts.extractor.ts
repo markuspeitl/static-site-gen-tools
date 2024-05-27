@@ -33,7 +33,7 @@ export class TsExtractor implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        console.log(`Extracting ${this.id}: ${resource.data?.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.data?.document?.src}`);
 
         const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (!component) {

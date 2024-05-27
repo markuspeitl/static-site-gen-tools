@@ -41,7 +41,7 @@ export class MarkdownCompiler implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
 
         resource.content = resourceContent;
         const dataResource: IProcessResource = await compileMarkdownResource(resource, config);

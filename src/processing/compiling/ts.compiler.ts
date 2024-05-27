@@ -4,30 +4,36 @@ import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from '../../components/helpers/generic-types';
 import { getTsComponentFromResource } from '../../components/components';
 import { TsExtractor } from '../extracting/ts.extractor';
-import { forkResourceScope } from '../../manage-scopes';
 import { setKeyInDict } from "../../components/helpers/dict-util";
 
 export class TsCompiler implements IResourceProcessor {
     id: string = 'ts.compiler';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    protected tsExtractor: TsExtractor = new TsExtractor();
 
-        const tsExtractor: TsExtractor = new TsExtractor();
-        return tsExtractor.canHandle(resource, config);
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+        return this.tsExtractor.canHandle(resource, config);
     }
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
-        console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
 
         const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (!component) {
             return resource;
         }
 
-        const renderedResource: IProcessResource = await component.render(resource, config);
+        let renderedResource: IProcessResource = await component.render(resource, config);
+
+        if (typeof renderedResource === 'string') {
+            renderedResource = {
+                content: renderedResource
+            };
+        }
+
         /*
         //Removed as not allowed to be a 'string' when coming from an IInternalComponent
         if (typeof dataResource === 'string') {

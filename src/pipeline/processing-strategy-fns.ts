@@ -112,7 +112,7 @@ export function processWithStrategyFn(strategy: FalsyAble<ProcessStrategy>): Pro
 
     return async function (resource: IProcessResource, config: any): Promise<IProcessResource> {
 
-        console.log(`Processing resource with '${this.id}': ${resource.id}`);
+        //console.log(`LOG: Processing resource with '${this.id}': ${resource.id}`);
 
         if (this.preProcess) {
             resource = await this.preProcess(resource, config);
@@ -137,7 +137,7 @@ export function compileSingleRunCanHandleFn(inputGuardConfig?: InputGuardConfig)
 
     return async function (resource: IProcessResource, config: any): Promise<boolean> {
 
-        console.log(`Check can handle resource with '${this.id}': ${resource.id}`);
+        //console.log(`Check can handle resource with '${this.id}': ${resource.id}`);
 
         //Oneshot check
         if (isProcessorRegisteredInResource(resource, this)) {

@@ -58,7 +58,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        console.log(`Compiling ${this.id}: ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
 
         resource.content = resourceContent;
 
