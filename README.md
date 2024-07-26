@@ -1006,3 +1006,323 @@ Add options for compiling component contents with current syntax and
 evaluating the sub subcomponents, BEFORE passing the compiled content
 to the component (for example for a frame, as the frame component might not properly
 compile subcomponents)
+
+### Navigation compile:
+Contains links to compiled pages (based on outpath).
+Option:
+1. Compile all pages and add template variable for navigation, if applicable
+2. Compile navigation based on paths on target directory and its own configuration
+3. Replace all pages with pending template variables (in this case navigation) with the compiled pending component
+
+Best to use the navigation component as master component for which source files are compiled and where to.
+(If there is no way to reach it there is no need to compile)
+Needs partial compile / ping pong compile
+
+1. Start navigation compilation
+2. Dispatches compile requests of the sub components/page
+3. The pages start compilation, but request a compile of the navigation component (which needs to request the previous instance of the navigation compile request)
+
+Navigation can not be fully compiled, before page input/output paths and meta data are compiled.
+And the sub pages can not be fully compiled, before navigation was compiled.
+
+--> Import all subpages into namespaces/arrays/collections, but as `data` which should be evaluated
+on import in the navigation data area (during that the input/output paths and meta data of subpages would be initialized),
+Then render the navigation entries via the data received from the imports.
+```html
+<data>
+    <import path="./aboutpages/*" as="aboutPagesData" data></import>
+    <import path="./eventpages/*" as="eventPagesData" data></import>
+</data>
+
+<nav>
+    <ul>
+        <for it="aboutPageData" of="aboutPagesData">
+            <li>
+                <img src="{{aboutPageData.image}}" />
+                <a href="{{relative(siteRoot, aboutPageData.targetPath)}}">{{aboutPageData.title}}</a>
+            </li>
+        </for>
+    </ul>
+    <nav-column>
+        {{eventPagesData}}
+    </nav-column>
+
+    <nav-column pages="eventPagesData"></nav-column>
+
+</nav>
+
+```
+
+
+## Component/document data options:
+- disableDefaultImports: don't use default imports in document (default import names are not available, or have to be imported explicitly)
+- compileContentFirst: compile the content of the page before evaluating components (passing data to component)
+- contentFormat: as which format to compile content of the component
+- targetPath:
+- targetDir: 
+- targetRelativeDir:
+- targetName:
+- outputFormat:
+- visible
+
+### Component attr options 
+- contentFormat: as which format to compile content of the component
+
+
+## Iteration/indexing
+
+
+## Runtime code:
+Put through some processors to polyfill component based 
+interfaces to the ui.
+
+sample-markdown.style.ts
+sample-markdown.style.scss
+sample-markdown.style.css
+sample-markdown.style.stylus
+
+
+Imports might need to be resolved.
+
+sample-markdown.control.ts
+
+- Either define through using the same name in the same directory of the component.
+- Or define specifically in 'data' the path to the file
+- Or when using a ts component add functions marked with a type: (style, .css, .scss) or (.js, .ts) for code behind
+
+Normal .css needs some kind of frontmatter (should be able to import other css sheets)
+
+When compiling a component to be a page, then all style references from the components need to be tracked.
+1. Recursively compile all components
+2. While compiling a component, locate the style of the component and compile this style
+3. Put compiled styles into memory (of the component that targets being a page)
+4. When all subcomponents are compiled and are inserted, take all styles and insert
+them on top of the page (`<style>` needs to be within the `<head>` tag of the page)
+
+Use same system for adding client side code.
+The system should be abstract enough that any additional slots or types of **addon data**
+can be defined and compiled.
+
+> The best thing is probably to put a **component** in the head tag of the pages.
+This component should then gather access to references to all sub components of the page,
+compile their styles and `render` them to a `<style>` tag.
+`<collect-style-renderer>`
+
+> The same thing can be done as well when using code behind or component specific client code
+`<collect-client-renderer>`
+
+- Might be nice to later move towards migrating the code behind to primarily be isomorphic code.
+(we can use platform specific libraries that should be injected into the functions:
+like using *cheerio* on node or *jquery* on js, .etc)
+
+
+Together with the client code we could also define the dependencies, that the code needs
+    - in plain ES5 there are no imports everything is global
+    - like defining that the code needs *jquery* (automatically insert jquery script tag before the code)
+The advantage is that for instance *jquery* would not be loaded of there is no sub component that depends on it.
+Often times there is way too much added in the `<head>` tag of a page than actually needed, because seperation can be tedious
+and while designing you want all possibilities at your disposal. (for layouts, scripts, .etc)
+
+> Can also be done for meta data (meta data collected from the components frontmatter, or data prop, of the actual article --> title, description, .etc)
+
+`<collect-meta path="">`
+
+
+## 11ty ts/js template compat to component:
+- *layout* property --> Options:
+    - Add a virtual wrapper component that assembles layout and content
+    - Add a wrapper component which does the assembling operation
+    - Automatically import and add the imported component frame around the content, if the layout prop is defined
+- *permalink* property: 
+    - rewrites the output path: --> just rewrite `resource.data.document.target` to save it to another location
+- *tags* property --> mainly for adding rendered results to a collection that is available to other places of the applications
+    - leverage the fragment cache to get rendered pages/fragments which can also be filtered based on data
+    - the page that is "indexing" the fragments/pages/posts/etc should import and render the sub pages
+        1. During data calculation go through all content files/components of a directory
+        2. Check the *tags* of every encountered file and select those with the target tag
+        3. Render the dependency fragments (or get them from fragment cache if they already exist and did not change)
+        4. Add the rendered component `resources`/results to the namespace defined in the dependency definition (`<import>` tag)
+        5. Iterate over the list in the namespace and use metadata in the `data` property of the rendered resource to create each index entry (using `<for>`)
+- `this` scoped functions
+    funtions that are automatically wrapped and information about the current page and content is added to the function when called
+    --> simulate through using special components/functions instead
+
+- global data --> general config data in `_data` that is injected globally into every component/template used on the site
+(currently -> import data as `global_data`, which should add it to the current scope, which is then inherited by sub components)
+
+
+## Importing existing rendered
+
+### Programming posts index example
+```html
+<data>
+    <import path="./mydirectory/**" as="programmingposts" rendered>
+        <where>
+            <i>data.tags.includes('programmingpost')</i>
+        </where>
+    </import>
+
+    <import path="./post-page-renderer"></import>
+</data>
+
+<body>
+
+    <post-page-renderer out="programmingposts" src="{{srcdir}}/that/dir/posts/**" target="{{distdir}}/reldistdir/path/">
+        <where>
+            <i>data.tags.includes('programmingpost')</i>
+        </where>
+    </post-page-renderer>
+
+    <tagged-pages tag="programmingpost" out="programmingposts" src="./content" target="./programming/"></tagged-pages>
+
+    <tagged-article-index tag="programmingpost" src="./content" target="./programming/">
+        Compiles the pages for target `tag` and 
+        renders an index with `for`
+    </tagged-article-index>
+
+    <div id="prog-index">
+        <for it="programmingpost" of="programmingposts">
+            <article>
+                <img src="{{programmingpost.data.image}}" />
+                <h2>{{programmingpost.data.title}}</h2>
+                <p>{{programmingpost.data.description}}</p>
+                <summarize>{{programmingpost.content}}</summarize>
+                <url root="{{distdir}}" path="{{programmingpost.data.document.target}}">Read more ...</url>
+            </article>
+
+            <!-- Alternatively use a component-->
+            <index-article data="{{programmingpost}}">
+
+            <!-- Alternatively bind local context-->
+            <ctx bind="programmingpost.data">
+                <img src="{{image}}" />
+                <h2>{{title}}</h2>
+                <p>{{description}}</p>
+            </ctx>
+
+        </for>
+    </div>
+</body>
+```
+
+`<where>` contains conditions applied to the `resource` that must match in order to be selected for 
+the import.
+
+Probably best to only compile the pages at compile time and return a namespaced variable
+containing the rendered page resources as a local variable.
+Then things like `<where>` can be implemented as a function of the component.
+
+The only advantage of the `data` and `rendered` properties when `<import>`ing 
+components, is that a explicit component rendering statement at the top of
+the compile body is not necessary then.
+
+
+Example top level site component/home page:
+
+`home.page.component.html`
+```html
+
+<data>
+    <import>../../default/html-page-imports.ts</import>
+    <import>../../default/nav-page-imports.ts</import>
+    <import path="./content/sections/**" as="sections"></import>
+</data>
+
+<page-contents target={{distdir}} as="rendered-page-bodies"/>
+
+<!--When we need a component once and that component is not dependant on being loaded in 'data' then
+it makes sense to load it in the same instruction where it is needed-->
+<some-custom-component importFrom="./path/" />
+
+<html>
+    <head>
+        <default-viewport />
+        <fav src="./assets/myicon.svg">
+        <page-style>./home.page.scss</page-style>
+        <scripts>./home.scripts.js</scripts>
+        <meta data="this"></meta>
+    </head>
+    <header>
+        <top-navigation as="top-navigation"></top-navigation>
+    </header>
+    <body>
+        <sort list="sections" by="data.index"></sort>
+        <for it="section" of="sections">
+            {{ section.content }}
+        </for>
+    </body>
+
+    <grid-footer as="bottom-footer">
+        <nav-set path="footer-nav-items.json"></nav-set>
+        <logo type="large">{{logo_path}}</logo>
+        <newsletter-sub></newsletter-sub>
+        <social-icons><social-icons/>
+        <legal-info-bar><legal-info-bar/>
+    </grid-footer>
+</html>
+
+<!--Navigation in the sub pages depends on all pages being rendered, when wanting to automatically generate navigation items/urls-->
+<!--Therefore we need to insert it later-->
+<!--<resolve-navs pages="rendered-page-bodies" nav="top-navigation"><resolve-navs/>-->
+
+<resolve-variable in="rendered-page-bodies">
+    <navigation>{{top-navigation.content}}</navigation>
+<resolve-variable/>
+
+<resolve-variable in="rendered-page-bodies">
+    <footer>{{bottom-footer.content}}</footer>
+<resolve-variable/>
+```
+
+```bash
+# Pass 'data' overrides via CLI
+cli.ts -srcDir ./page -targetDir ./dist/page home.page.component.html
+#or: src and target dir can be defined within the 'home page component'
+cli.ts ./page/home.page.component.html
+
+#'running-shorter' is the name of the specific site
+cli.ts -dataPath ./page/home.running-shorter.data.html ./page/home.page.component.html
+#While components can be costructed very abstract and reuseable, the specified data might be very different
+# depending on the specific data of the page (title, general layout, .etc)
+# therefore the parent/caller of a component should be able to override a components data and/or specify a new
+# path to load the data from
+```
+
+# Themes:
+Make assumptions about the data structure of a page,
+like in particular a blog/cms like structure, with tags/categories, a navigation to different pages and page indices,
+a footer, links, .etc.
+As bssg is mostly website structure and purpose agnostic, we can not apply a theme.
+To do this we can 
+- define/provide mutliple generic components and tools for building a blog from content pages and website data.
+- a website creator can then use those components/tools to build a blog by mainly only providing content/media and data
+(navigation tags/pages, website author/domain/name/title) and defining the base structure of the site
+(defining a main website frame and the home page)
+- To define a theme these default components/tools can be overwritten by modified (inherit original) or rewritten versions
+(the theme should basically be a script that modifies the startup or initialization config)
+
+The simplest theme would be simply to use the default provided components and override their
+styles to have a different visualization.
+The most non technical user friendly way to do this would be to style every default theme component with an
+*external* styling file and give the user an opportuning to define one (or multiple) *theme* directories,
+in which you can place files that 'mask' the original ones.
+(Later maybe a way to inherit from the orginal styles).
+
+This directory can then be simply packaged and distributed as an npm package.
+This package can then be installed and to use this theme we can
+simply add the themes directory to our 'themeDirs' configuration prop.
+`typeof themeDirs: local_relative_path | local_absolute_path | node_modules_relative_path`
+
+Node modules theme path and local relative theme path, should be the **same**,
+you should be able to easily replace a local with a npm version.
+
+(Though it would also be really cool to be able to define a `remote_git_url`, `remote_theme_json_url` so that if you have built
+a page with any bssg theme and you want to try out different looks on YOUR own page, you simply add the *remote url* to your themes
+and recompile --> you can rapidly try out the options on your own page/data that you intend to use).
+Uninstalling a theme is as simple as removing the `themeDirs` entry from your config.
+
++ Theme package creation and publishing should be streamlined:
+Provide scripts that are as easy as:
+`npx bssg init-theme ./path/to/theme` --> interactive polling of package meta data
+`npx bssg publish-theme ./path/to/theme`
+`npx bssg install-theme somelocalorremotetheme` --> would be nice to add itself automatically to the config

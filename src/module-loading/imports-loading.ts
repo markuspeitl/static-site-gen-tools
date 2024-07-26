@@ -23,7 +23,13 @@ export interface ImportReference {
     content?: string;
     //Invoke data functionality at import time (for data file: .json, .yml, for components that affect data, .etc)
     data?: boolean;
+    //Request standalone rendered instance or instances of the imported components and put the result into a local variable.
+    //Example: Render/Import all posts with a certain <import> ed directory and then generate an index by iterating over the resulting collection
+    rendered?: boolean;
+    where?: string[]; //List of data conditions to match (for globbed or directory style multi imports)
 }
+//`data` and `rendered` cause the component extractor/compiler to be invoked immediately, instead of using them 
+//in the compile content/body of the component.
 
 export function getImportAliasFromFilePath(importPath: string): string {
     const name: string = path.basename(importPath);

@@ -38,7 +38,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         '.+\.scss': [ 'file' ],
                         '.+\.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
-                        '.+\/': [ 'dir' ],
+                        '.+\/': [ 'dir', 'watch' ],
                         '.+': [ 'dir' ],
                         //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
