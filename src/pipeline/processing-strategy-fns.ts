@@ -1,7 +1,7 @@
 import lodash from "lodash";
-import { ensureKeyAtDict, getKeyFromDict } from "../components/helpers/dict-util";
-import { settleValueOrNull } from "../utils/promise-util";
-import type { FalsyAble } from "../components/helpers/generic-types";
+import { ensureKeyAtDict, getKeyFromDict } from "@markus/ts-node-util-mk1";
+import { settleValueOrNull } from "@markus/ts-node-util-mk1";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { IProcessingNode, IResourceProcessor, IProcessResource, ProcessFunction, ProcessStrategy, CanHandleFunction, InputGuardConfig } from "./i-processor";
 
 export type SubProcessorsDict = { [ processorId: string ]: IProcessingNode; };

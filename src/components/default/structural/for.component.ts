@@ -1,10 +1,10 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
 import { processTreeStages } from "../../../processing-tree-wrapper";
-import { settleValueOrNull } from "../../../utils/promise-util";
+import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { BaseComponent, IInternalComponent } from "../../base-component";
-import { filterFalsy } from "../../helpers/array-util";
-import { getKeyFromDict } from "../../helpers/dict-util";
+import { filterFalsy } from "@markus/ts-node-util-mk1";
+import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 

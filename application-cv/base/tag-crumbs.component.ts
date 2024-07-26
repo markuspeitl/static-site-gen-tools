@@ -1,6 +1,6 @@
-import { filterFalsy } from "../../src/components/helpers/array-util";
-import { curvyTemplate, renderArraySelf } from "../../src/components/helpers/pre-process";
-import { wrapContent } from "../../src/components/helpers/wrap-html";
+import { filterFalsy } from "@markus/ts-node-util-mk1";
+import { curvyTemplate, renderArraySelf } from "@markus/ts-node-util-mk1";
+import { wrapContent } from "@markus/ts-node-util-mk1";
 
 export function render(data: any) {
 

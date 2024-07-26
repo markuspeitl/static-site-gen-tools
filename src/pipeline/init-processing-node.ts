@@ -1,5 +1,5 @@
-import { collectInSelfAndParents } from "../components/helpers/dict-util";
-import type { FalsyAble } from "../components/helpers/generic-types";
+import { collectInSelfAndParents } from "@markus/ts-node-util-mk1";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { IProcessingNode, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId } from "./i-processor";
 import path from "path";
 import { loadProcessorArrayFromPaths } from "../load-glob-modules";

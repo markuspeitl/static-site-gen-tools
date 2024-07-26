@@ -1,8 +1,8 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
-import type { FalsyAble } from '../../components/helpers/generic-types';
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { getTsComponentFromResource } from "../../components/components";
 
 export class TsExtractor implements IResourceProcessor {

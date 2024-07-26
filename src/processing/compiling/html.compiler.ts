@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html.compiler';

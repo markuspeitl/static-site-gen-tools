@@ -1,7 +1,7 @@
-import { wrapContent } from "../../src/components/helpers/wrap-html";
+import { wrapContent } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../../src/config";
 import type { IProcessResource } from "../../src/pipeline/i-processor";
-import { splitStringPreserve } from "../../src/utils/string-util";
+import { splitStringPreserve } from "@markus/ts-node-util-mk1";
 
 function renderSpan(content: string): string {
     return `<span>${content}</span>`;

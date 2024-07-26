@@ -1,8 +1,7 @@
 import * as cheerio from 'cheerio';
-import { type AttrDict, isEmpty } from './util';
 import * as path from 'path';
 import * as fs from 'fs';
-import type { FalsyAble } from '../components/helpers/generic-types';
+import { AttrDict, isEmpty, type FalsyAble } from "@markus/ts-node-util-mk1";
 
 
 export function loadHtml(html: string, noHtmlEntities: boolean = true): cheerio.Root {

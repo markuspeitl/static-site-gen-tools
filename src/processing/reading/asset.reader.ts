@@ -2,8 +2,8 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
-import { getFsNodeStat } from '../../utils/fs-util';
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { getFsNodeStat } from "@markus/ts-node-util-mk1";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 export class FileReader implements IResourceProcessor {
 

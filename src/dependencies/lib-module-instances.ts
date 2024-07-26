@@ -1,8 +1,9 @@
 
+import { getLibModuleInstance, ModuleConstructDict, setUnsetCfgLibConstructors } from "@markus/ts-node-util-mk1";
 import { SsgConfig } from "../config";
 //import { Environment } from "nunjucks";
 
-const defaultLibConstructors = {
+const defaultLibConstructors: ModuleConstructDict = {
     'markdown': async (config?: SsgConfig, configOptions?: any) => {
         const markdownit = await import('markdown-it');
 
@@ -40,42 +41,8 @@ const defaultLibConstructors = {
     }
 };
 
-const initializedLibsCache: Record<string, any> = {};
-
-export function setDefaultLibConstructors(config: SsgConfig): void {
-
-    if (!config.libConstructors) {
-        config.libConstructors = {};
-    }
-
-    const libConstructors: Record<string, any> = config.libConstructors;
-
-    for (const libName in defaultLibConstructors) {
-        if (!libConstructors[ libName ]) {
-            libConstructors[ libName ] = defaultLibConstructors[ libName ];
-        }
-    }
-}
-
-export type ConstructorFn = (config?: SsgConfig) => Promise<any>;
-export type ConstructorFnOrStatic = ConstructorFn | any;
-
-export async function initializeLib(libConstructor: ConstructorFnOrStatic, config?: SsgConfig, configOptions?: any): Promise<any> {
-
-    if (typeof libConstructor === 'function') {
-        const initializedLib: any = await libConstructor(config, configOptions);
-        return initializedLib;
-    }
-
-    return libConstructor;
-}
 
 export async function getLibInstance(libName: string, config?: SsgConfig, configOptions?: any): Promise<any> {
-
-    if (initializedLibsCache[ libName ]) {
-        return initializedLibsCache[ libName ];
-    }
-
     if (!config) {
         return null;
     }
@@ -84,21 +51,13 @@ export async function getLibInstance(libName: string, config?: SsgConfig, config
         config.libConstructors = {};
     }
 
-    let selectedLibConstructor: ConstructorFnOrStatic = config.libConstructors[ libName ];
 
-    if (!selectedLibConstructor) {
-        selectedLibConstructor = defaultLibConstructors[ libName ];
+    if (config.libConstructors[ libName ]) {
+        return getLibModuleInstance(libName, config.libConstructors, config, configOptions);
     }
+    return getLibModuleInstance(libName, defaultLibConstructors, config, configOptions);
+}
 
-    if (!selectedLibConstructor) {
-        throw new Error(`Library with the key '${libName}' is not defined in 'defaultLibConstructors', please add dependency costructor`);
-    }
-
-    const initializedLib: any = await initializeLib(selectedLibConstructor, config, configOptions);
-
-    if (initializedLib) {
-        initializedLibsCache[ libName ] = initializedLib;
-    }
-
-    return initializedLib;
+export function setDefaultLibConstructors(config: SsgConfig): void {
+    setUnsetCfgLibConstructors(config, defaultLibConstructors);
 }

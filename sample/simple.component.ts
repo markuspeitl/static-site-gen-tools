@@ -1,9 +1,10 @@
 import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "../src/components/base-component";
 import { dataTemplateFn, StaticAssembledFileComponent } from "../src/components/common-components";
-import { css, curvyTemplate, html, ts } from "../src/components/helpers/pre-process";
 import { SsgConfig } from "../src/config";
 import * as fs from 'fs';
 import { IProcessResource } from "../src/pipeline/i-processor";
+import { css, curvyTemplate, html } from "@markus/ts-node-util-mk1/src/html/pre-processors";
+import ts from "typescript";
 
 export class PropStyleComponent implements ExtensiveComponent {
 

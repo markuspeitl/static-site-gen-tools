@@ -3,7 +3,7 @@ import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-proc
 import type { Environment } from 'nunjucks';
 import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { HtmlCompiler } from './html.compiler';
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 async function compileMarkdownResource(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {

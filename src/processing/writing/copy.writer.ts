@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import type { FalsyStringPromise } from '../../components/helpers/generic-types';
+import type { FalsyStringPromise } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';
 

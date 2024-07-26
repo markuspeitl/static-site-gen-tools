@@ -2,7 +2,7 @@ import type { SsgConfig } from "../config";
 import type { IProcessResource } from "../pipeline/i-processor";
 import type { IInternalComponent } from "./base-component";
 import { registerCompileArgsResource, type DeferCompileArgs } from "./deferred-component-compiling";
-import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "../utils/cheerio-util";
+import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "@markus/ts-node-util-mk1";
 import { getFlatResourceImportSymbols } from "../module-loading/imports-loading";
 
 export async function processTopLevelNodesOfSymbols(html: string, symbolsToDetect: string[], processNodeFn: TaggedCheerioNodeFn<any>): Promise<string> {

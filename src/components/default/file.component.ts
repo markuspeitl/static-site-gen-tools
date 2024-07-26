@@ -1,7 +1,7 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource } from "../../pipeline/i-processor";
 import type { IInternalComponent } from "../base-component";
-import type { FalsyAble } from "../helpers/generic-types";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { resetDocumentSetInputFormat } from "../../processing/i-resource-processor";
 import { processStagesOnInputPath, processSubPath } from "../../processing-tree-wrapper";
 

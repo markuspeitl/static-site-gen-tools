@@ -1,13 +1,13 @@
 
 import type { IProcessor, IProcessResource, ProcessFunction } from "../pipeline/i-processor";
-import type { FalsyAble } from "./helpers/generic-types";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../config";
 import type { IInternalComponent } from "./base-component";
 import { calcHash } from "../fragement-cache";
-import { cheerioReplaceIdsWithUpdatesHtml } from "../utils/cheerio-util";
-import { settleValueOrNull } from "../utils/promise-util";
-import { removeBaseBlockIndent } from "../utils/string-util";
-import { setKeyInDict } from "./helpers/dict-util";
+import { cheerioReplaceIdsWithUpdatesHtml } from "@markus/ts-node-util-mk1";
+import { settleValueOrNull } from "@markus/ts-node-util-mk1";
+import { removeBaseBlockIndent } from "@markus/ts-node-util-mk1";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { resolveDataFromParentResource } from "./resolve-component-path-refs";
 import { getImportInstance, IImportInstance } from "../module-loading/imports-loading";
 import { passThroughFnChain } from "../pipeline/processing-strategy-fns";

@@ -3,8 +3,8 @@ import { calcHash } from '../fragement-cache';
 import * as fs from 'fs';
 import path from 'path';
 import { SsgConfig } from '../config';
-import { FalsyAble, SingleOrArray } from '../components/helpers/generic-types';
-import { arrayifyFilter } from '../components/helpers/array-util';
+import { FalsyAble, SingleOrArray } from "@markus/ts-node-util-mk1";
+import { arrayifyFilter } from "@markus/ts-node-util-mk1";
 import {
     requireFromString,
     importFromString,

@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../config";
-import type { FalsyAble } from "./helpers/generic-types";
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
 import { BaseComponent, DocumentData, IInternalComponent } from "./base-component";
 import { PassthroughComponent } from "./default/passthrough.component";

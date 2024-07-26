@@ -2,7 +2,7 @@ import path from "path";
 import { SsgConfig } from "./config";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
-import { getFsNodeStat } from "./utils/fs-util";
+import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
 import { IProcessingNodeConfig } from "./pipeline/i-processor";
 import type { IProcessResource } from './pipeline/i-processor';
@@ -10,7 +10,7 @@ import { defaultScopeManager } from "./data/scope-manager";
 import { initProcessorInstanceFromConf } from "./pipeline/init-processing-node";
 import { initDefaultImportSymbols } from "./module-loading/imports-loading";
 import { resolveDataFromParentFile } from "./components/resolve-component-path-refs";
-import { resolveRelativePaths } from "./utils/path-util";
+import { resolveRelativePaths } from "@markus/ts-node-util-mk1";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 

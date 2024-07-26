@@ -1,7 +1,7 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/lib-module-instances";
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 async function compileMarkdownResource(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     const markdownRendererInstance: markdownit = await getLibInstance('markdown', config, {

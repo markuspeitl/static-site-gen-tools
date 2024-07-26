@@ -1,4 +1,4 @@
-import { ensureKeyAtDict } from "../components/helpers/dict-util";
+import { ensureKeyAtDict } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../config";
 import type { IProcessResource, IResourceProcessor } from "../pipeline/i-processor";
 

@@ -1,6 +1,6 @@
 import path from "path";
-import { settleValueOrNullFilter } from "./utils/promise-util";
-import { anchorAndGlob } from "./utils/globbing";
+import { settleValueOrNullFilter } from "@markus/ts-node-util-mk1";
+import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import { getFirstInstanceTargetClass, getModuleId } from "./module-loading/ts-modules";
 import type Module from "module";
 import type { IProcessor } from "./pipeline/i-processor";

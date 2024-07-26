@@ -1,11 +1,11 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { FalsyString, FalsyStringPromise } from '../../components/helpers/generic-types';
+import { FalsyString, FalsyStringPromise } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';
-import { getFsNodeStat } from '../../utils/fs-util';
-import { isDirPath, isPath } from "../../utils/path-util";
-import { setKeyInDict } from "../../components/helpers/dict-util";
+import { getFsNodeStat } from "@markus/ts-node-util-mk1";
+import { isDirPath, isPath } from "@markus/ts-node-util-mk1";
+import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
 
