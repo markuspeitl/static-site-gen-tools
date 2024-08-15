@@ -1,6 +1,7 @@
 import { arrayifyFilter, inflateTemplateVars, loadDataAsync, loadDataSources } from "@markus/ts-node-util-mk1";
 import path from "path";
 import * as fs from 'fs';
+import { ArgumentParser } from 'argparse';
 
 export async function getConfigurationArrayFrom(jsonFilePath: string): Promise<any[]> {
     const loadedJson: any = await loadDataAsync(jsonFilePath);
@@ -181,11 +182,22 @@ export async function generateLaunchConfig(
     generatorJsonPath: string,
     targetFilePath: string,
     baseLaunchConfig: any = null,
-): Promise<any> {
+): Promise<void> {
+
+    console.log(`Generating config '${generatorJsonPath}' --> '${targetFilePath}'`);
 
     const loadedGenJson: any = await loadDataAsync(generatorJsonPath);
+    if (!loadedGenJson) {
+        return;
+    }
 
     let inflatedLaunchJson: any = await inflateGenerateJson(loadedGenJson, generatorJsonPath);
+
+    if (!inflatedLaunchJson.configurations) {
+        inflatedLaunchJson.configurations = [];
+    }
+
+    console.log(`Successfully generated '${inflatedLaunchJson.configurations.length}' configurations from '${generatorJsonPath}'`);
 
     if (baseLaunchConfig) {
         const inflatedConfigurations = inflatedLaunchJson.configurations || [];
@@ -196,23 +208,69 @@ export async function generateLaunchConfig(
         inflatedLaunchJson.configurations.push(...inflatedConfigurations);
     }
 
-    const jsonString = JSON.stringify(inflatedLaunchJson, null, 4);
-    await fs.promises.writeFile(targetFilePath, jsonString);
+    if (targetFilePath) {
+
+        fs.mkdirSync(path.dirname(targetFilePath), { recursive: true });
+
+        const jsonString = JSON.stringify(inflatedLaunchJson, null, 4);
+
+        console.log(`Writing generated launch.json to '${targetFilePath}'`);
+
+        await fs.promises.writeFile(targetFilePath, jsonString);
+    }
 
     return inflatedLaunchJson;
 }
 
+//const generatorFilePath: string = path.join(__dirname, './launch-generator-config.json');
+//const targetFilePath: string = path.join(__dirname, './launch.json');
 
-const launchFilePath: string = path.join(__dirname, './launch.json');
-//const targetFilePath: string = path.join(__dirname, './launch-generated.json');
-const generatorFilePath: string = path.join(__dirname, './launch-configs-template.json');
-const targetFilePath: string = path.join(__dirname, './launch.json');
+export function main() {
+    const parser = new ArgumentParser({
+        description: 'Generate launch.json from launch-generator config'
+    });
 
+    parser.add_argument('-s', '--source', { help: 'Source path to consume', default: '.vscode/launch-generator-config.json' });
+    parser.add_argument('-t', '--target', { help: 'Target path to write to', default: '.vscode/launch.json' });
+    parser.add_argument('-tv', '--target_version', { help: 'launch.json version field value', default: '0.2.0' });
+    parser.add_argument('-y', '--overwrite', { help: 'Overwrite the --target file without making a backup', action: 'store_true' });
 
-generateLaunchConfig(
-    generatorFilePath,
-    targetFilePath,
-    {
-        'version': '0.2.0'
+    const args: any = parser.parse_args();
+
+    if (!fs.existsSync(args.source)) {
+        throw new Error(`Source file at ${args.source} does not exist -> Exiting launch.json generation`);
     }
-);
+    if (!args.target) {
+        throw new Error(`Target path was empty --> exiting`);
+    }
+
+    if (fs.existsSync(args.target) && !args.overwrite) {
+
+        const parsedTargetPath: path.ParsedPath = path.parse(args.target);
+
+        const targetBackupPath: string = path.join(parsedTargetPath.dir, parsedTargetPath.name + "-backup.json");
+
+        console.log(`Lauch json already exists -> making backup at ${targetBackupPath}`);
+
+        if (fs.existsSync(targetBackupPath)) {
+            throw new Error(`Backup path at ${args.source} does already exist -> no overwrite performed
+                To do so call with the '-y' option to overwrite without backup, or delete the backup first
+            `);
+        }
+
+        fs.copyFileSync(args.target, targetBackupPath);
+        console.log(`Created backup of ${args.target} at ${targetBackupPath}`);
+    }
+
+    generateLaunchConfig(
+        args.source,
+        args.target,
+        {
+            'version': args.target_version
+        }
+    );
+}
+
+if (require.main?.filename === __filename) {
+    main();
+}

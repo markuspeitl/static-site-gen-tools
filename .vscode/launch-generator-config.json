@@ -123,8 +123,8 @@
             "gen-launch-config-debug": {
                 "args": [
                     "${workspaceRoot}/.vscode/gen-launch.ts",
-                    "application-cv/.vscode/launch-configs-template.json",
-                    "application-cv/.vscode/launch-config-generated.json"
+                    ".vscode/launch-configs-template.json",
+                    ".vscode/launch-config-generated.json"
                 ]
             }
         }
