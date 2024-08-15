@@ -25,57 +25,108 @@
         "sampleComponentsDebug": {
             //The default property signifies a new group, instead of a configuration dict --> it is required
             "default": {
-                "name": "debug $params.key",
+                "name": "$params.key debug",
                 "args": [
                     "${workspaceRoot}/cli.ts",
-                    "sample/ts/$params.inputFile",
-                    "sample/dist/$params.outputFile"
+                    "$params.inputFile",
+                    "$params.outputFile"
                 ]
             },
-            "very-simple-component": {
+            "compile sample dir": {
                 "params": {
-                    "inputFile": "sample/ts/very-simple.component.ts",
-                    "outputFile": "sample/dist/very-simple.component.html"
+                    "inputFile": "sample/sample-dir/",
+                    "outputFile": "sample/dist/sample-dir/"
                 }
             },
-            "functional-component": {
+            "compile current file": {
                 "params": {
-                    "inputFile": "sample/ts/functional.component.ts",
-                    "outputFile": "sample/dist/functional.component.html"
+                    "inputFile": "${file}",
+                    "outputFile": "sample/dist/${fileBasename}"
                 }
             },
-            "sample-component": {
-                "params": {
-                    "inputFile": "sample.component.ts",
-                    "outputFile": "sample.component.html"
-                }
-            },
-            "self-test": {
-                "name": "Self test name override"
-            },
-            //Special key --> no inheritance/merging, only generating targets by passing different parameters
-            "parametize": [
-                {
-                    "key": "param simple component",
-                    "inputFile": "sample/ts/very-simple.component.ts",
-                    "outputFile": "sample/dist/very-simple.component.html"
+            "sampleTsComponentsDebug": {
+                "default": {
+                    "name": ".ts $params.key component",
+                    "args": [
+                        "${workspaceRoot}/cli.ts",
+                        "sample/ts/$params.key$.ts",
+                        "sample/dist/$params.key$.html"
+                    ]
                 },
-                {
-                    "key": "param simple component2",
-                    "inputFile": "sample/ts/very-simple.component2.ts",
-                    "outputFile": "sample/dist/very-simple.component2.html"
+                "parametrize-keys": [
+                    "functional.component",
+                    "prop-styled.component",
+                    "sample.component",
+                    "simple.component",
+                    "sub-sample.component",
+                    "very-simple.component"
+                ]
+            },
+            "sampleToDictDirDebug": {
+                "default": {
+                    "args": [
+                        "${workspaceRoot}/cli.ts",
+                        "sample/$params.inputFile",
+                        "sample/dist/$params.outputFile"
+                    ]
                 },
-                {
-                    "key": "param simple component3",
-                    "inputFile": "sample/ts/very-simple.component3.ts",
-                    "outputFile": "sample/dist/very-simple.component3.html"
-                }
-            ],
-            "parametize-keys": [
-                "very-simpleanother.component",
-                "other.component",
-                "other-simple.component"
-            ]
+                //Special key --> no inheritance/merging, only generating targets by passing different parameters
+                "parametrize": [
+                    {
+                        "key": "sample-markdown.md",
+                        "inputFile": "sample-markdown.md",
+                        "outputFile": "sample-markdown.html"
+                    },
+                    {
+                        "key": "nested-for.md",
+                        "inputFile": "nested-for.md",
+                        "outputFile": "nested-for.html"
+                    },
+                    {
+                        "key": "sub-content-compile.html",
+                        "inputFile": "sub-content-compile.html",
+                        "outputFile": "sub-content-compile.html"
+                    },
+                    {
+                        "key": "content-to-insert.md",
+                        "inputFile": "content-to-insert.md",
+                        "outputFile": "content-to-insert.html"
+                    }
+                ]
+            },
+            "sampleCVDebug": {
+                "default": {
+                    "args": [
+                        "${workspaceRoot}/cli.ts",
+                        "application-cv/$params.inputFile",
+                        "application-cv/dist/$params.outputFile"
+                    ]
+                },
+                "parametrize": [
+                    {
+                        "key": "assembled cv",
+                        "inputFile": "assembled-cv.ehtml",
+                        "outputFile": "index.html"
+                    },
+                    {
+                        "key": "business-card.md",
+                        "inputFile": "business-card.md",
+                        "outputFile": "business-card.html"
+                    },
+                    {
+                        "key": "sub-content-compile.html",
+                        "inputFile": "sub-content-compile.html",
+                        "outputFile": "sub-content-compile.html"
+                    }
+                ]
+            },
+            "gen-launch-config-debug": {
+                "args": [
+                    "${workspaceRoot}/.vscode/gen-launch.ts",
+                    "application-cv/.vscode/launch-configs-template.json",
+                    "application-cv/.vscode/launch-config-generated.json"
+                ]
+            }
         }
     }
 }
