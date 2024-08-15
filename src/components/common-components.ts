@@ -2,6 +2,7 @@ import type { SsgConfig } from "../config";
 import * as fs from 'fs';
 import { DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "./base-component";
 import { curvyTemplate } from "@markus/ts-node-util-mk1";
+import { IProcessResource } from "../pipeline/i-processor";
 
 export function readFileFn(filePath: string): () => Promise<string> {
     return async () => {
@@ -41,11 +42,15 @@ public clientCodeFile: string = './script.js';
 public renderFile: string = './index.html';*/
 
 export function dataTemplateFn(templateString: string): DataToParsedDocumentOrString {
-    const renderTemplateFn = async (dataCtx?: DocumentData | null, config?: SsgConfig) => {
-        if (!dataCtx) {
-            dataCtx = {};
+    const renderTemplateFn = async (resource: IProcessResource, config?: SsgConfig) => {
+        if (!resource) {
+            resource = {};
         }
-        return curvyTemplate(templateString, dataCtx);
+        if (!resource.data) {
+            return templateString;
+        }
+
+        return curvyTemplate(templateString, resource.data);
     };
     return renderTemplateFn;
 }

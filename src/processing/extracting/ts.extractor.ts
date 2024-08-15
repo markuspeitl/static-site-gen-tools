@@ -9,6 +9,11 @@ export class TsExtractor implements IResourceProcessor {
     id: string = 'ts.extractor';
 
     public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+
+        if (resource.id && resource.id.endsWith('.ts')) {
+            return true;
+        }
+
         if (typeof resource.content !== 'string') {
             return false;
         }

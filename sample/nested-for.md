@@ -13,7 +13,7 @@ somevalue: hello from somevalue
 ---
 
 <if cond="false">
-    Non Truthy if first
+    Non Truthy if - before anything else --> if this shows there is something wrong
 </if>
 
 

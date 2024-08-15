@@ -15,10 +15,10 @@ export class TsCompiler implements IResourceProcessor {
         return this.tsExtractor.canHandle(resource, config);
     }
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
+        /*const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
-        }
+        }*/
         //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
 
         const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
