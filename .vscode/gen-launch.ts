@@ -253,7 +253,7 @@ export function main() {
         console.log(`Lauch json already exists -> making backup at ${targetBackupPath}`);
 
         if (fs.existsSync(targetBackupPath)) {
-            throw new Error(`Backup path at ${args.source} does already exist -> no overwrite performed
+            throw new Error(`Backup path at ${targetBackupPath} does already exist -> no overwrite performed
                 To do so call with the '-y' option to overwrite without backup, or delete the backup first
             `);
         }
