@@ -1,0 +1,85 @@
+{
+    "extend": "./launch.json",
+    "default": {},
+    "tsNodeDebug": {
+        "default": {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps"
+            ],
+            "cwd": "${workspaceRoot}",
+            //"args": [],
+            //"name": "",
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps"
+            }
+        },
+        "sampleComponentsDebug": {
+            //The default property signifies a new group, instead of a configuration dict --> it is required
+            "default": {
+                "name": "debug $params.key",
+                "args": [
+                    "${workspaceRoot}/cli.ts",
+                    "sample/ts/$params.inputFile",
+                    "sample/dist/$params.outputFile"
+                ]
+            },
+            "very-simple-component": {
+                "params": {
+                    "inputFile": "sample/ts/very-simple.component.ts",
+                    "outputFile": "sample/dist/very-simple.component.html"
+                }
+            },
+            "functional-component": {
+                "params": {
+                    "inputFile": "sample/ts/functional.component.ts",
+                    "outputFile": "sample/dist/functional.component.html"
+                }
+            },
+            "sample-component": {
+                "params": {
+                    "inputFile": "sample.component.ts",
+                    "outputFile": "sample.component.html"
+                }
+            },
+            "self-test": {
+                "name": "Self test name override"
+            },
+            //Special key --> no inheritance/merging, only generating targets by passing different parameters
+            "parametize": [
+                {
+                    "key": "param simple component",
+                    "inputFile": "sample/ts/very-simple.component.ts",
+                    "outputFile": "sample/dist/very-simple.component.html"
+                },
+                {
+                    "key": "param simple component2",
+                    "inputFile": "sample/ts/very-simple.component2.ts",
+                    "outputFile": "sample/dist/very-simple.component2.html"
+                },
+                {
+                    "key": "param simple component3",
+                    "inputFile": "sample/ts/very-simple.component3.ts",
+                    "outputFile": "sample/dist/very-simple.component3.html"
+                }
+            ],
+            "parametize-keys": [
+                "very-simpleanother.component",
+                "other.component",
+                "other-simple.component"
+            ]
+        }
+    }
+}
+
+
+
+

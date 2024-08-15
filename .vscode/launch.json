@@ -10,19 +10,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "sample/sample-dir/",
-                "sample/dist/sample-dir/",
+                "sample/dist/sample-dir/"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -34,19 +34,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "${file}",
-                "sample/dist/${fileBasename}",
+                "sample/dist/${fileBasename}"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -58,19 +58,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "sample/sample-markdown.md",
-                "sample/dist/sample-markdown.html",
+                "sample/dist/sample-markdown.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -82,19 +82,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "sample/nested-for.md",
-                "sample/dist/nested-for.html",
+                "sample/dist/nested-for.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -106,13 +106,13 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "sample/sub-content-compile.html",
-                "sample/dist/sub-content-compile.html",
+                "sample/dist/sub-content-compile.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
@@ -135,15 +135,63 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
-                "sample/simple.component.ts",
-                "sample/dist/simple-component.html",
-                //"fileComponent" //TODO add select export prop support
+                "sample/ts/very-simple.component.ts",
+                "sample/dist/very-simple-component.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
                 "NODE_OPTIONS": "--enable-source-maps",
+            }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "name": "sample/typescript document compile",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps",
+            ],
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "${workspaceRoot}/cli.ts",
+                "sample/ts/functional.component.ts",
+                "sample/dist/functional-component.html"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps"
+            }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "name": "sample/typescript document compile",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps"
+            ],
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "${workspaceRoot}/cli.ts",
+                "sample/simple.component.ts",
+                "sample/dist/simple-component.html"
+                //"fileComponent" //TODO add select export prop support
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -155,19 +203,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "${workspaceRoot}/application-cv/assembled-cv.ehtml",
-                "${workspaceRoot}/application-cv/dist/index.html",
+                "${workspaceRoot}/application-cv/dist/index.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -179,19 +227,19 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "${workspaceRoot}/application-cv/business-card.md",
-                "${workspaceRoot}/application-cv/dist/business-card.html",
+                "${workspaceRoot}/application-cv/dist/business-card.html"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
             "env": {
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
-                "NODE_OPTIONS": "--enable-source-maps",
+                "NODE_OPTIONS": "--enable-source-maps"
             }
         },
         {
@@ -203,13 +251,37 @@
             "runtimeArgs": [
                 "--require",
                 "ts-node/register",
-                "--enable-source-maps",
+                "--enable-source-maps"
             ],
             "cwd": "${workspaceRoot}",
             "args": [
                 "${workspaceRoot}/cli.ts",
                 "${workspaceRoot}/sample/content-to-insert.md",
-                "${workspaceRoot}/sample/dist/content-inserted.html",
+                "${workspaceRoot}/sample/dist/content-inserted.html"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps"
+            }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "name": "debug generate launch file",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps",
+            ],
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "${workspaceRoot}/.vscode/gen-launch.ts",
+                "${workspaceRoot}/.vscode/launch-configs-template.json",
+                "${workspaceRoot}/.vscode/launch-config-generated.json"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "sourceMaps": true,
@@ -217,6 +289,6 @@
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
                 "NODE_OPTIONS": "--enable-source-maps",
             }
-        },
+        }
     ]
 }
