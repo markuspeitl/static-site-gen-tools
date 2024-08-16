@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { isPath, possibleDirPath } from "@markus/ts-node-util-mk1";
-import { processTreeFromToPath } from "../../processing-tree-wrapper";
+import { processStagesFromToPath } from "../../processing-tree-wrapper";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 
@@ -75,7 +75,7 @@ export class DirReader implements IResourceProcessor {
             const fsNodePath: string = path.join(resolvedPath, dirFile);
             //const targetNodePath: string = path.join(getTargetDirPath(resource), dirFile);
 
-            const processedResource: IProcessResource = await processTreeFromToPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
+            const processedResource: IProcessResource = await processStagesFromToPath(fsNodePath, getSubPathAtTarget(resource, dirFile), config);
 
 
             setKeyInDict(resource, 'document.processed', dirFile);

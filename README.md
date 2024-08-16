@@ -1448,3 +1448,39 @@ and therefore does not fit writing display documents in visual language very wel
 ```
 
 To really make the dev experience shine, the blocks could be color coded in the editor.
+
+
+## 11ty compat notes
+1. Use dir or glob reader to read all files of an eleventy 'content' dir and send them down the chain
+2. Send all detected files/dirs through the data extractors
+(extract frontmatter data as clean data to be pretransformed and get unresolved 'content')
+    - Data extraction on a dir needs a compat layer or implementations (probably useful to have in normal bssg as well)
+3. Compile the rest content to an ehtml format containing the layout components as a wrapper
+4. Modify output path by using the permalink data property
+5. Send the document back starting again from the compiler stage (should compile just like a usual bssg component)
+6. Should compile the component and write like usual
+
+Requirements:
+- The IO chain needs to be visible to the component (get the parent directory resources and their properties through the `parent` property)
+inject as data.page.inputPath and data.page.outputPath in compat layer
+- Global data needs to be available (use reader+extractor stage to get global data and make sure it is merged before handling the 11ty content dir)
+-> `_data` dir should be treated like it would be a (virtual) parent of the input directory
+- Parse and convert shortcodes/helpers to internal functions (can probably be passed to njk compiler, or be transpiled to bssg components altogether)
+- compiled "layout" paths need to be properly resolved -> add 'includesDir' to import resolve paths or, pass variable through config and handle by tranpiler
+
+- templateFormats -> basically use a selection mechanism of what file is sent through the compile chain and what not
+- htmlTemplateEngine -> manipulating the compile chain to compile html files with this 'compiler' 
+first -> should be more general mechanism to select what is treats as what format or by which compiler type/format chain
+- markdownTemplateEngine -> manipulating the compile chain to compile md files with this 'compiler' first
+
+## Auxilirary 11ty fns
+- assets -> use bssg platform mechanism for now and exclude during bssg compile run
+- plugins -> the only thing i am using additionally is 'eleventy-sass' -> (re)write own .scss compiler
+- shortcodes -> most currently defined shortcodes are not worth reusing -> convert to the *functional* component system of bssg
+- include/exclude -> just add include + exclude paths to bssg ( = simple)
+- (data)-parsers -> essentially handled by 'extractor' stage targets registered in the processing tree
+- ~~extensions~~ -> is what file extension 11ty should treat as alias for other extensions -> this might be useful in bssg as well -> trivial to implement
+- transforms -> = postprocessing -> in bssg this is essentially inbuilt by adding targets to the format specific compilers
+(maybe add some helper fns that simplify that management)
+--> todo refactor current 11ty fns to not be dependent on globaldata and not dependent on the `page` variable
+and all of this data can be extracted from the result resource chain (with .parent property)

@@ -152,10 +152,10 @@ export async function processStagesOnInputPath(stagesToProcess: string[] | undef
 }
 
 export async function processStagesFromToPath(
-    stagesToProcess: string[] | undefined,
     inputPath: string,
     outputPath: string | null,
-    config: SsgConfig
+    config: SsgConfig,
+    stagesToProcess?: string[],
 ): Promise<IProcessResource> {
 
     const toProcessResource: IProcessResource = {
@@ -172,7 +172,7 @@ export async function processStagesFromToPath(
     return processStagesOnResource(toProcessResource, config, stagesToProcess);
 }
 
-export const processTreeFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(undefined, inputPath, outputPath, config);
+//export const processStagesFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(inputPath, outputPath, config, undefined);
 
 //Render the resource content with predefined 'extractor' and 'compiler' stages
 //Mainly for rendering generated sub content/body from within components (return render control to bssg)

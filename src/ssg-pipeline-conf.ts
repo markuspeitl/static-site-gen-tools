@@ -34,6 +34,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.md': [ 'file' ],
                         '.+\.njk': [ 'file' ],
                         '.+\.ts': [ 'file' ],
+                        '.+\.js': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
                         '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         '.+\.scss': [ 'file' ],
