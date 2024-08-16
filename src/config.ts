@@ -54,6 +54,8 @@ export interface SsgConfig {
 
     scopeManager?: IScopeManager;
 
+    processedDocuments?: any[];
+
 
     //<deprecated>
     //Generic compile runner that selects a target runner from src data
@@ -112,5 +114,4 @@ export interface SsgConfig {
     //layoutResolvePaths?: string[]; // removed layout == component
     //Note: the more paths -> can affect the layout and compiler resolve speed
     //componentResolvePaths?: string[];
-
 }

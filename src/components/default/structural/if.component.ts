@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
-import { processTreeStages, renderComponentBodyContent } from "../../../processing-tree-wrapper";
+import { forkSubResourceProcessStages, renderComponentBodyContent } from "../../../processing-tree-wrapper";
 import { getScopedEvalFn } from "@markus/ts-node-util-mk1";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 

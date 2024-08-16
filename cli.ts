@@ -1,7 +1,9 @@
 import type { SsgConfig } from './src/config';
 import type { IProcessResource } from './src/pipeline/i-processor';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
-import { processTreeFromToPath } from './src/processing-tree-wrapper';
+import { processStagesFromToPath } from './src/processing-tree-wrapper';
+import http from 'node:http';
+import path from 'path';
 
 async function main() {
     /*const parser = new ArgumentParser({
@@ -106,7 +108,34 @@ async function main() {
     }
     await Promise.all(tryMultiFileCompilePromises);*/
 
-    await processTreeFromToPath(config.sourcePath, config.targetPath, config);
+    await processStagesFromToPath(config.sourcePath, config.targetPath, config);
+
+    if (config.processedDocuments) {
+        const processedDocuments: any[] = config.processedDocuments;
+        console.log("Processed documents: ");
+
+        console.log(processedDocuments.map((item) => '- ' + item.src).join('\n'));
+
+        console.log("Processed doc File urls: ");
+        const documentTargets = processedDocuments.map((item) => item.target);
+        const fileUrls = documentTargets.map((target) => "file://" + path.resolve(target));
+        console.log(fileUrls.join('\n'));
+
+
+        /*const requestListener = function (req, res) {
+            res.setHeader("Content-Type", "text/html");
+            res.writeHead(200);
+            res.end("My first server!");
+        };
+        const server = http.createServer(requestListener);
+
+        const host = '127.0.0.1';
+        const port = 8222;
+        server.listen(port, host, () => {
+            console.log(`Server is running on http://${host}:${port}`);
+        });*/
+    }
+
 
 
     //TODO seperate file and buffer compile

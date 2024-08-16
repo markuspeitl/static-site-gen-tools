@@ -3,7 +3,7 @@ import type { IProcessResource } from "../../pipeline/i-processor";
 import type { IInternalComponent } from "../base-component";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { resetDocumentSetInputFormat } from "../../processing/i-resource-processor";
-import { processStagesOnInputPath, processSubPath } from "../../processing-tree-wrapper";
+import { processStagesOnInputPath, processStagesOnResource } from "../../processing-tree-wrapper";
 
 /*const cachedFileResources: Record<string, IProcessResource> = {};
 export async function getFileResource(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IProcessResource>> {
@@ -89,7 +89,7 @@ export class FileComponent implements IInternalComponent {
         //resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
 
         //resource.content = readResource.content;
-        this.dataExtractedResource = await processSubPath(readResource, config, [ 'extractor' ]);
+        this.dataExtractedResource = await processStagesOnResource(readResource, config, [ 'extractor' ]);
 
         if (!this.dataExtractedResource) {
             this.dataExtractedResource = readResource;
@@ -109,7 +109,7 @@ export class FileComponent implements IInternalComponent {
 
         resourceToCompile.data.content = resource.content;
 
-        return await processSubPath(resourceToCompile, config, [ 'compiler' ]);
+        return await processStagesOnResource(resourceToCompile, config, [ 'compiler' ]);
     }
 
 }

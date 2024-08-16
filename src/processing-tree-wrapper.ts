@@ -1,9 +1,10 @@
+import { FalseAbleVal } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "./config";
 import { forkDataScope } from "./manage-scopes";
-import type { CanHandleFunction, IProcessingNode, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
+import type { CanHandleFunction, IProcessingNode, IProcessor, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
 import * as lodash from 'lodash';
 
-export class ProcessingTreeWrapper implements IResourceProcessor {
+/*export class ProcessingTreeWrapper implements IResourceProcessor {
     id: string = 'tree-wrapper';
     private subjectProcessingNode: IProcessingNode;
     canHandle: CanHandleFunction;
@@ -13,46 +14,126 @@ export class ProcessingTreeWrapper implements IResourceProcessor {
         this.canHandle = this.subjectProcessingNode.canHandle;
         this.process = this.subjectProcessingNode.process;
     }
+}*/
+
+
+export function registerProcessedDocument(
+    resource: IProcessResource,
+    config: SsgConfig,
+): void {
+    if (resource?.data?.document?.src) {
+        if (!config.processedDocuments) {
+            config.processedDocuments = [];
+        }
+        config.processedDocuments.push(resource?.data?.document);
+    }
+}
+
+/*export async function processRegisterDocument(
+    resource: IProcessResource,
+    config: SsgConfig,
+    processFn: ProcessFunction,
+    ...stagesToProcess: string[]
+): Promise<IProcessResource> {
+    const processedResource: IProcessResource = await processFn(resource, config, ...stagesToProcess);
+    registerProcessedDocument(processedResource, config);
+    return processedResource;
+}*/
+
+export async function processStagesOnResourceRegisterDoc(
+    resource: IProcessResource,
+    config: SsgConfig,
+    stagesToProcess?: string[]
+): Promise<IProcessResource> {
+
+    const processedResource: IProcessResource = await processStagesOnResource(resource, config, stagesToProcess);
+    registerProcessedDocument(processedResource, config);
+    return processedResource;
+}
+
+
+export function extractSubChainNode(
+    srcProcessorNode: IProcessingNode,
+    chainStages: FalseAbleVal<string[]>,
+    cache?: Record<string, IProcessingNode>
+): IProcessingNode {
+
+    let stageChainId: string = 'default';
+    if (chainStages) {
+        stageChainId = chainStages.join();
+    }
+    if (cache && cache[ stageChainId ]) {
+        return cache[ stageChainId ];
+    }
+
+    const srcProcessorCopy: IProcessingNode = lodash.cloneDeep(srcProcessorNode);
+
+    if (chainStages) {
+        const selectedSubProcessorSubset: IProcessor[] | undefined = srcProcessorNode.processors?.filter((processor) => chainStages.includes(processor.id));
+        srcProcessorCopy.processors = selectedSubProcessorSubset;
+    }
+
+    if (cache) {
+        cache[ stageChainId ] = srcProcessorCopy;
+    }
+
+    return srcProcessorCopy;
 }
 
 //Very rudimentary and specific currently, only 1 level beneath top
-export async function processSubPath(resource: IProcessResource, config: SsgConfig, stagesToProcess?: string[]): Promise<IProcessResource> {
+export async function processStagesOnResource(
+    resource: IProcessResource,
+    config: SsgConfig,
+    stagesToProcess?: string[]
+): Promise<IProcessResource> {
 
-    const subPathId: string | undefined = stagesToProcess?.join();
-    if (!config.subTreePathCache) {
-        config.subTreePathCache = {};
-    }
-    if (subPathId && config.subTreePathCache[ subPathId ]) {
-        return config.subTreePathCache[ subPathId ].process(resource, config);
-    }
+
     if (!config.processingTree) {
         return resource;
     }
-
-    if (!subPathId) {
-        return config.processingTree.process(resource, config);
+    if (!config.subTreePathCache) {
+        config.subTreePathCache = {};
     }
 
-    const processTreeCopy: IProcessingNode = lodash.cloneDeep(config.processingTree);
+    //Compiles and caches a subchain of the main processor
+    const selectedSubChainNode: IProcessingNode = extractSubChainNode(
+        config.processingTree,
+        stagesToProcess,
+        config.subTreePathCache
+    );
 
-    processTreeCopy.processors = processTreeCopy.processors?.filter((processor) => stagesToProcess?.includes(processor.id));
+    const processedResource: IProcessResource = await selectedSubChainNode.process(
+        resource,
+        config
+    );
 
-    config.subTreePathCache[ subPathId ] = processTreeCopy;
+    registerProcessedDocument(processedResource, config);
 
-    return processSubPath(resource, config, stagesToProcess);
+    return processedResource;
 }
 
-export async function processTreeStages(stagesToProcess: string[] | undefined, resource: IProcessResource, config: SsgConfig, processRunId?: string): Promise<IProcessResource> {
-    const forkedResource: IProcessResource = forkDataScope(resource);
+export async function forkSubResourceProcessStages(
+    parentResource: IProcessResource,
+    config: SsgConfig,
+    stagesToProcess: string[] | undefined,
+    processRunnerId?: string, //appended to resource id to track changes, not required
+): Promise<IProcessResource> {
 
-    processRunId = "_" + processRunId || '';
+    const childForkedResource: IProcessResource = forkDataScope(parentResource);
 
-    forkedResource.id = forkedResource.id + processRunId;
-    forkedResource.control = {
-        parent: resource,
+    if (!processRunnerId) {
+        processRunnerId = 'child';
+    }
+
+    childForkedResource.id = parentResource.id + '->' + processRunnerId;
+
+    //Reset control flow
+    childForkedResource.control = {
+        parent: parentResource,
         handledProcIds: [],
     };
-    return processSubPath(forkedResource, config, stagesToProcess);
+
+    return processStagesOnResource(childForkedResource, config, stagesToProcess);
 }
 
 //Example: Use process stage to read resource to memory
@@ -67,10 +148,15 @@ export async function processStagesOnInputPath(stagesToProcess: string[] | undef
         }
     };
 
-    return processSubPath(toReadResource, config, stagesToProcess);
+    return processStagesOnResource(toReadResource, config, stagesToProcess);
 }
 
-export async function processStagesFromToPath(stagesToProcess: string[] | undefined, inputPath: string, outputPath: string | null, config: SsgConfig): Promise<IProcessResource> {
+export async function processStagesFromToPath(
+    stagesToProcess: string[] | undefined,
+    inputPath: string,
+    outputPath: string | null,
+    config: SsgConfig
+): Promise<IProcessResource> {
 
     const toProcessResource: IProcessResource = {
         id: inputPath,
@@ -83,13 +169,28 @@ export async function processStagesFromToPath(stagesToProcess: string[] | undefi
         }
     };
 
-    return processSubPath(toProcessResource, config, stagesToProcess);
+    return processStagesOnResource(toProcessResource, config, stagesToProcess);
 }
 
 export const processTreeFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(undefined, inputPath, outputPath, config);
 
-export async function renderComponentBodyContent(resource: IProcessResource, config: SsgConfig, processRunId?: string): Promise<IProcessResource> {
+//Render the resource content with predefined 'extractor' and 'compiler' stages
+//Mainly for rendering generated sub content/body from within components (return render control to bssg)
+export async function renderComponentBodyContent(
+    resource: IProcessResource,
+    config: SsgConfig,
+    processRunId?: string
+): Promise<IProcessResource> {
+
     //forkedResource.id = forkedResource.id + processRunId;
     //const stagesRunId: string = processRunId;
-    return processTreeStages([ 'extractor', 'compiler' ], resource, config, processRunId);
+    return forkSubResourceProcessStages(
+        resource,
+        config,
+        [
+            'extractor',
+            'compiler'
+        ],
+        processRunId
+    );
 }

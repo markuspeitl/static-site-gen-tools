@@ -147,6 +147,12 @@ export async function getTsComponentFromResource(resource: IProcessResource, con
         return null;
     }
 
+    const inputPath: string | undefined = resource.data?.document?.src;
+    if (inputPath) {
+        const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
+        return filePathComponent;
+    }
+
     if (resource.content) {
         const bufferComponent: FalsyAble<IInternalComponent> = await getTsComponentFromBuffer(resource.content, config);
         if (bufferComponent) {
@@ -154,10 +160,5 @@ export async function getTsComponentFromResource(resource: IProcessResource, con
         }
     }
 
-    const inputPath: string | undefined = resource.data?.document?.src;
-    if (inputPath) {
-        const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
-        return filePathComponent;
-    }
     return null;
 }

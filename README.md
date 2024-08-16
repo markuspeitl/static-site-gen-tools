@@ -1326,3 +1326,125 @@ Provide scripts that are as easy as:
 `npx bssg init-theme ./path/to/theme` --> interactive polling of package meta data
 `npx bssg publish-theme ./path/to/theme`
 `npx bssg install-theme somelocalorremotetheme` --> would be nice to add itself automatically to the config
+
+
+## Minml
+A concise way to write common html structures:
+
+```html
+?data
+
+?
+
+?meta
+    title: hello world
+?
+
+#1 Hello one
+
+/p #my-item .this-class .other-class
+    /p
+        Hello
+    /p
+/p
+
+/p
+$my-item 
+.this-class
+.other-class
+    /p
+        Hello
+    /p
+/p
+
+/=div
+    /
+        #p
+            Hello from nested div
+        #p
+    /
+/
+
+/p 
+arrval: one two three
+arrval: one,two,three
+singval = one two three
+singval = test
+    > I am the content of /p block
+/p
+
+/p 
+    > Hello i am a multi line
+    > text that contains line breaks
+    > and escapes characters like /p ? >
+/p
+
+/p 
+    > Hello i am a single line broken \
+    > into multiple lines \
+    > just like you would in programming \
+/p
+
+/1 Title of my site:
+
+//h sub title of my site:
+
+Escape identation util block start
+()
+
+-   /p 
+        > Hello i am a line
+
+        #Comment for some notes
+
+        /p
+            sub paragraph
+        /p
+
+        /img 
+        style=width:100% height:auto
+            https://domain.com/img.png
+        /img
+
+
+        > into multiple lines \
+        > just like you would in programming \
+    /p
+
+/img 
+    src> test.png
+    > content attribute stored next to text
+/img
+
+?script
+
+?
+
+```
+- no html and body tag -> .minml extension already says how it is to be interpreted (as html)
+- data & visualization:
+    - head, script and other tags are interpreted as data and not displayed
+    - visualization are displayed or structural elements: div, body, p, .etc
+- semantically important whitespace (indentation)
+- `"` tokens for denoting start and end of id or class value, are unnecessary (id only single word allwed)
+- Different tokens for rendered/structural and data/info/functionality blocks
+- Array values are parsed until next semantic token OR untile end of line
+- HTML is in XML format which is primarily a data transfer and storage format
+and therefore does not fit writing display documents in visual language very well
+- Every special token at the start of the line has meaning
+- Attributes are essentially named content -> why is there a distinction
+
+```html
+/img
+    /src test.png
+    /style
+        width: 100%
+        height: 200px
+    /p
+        hello world
+    /p
+    > hello text node
+/img
+```
+
+To really make the dev experience shine, the blocks could be color coded in the editor.

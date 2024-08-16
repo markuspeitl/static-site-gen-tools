@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../config";
 import type { IProcessResource } from "../pipeline/i-processor";
-import { processTreeStages } from "../processing-tree-wrapper";
+import { forkSubResourceProcessStages } from "../processing-tree-wrapper";
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
 import type { IInternalComponent } from "./base-component";
 
@@ -23,7 +23,7 @@ export async function deferContentCompile(resource: IProcessResource, config: Ss
     compileBodyResource.id = undefined;
 
 
-    const dataExtractedDocument: FalsyAble<IProcessResource> = await processSubPath(compileBodyResource, config);
+    const dataExtractedDocument: FalsyAble<IProcessResource> = await processStagesOnResource(compileBodyResource, config);
     if (!dataExtractedDocument) {
         return compileBodyResource;
     }
@@ -46,7 +46,11 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('extractor', resource, config);
 
-        const dataExtractedResource: IProcessResource = await processTreeStages([ 'extractor' ], resource, config);
+        const dataExtractedResource: IProcessResource = await forkSubResourceProcessStages(
+            resource,
+            config,
+            [ 'extractor' ]
+        );
         return dataExtractedResource;
     }
     public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
@@ -57,7 +61,11 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('compiler', resource, config);
 
-        const compiledResource: IProcessResource = await processTreeStages([ 'compiler' ], resource, config);
+        const compiledResource: IProcessResource = await forkSubResourceProcessStages(
+            resource,
+            config,
+            [ 'compiler' ]
+        );
         return compiledResource;
     }
 }

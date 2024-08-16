@@ -226,12 +226,12 @@ export async function compilePendingChildren(resource: IProcessResource, config:
 
     //const dataParseDoc: FalsyAble<IProcessResource> = await component.data(subDocToCompile, config);
     //const dataParseDoc: FalsyAble<IProcessResource> = await config.masterCompileRunner?.extractDataWith('html', subDocToCompile, config);
-    const dataExtractedResource: IProcessResource = await processTreeStages([ 'extractor' ], subDocToCompile, config);
+    const dataExtractedResource: IProcessResource = await forkSubResourceProcessStages([ 'extractor' ], subDocToCompile, config);
 
 
     //Resolve any html tags that link other components in the result
     //const subsRenderedDoc: FalsyAble<IProcessResource> = await config.masterCompileRunner?.compileWith('html', dataParseDoc, config);
-    const subsRenderedDoc: IProcessResource = await processTreeStages([ 'compiler' ], dataExtractedResource, config);
+    const subsRenderedDoc: IProcessResource = await forkSubResourceProcessStages([ 'compiler' ], dataExtractedResource, config);
 
     if (!subsRenderedDoc) {
         return args;

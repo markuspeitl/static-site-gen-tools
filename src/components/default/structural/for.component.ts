@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
-import { processTreeStages } from "../../../processing-tree-wrapper";
+import { forkSubResourceProcessStages, renderComponentBodyContent } from "../../../processing-tree-wrapper";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { filterFalsy } from "@markus/ts-node-util-mk1";
@@ -55,7 +55,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
             const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
-            return processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
+            return forkSubResourceProcessStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
             //const renderedBody = renderedIterationResource?.content || '';
             //const renderedBody = forkedResource.content;
         });
@@ -72,9 +72,18 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
-            const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
+            const forkedResourceRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
 
-            let renderedIterationResource: IProcessResource | null = await processTreeStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
+            let renderedIterationResource: IProcessResource | null = await renderComponentBodyContent(
+                resource,
+                config,
+                /*[
+                    'extractor',
+                    'compiler'
+                ],*/
+                forkedResourceRunId
+            );
+
             const renderedBody = renderedIterationResource?.content || '';
             renderedIterationResource = null;
             //const renderedBody = forkedResource.content;

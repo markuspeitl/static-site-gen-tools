@@ -14,8 +14,18 @@ export interface IProcessResource {
 }
 
 
-export type ProcessFunction = (resource: IProcessResource, config: any) => Promise<IProcessResource>;
-export type CanHandleFunction = (resource: IProcessResource, config: any) => Promise<boolean>;
+export type ProcessFunction = (
+    resource: IProcessResource,
+    config: any,
+    ...args: any[]
+) => Promise<IProcessResource>;
+
+export type CanHandleFunction = (
+    resource: IProcessResource,
+    config: any,
+    ...args: any[]
+) => Promise<boolean>;
+
 export type ProcessStrategy = 'serial' | 'parallel' | 'firstMatch' | 'lastMatch';
 
 export interface IProcessor {
