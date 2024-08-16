@@ -37,7 +37,7 @@ export class FileWriter implements IResourceProcessor {
             return resource;
         }
 
-        console.log(`Writing ${this.id}: resource: ${resource?.id} -- n-th: ${FileWriter.fileWriteCounter} to path ${targetFilePath}`);
+        console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${targetFilePath}`);
         FileWriter.fileWriteCounter++;
 
 

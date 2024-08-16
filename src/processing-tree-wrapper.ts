@@ -137,7 +137,7 @@ export async function forkSubResourceProcessStages(
 }
 
 //Example: Use process stage to read resource to memory
-export async function processStagesOnInputPath(stagesToProcess: string[] | undefined, documentPath: string, config: SsgConfig): Promise<IProcessResource> {
+export async function processStagesOnInputPath(documentPath: string, config: SsgConfig, stagesToProcess?: string[]): Promise<IProcessResource> {
 
     const toReadResource = {
         id: documentPath,
@@ -194,3 +194,45 @@ export async function renderComponentBodyContent(
         processRunId
     );
 }
+
+export interface ProcessingWrapper {
+    renderFork: (
+        parentResource: IProcessResource,
+        config: SsgConfig,
+        processRunId?: string
+    ) => Promise<IProcessResource>;
+
+    processFork: (
+        parentResource: IProcessResource,
+        config: SsgConfig,
+        stagesToProcess?: string[],
+        processRunId?: string
+    ) => Promise<IProcessResource>;
+
+    processDocument: (
+        inputPath: string,
+        config: SsgConfig,
+        stagesToProcess?: string[],
+    ) => Promise<IProcessResource>;
+
+    processDocumentTo: (
+        inputPath: string,
+        outputPath: string | null,
+        config: SsgConfig,
+        stagesToProcess?: string[],
+    ) => Promise<IProcessResource>;
+
+    processStages: (
+        parentResource: IProcessResource,
+        config: SsgConfig,
+        stagesToProcess?: string[]
+    ) => Promise<IProcessResource>;
+}
+
+export const defaultProcessingWrapper: ProcessingWrapper = {
+    renderFork: renderComponentBodyContent,
+    processFork: forkSubResourceProcessStages,
+    processDocument: processStagesOnInputPath,
+    processDocumentTo: processStagesFromToPath,
+    processStages: processStagesOnResource
+};

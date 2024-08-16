@@ -33,14 +33,14 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
                         '.+\.md': [ 'file' ],
                         '.+\.njk': [ 'file' ],
-                        '.+\.ts': [ 'file' ],
+                        '.+\.ts': [ 'pass-path' ],
                         '.+\.js': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
                         '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         '.+\.scss': [ 'file' ],
                         '.+\.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
-                        '.+\/': [ 'dir', 'watch' ],
-                        '.+': [ 'dir' ],
+                        //'.+\/': [ 'dir', 'watch' ],
+                        '.+\/': [ 'dir' ],
                         //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
                 }
@@ -63,6 +63,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'md': [ 'md', 'html' ],
                         'njk': [ 'md', 'html' ],
                         'ts': [ 'md', 'ts' ],
+                        'dir': [ 'dir' ]
                     },
                 }
             },
@@ -120,21 +121,31 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 strategy: 'firstMatch',
 
                 fileProcessorChains: {
-                    matchProp: 'id',
+                    //matchProp: 'id',
+                    matchProp: 'data.document.outputFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.writer',
                     processors: {
-                        '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
-                        '.+\.md': [ 'file' ],
-                        '.+\.njk': [ 'file' ],
-                        '.+\.ts': [ 'file' ],
-                        //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                        //'.+\.scss': [ 'file' ],
-                        //'.+\/': [ 'dir' ],
-                        //'.+': [ 'dir' ],
-                        '.+.png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
-                        //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
+                        'dir': [ 'dir' ],
+                        'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                        'md': [ 'file' ],
+                        'njk': [ 'file' ],
+                        'ts': [ 'file' ],
+                        'jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        'scss': [ 'file' ],
+                        'png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
+
+                        // '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                        // '.+\.md': [ 'file' ],
+                        // '.+\.njk': [ 'file' ],
+                        // '.+\.ts': [ 'file' ],
+                        // //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
+                        // '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        // //'.+\.scss': [ 'file' ],
+                        // //'.+\/': [ 'dir' ],
+                        // //'.+': [ 'dir' ],
+                        // '.+.png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
+                        // //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
                 }
             }

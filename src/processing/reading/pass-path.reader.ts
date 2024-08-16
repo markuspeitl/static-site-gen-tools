@@ -2,12 +2,12 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
-import { getFsNodeStat } from "@markus/ts-node-util-mk1";
+import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
-export class AssetReader implements IResourceProcessor {
+export class PassPathReader implements IResourceProcessor {
 
-    public id: string = 'asset.reader';
+    public id: string = 'pass-path.reader';
 
     public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
@@ -21,7 +21,6 @@ export class AssetReader implements IResourceProcessor {
             return false;
         }
         return true;
-
     }
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
@@ -29,15 +28,12 @@ export class AssetReader implements IResourceProcessor {
             return resource;
         }
         console.log(`Reading ${this.id}: ${resource.data?.document?.src}`);
-        //const resolvedPath: string = path.resolve(resourceId);
-        //const parsedPath: path.ParsedPath = path.parse(resolvedPath);
 
-        setKeyInDict(resource, 'data.document.inputFormat', 'asset');
-        setKeyInDict(resource, 'data.document.outputFormat', 'asset');
-
-        //resource = addHandlerId(resource, 'reader', this);
-        //Mark resource as read --> resource is not processed by the 'reader' stage anymore
-        //resource.id = undefined;
+        const resolvedPath: string = path.resolve(resourceId);
+        const fileExtension: string = getCleanExt(resolvedPath);
+        setKeyInDict(resource, 'data.document.inputFormat', fileExtension);
+        //setKeyInDict(resource, 'data.document.inputFormat', 'pass-path');
+        resource.content = resourceId;
         return resource;
     }
 }

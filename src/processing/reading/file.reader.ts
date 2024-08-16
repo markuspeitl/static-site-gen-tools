@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import { FalsyString, FalsyStringPromise } from "@markus/ts-node-util-mk1";
+import { FalsyString, FalsyStringPromise, getCleanExt } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
@@ -65,15 +65,10 @@ export class FileReader implements IResourceProcessor {
         console.log(`Reading ${this.id}: ${resource.data?.document?.src}`);
 
         const resolvedPath: string = path.resolve(resourceId);
-        const parsedPath: path.ParsedPath = path.parse(resolvedPath);
-        const fileContents: FalsyString = await readFileAsString(resolvedPath);
-
-        let fileExtension = parsedPath.ext;
-        if (fileExtension.startsWith('.')) {
-            fileExtension = fileExtension.slice(1);
-        }
-
+        const fileExtension: string = getCleanExt(resolvedPath);
         setKeyInDict(resource, 'data.document.inputFormat', fileExtension);
+
+        const fileContents: FalsyString = await readFileAsString(resolvedPath);
         resource.content = fileContents;
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore

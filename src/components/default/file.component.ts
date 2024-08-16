@@ -75,7 +75,11 @@ export class FileComponent implements IInternalComponent {
         }
         this.path = dataPath;
 
-        const readResource: FalsyAble<IProcessResource> = await processStagesOnInputPath([ 'reader' ], this.path, config);
+        const readResource: FalsyAble<IProcessResource> = await processStagesOnInputPath(
+            this.path,
+            config,
+            [ 'reader' ]
+        );
         if (!readResource) {
             return resource;
         }

@@ -1,0 +1,49 @@
+import path from 'path';
+import type { SsgConfig } from "../../config";
+import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
+import { processStagesOnInputPath } from "../../processing-tree-wrapper";
+import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+
+
+const dataFilePathRegex = new RegExp(/^.+\.data\..+$/i);
+
+export class DirReader implements IResourceProcessor {
+
+    public id: string = 'dir.reader';
+
+    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+        //Check should already be handled by stage guard match
+        return true;
+    }
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+        const resourceId: string | undefined = resource.id;
+        if (!resourceId) {
+            return resource;
+        }
+        const document: ResourceDoc = getResourceDoc(resource);
+        const documentSrc: string = document.src;
+
+        console.log(`Reading ${this.id}: ${documentSrc}`);
+        const dirFiles: string[] = resource.content;
+        const dirDataFiles: string[] = mapFilterRegexMatches(dirFiles, dataFilePathRegex, (dirPath: string) => path.basename(dirPath));
+
+        const resourceData: any = resource.data;
+
+        for (let dirDataFile of dirDataFiles) {
+            if (!path.isAbsolute(dirDataFile)) {
+                dirDataFile = path.join(documentSrc, dirDataFile);
+            }
+
+            //TODO this should fork a sub resource from the current dir context data instead (these fns should also be on the config itself)
+            //When cleaning the types it should be possible to write a processor without importing any external functionality
+            const dataFileResource: IProcessResource = await processStagesOnInputPath(dirDataFile, config, [ 'reader', 'extractor' ]);
+            //Merge this or is assign enough
+            Object.assign(resourceData, dataFileResource.data);
+        }
+
+        return resource;
+
+        //setKeyInDict(resource, 'data.document.outputFormat', 'dir');
+    }
+}

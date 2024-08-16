@@ -11,6 +11,7 @@ import { initProcessorInstanceFromConf } from "./pipeline/init-processing-node";
 import { initDefaultImportSymbols } from "./module-loading/imports-loading";
 import { resolveDataFromParentFile } from "./components/resolve-component-path-refs";
 import { resolveRelativePaths } from "@markus/ts-node-util-mk1";
+import { defaultProcessingWrapper } from "./processing-tree-wrapper";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -136,6 +137,7 @@ export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
 
     config.scopeManager = defaultScopeManager;
 
+    config.processor = defaultProcessingWrapper;
     return config;
 }
 

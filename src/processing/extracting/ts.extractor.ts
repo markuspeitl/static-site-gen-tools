@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource } from '../../pipeline/i-processor';
-import { TsBaseProcessor } from "../base-shared/ts.base.processor";
+import { TsBaseProcessor } from "../shared/ts.base.processor";
 
 export class TsExtractor extends TsBaseProcessor {
     id: string = 'ts.extractor';

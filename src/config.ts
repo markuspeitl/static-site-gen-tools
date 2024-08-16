@@ -4,6 +4,7 @@ import type { IInternalComponent } from "./components/base-component";
 import type { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
 import type { IScopeManager } from "./data/scope-manager";
 import type { IImportInstance } from "./module-loading/imports-loading";
+import { ProcessingWrapper } from "./processing-tree-wrapper";
 
 export interface SsgConfig {
     //compilers?: Record<string, any>;
@@ -23,6 +24,8 @@ export interface SsgConfig {
     //paths to the config extensions and mods to load
     userConfigPath?: string;
     runtimeConfigPath?: string;
+
+    processor?: ProcessingWrapper;
 
     //Detected Components matching in those paths should be automatically loaded as dependencies
     //Default: [./src/components/default]
