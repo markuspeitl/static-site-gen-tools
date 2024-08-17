@@ -59,11 +59,11 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                     strategy: 'serial',
                     fileIdPostfix: '.extractor',
                     processors: {
+                        'dir': [ 'dir' ],
                         'html': [ 'html' ],
                         'md': [ 'md', 'html' ],
                         'njk': [ 'md', 'html' ],
-                        'ts': [ 'md', 'ts' ],
-                        'dir': [ 'dir' ]
+                        'ts': [ 'md', 'ts' ]
                     },
                 }
             },
@@ -81,6 +81,9 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                     strategy: 'serial',
                     fileIdPostfix: '.compiler',
                     processors: {
+                        'dir': [
+                            'dir'
+                        ],
                         'html': [
                             'placeholder',
                             'component',

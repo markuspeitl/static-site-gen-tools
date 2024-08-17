@@ -1,3 +1,4 @@
+import { filterFalsy, mapDictListProp } from '@markus/ts-node-util-mk1';
 import type { SsgConfig } from './src/config';
 import type { IProcessResource } from './src/pipeline/i-processor';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
@@ -107,19 +108,30 @@ async function main() {
     }
     await Promise.all(tryMultiFileCompilePromises);*/
 
+    console.time('full_processing');
+
     await config.processor.processDocumentTo(config.sourcePath, config.targetPath, config);
 
+    console.timeEnd('full_processing');
+
     if (config.processedDocuments) {
-        const processedDocuments: any[] = config.processedDocuments;
+        const processedDocuments: any[] = filterFalsy(config.processedDocuments);
         console.log("Processed documents: ");
 
-        console.log(processedDocuments.map((item) => '- ' + item.src).join('\n'));
+        for (let procDocument of processedDocuments) {
+            if (typeof procDocument === 'object') {
+                const docSrc: string = procDocument.src || '';
+                const docTarget: string = procDocument.target || '';
+                console.log(`Processed doc: '${docSrc}' --> '${docTarget}'`);
+            }
+        }
 
+        /*const docSources = mapDictListProp(processedDocuments, 'src');
+        console.log(docSources.join('\n'));
         console.log("Processed doc File urls: ");
-        const documentTargets = processedDocuments.map((item) => item.target);
-        const fileUrls = documentTargets.map((target) => "file://" + path.resolve(target));
-        console.log(fileUrls.join('\n'));
-
+        const documentTargets: string[] = mapDictListProp(processedDocuments, 'target');
+        const fileUrls = documentTargets.map((target: string) => "file://" + path.resolve(target));
+        console.log(fileUrls.join('\n'));*/
 
         /*const requestListener = function (req, res) {
             res.setHeader("Content-Type", "text/html");

@@ -19,6 +19,8 @@ export function getDocumentTargetSubPath(resource: IProcessResource, relativePat
 }
 
 export interface ResourceDoc {
+    inputFormat: string,
+    outputFormat: string,
     src: string,
     target: string;
 }
@@ -31,4 +33,71 @@ export function getResourceDoc(resource: IProcessResource): ResourceDoc {
         resource.data.document = {};
     }
     return resource.data.document;
+}
+
+export function getTargetFromFormat(
+    srcPath: string,
+    outputFormat?: string,
+    targetDirPath?: string,
+    overridePostFix?: string,
+): string {
+
+    if (!targetDirPath) {
+        targetDirPath = path.dirname(srcPath);
+    }
+    const parsedSrcPath: path.ParsedPath = path.parse(srcPath);
+
+    if (!overridePostFix) {
+        overridePostFix = '.' + outputFormat;
+    }
+
+    const targetPath: string = path.join(targetDirPath, parsedSrcPath.name + overridePostFix);
+    return targetPath;
+}
+
+export function getTargetFromDocFormat(
+    document: ResourceDoc,
+    outputFormat?: string,
+    targetDirPath?: string,
+    overridePostFix?: string,
+) {
+    if (document.target) {
+        return document.target;
+    }
+    if (!outputFormat) {
+        outputFormat = document.inputFormat;
+    }
+    if (document.outputFormat) {
+        outputFormat = document.outputFormat;
+    }
+
+    return getTargetFromFormat(
+        document.src,
+        outputFormat,
+        targetDirPath,
+        overridePostFix
+    );
+}
+
+export function setTargetFromFormat(
+    document: ResourceDoc,
+    outputFormat?: string,
+    targetDirPath?: string,
+    overridePostFix?: string,
+): void {
+
+    if (!document) {
+        return;
+    }
+
+    document.target = getTargetFromDocFormat(
+        document,
+        outputFormat,
+        targetDirPath,
+        overridePostFix
+    );
+
+    if (document.src === document.target) {
+        throw Error("Document src and target paths are identical --> not allowed to prevent data loss");
+    }
 }

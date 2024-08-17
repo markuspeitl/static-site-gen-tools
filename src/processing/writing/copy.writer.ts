@@ -1,8 +1,9 @@
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
-import type { FalsyStringPromise } from "@markus/ts-node-util-mk1";
+import { ensureFileDir, type FalsyStringPromise } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';
+import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
@@ -27,7 +28,8 @@ export class CopyWriter implements IResourceProcessor {
 
     public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
-        if (resource.data?.document?.target && resource.data?.document?.src) {
+        const document: ResourceDoc = getResourceDoc(resource);
+        if (document.target && document.src) {
             return true;
         }
         return false;
@@ -37,12 +39,13 @@ export class CopyWriter implements IResourceProcessor {
         if (!resourceId) {
             return resource;
         }
-        console.log(`Writing ${this.id}: ${resource.data?.document?.target}`);
 
+        const document: ResourceDoc = getResourceDoc(resource);
+        console.log(`Writing ${this.id}: ${document.src} --> ${document.target}`);
         //resource = addHandlerId(resource, 'writer', this);
 
-        const targetPath: string | null = resource.data?.document?.target;
-        const srcPath: string | null = resource.data?.document?.src;
+        const targetPath: string | null = document.target;
+        const srcPath: string | null = document.src;
 
         if (srcPath && targetPath) {
 
@@ -54,8 +57,7 @@ export class CopyWriter implements IResourceProcessor {
                 return resource;
             }
 
-            const targetDir: string = path.dirname(resolvedTarget);
-            await fs.promises.mkdir(targetDir, { recursive: true });
+            ensureFileDir(resolvedTarget);
 
             //https://stackoverflow.com/questions/13786160/copy-folder-recursively-in-node-js
             await fs.promises.cp(srcPath, resolvedTarget);

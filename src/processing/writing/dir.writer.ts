@@ -1,8 +1,9 @@
 import path from "path";
 import { SsgConfig } from "../../config";
 import { IProcessResource, IResourceProcessor } from "../../pipeline/i-processor";
-import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+import { getResourceDoc, ResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
 import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull, filterFalsy } from '@markus/ts-node-util-mk1';
+
 
 export class DirWriter implements IResourceProcessor {
 
@@ -19,14 +20,31 @@ export class DirWriter implements IResourceProcessor {
         }
         const document: ResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
-        const documentTarget: string = makeAbsolute(document.target);
+        //const documentTarget: string = makeAbsolute(document.target);
+        const dirDocumentTarget: string = document.target;
 
-        console.log(`Reading ${this.id}: ${documentSrc}`);
+        console.log(`Writing ${this.id}: ${documentSrc} --> ${dirDocumentTarget}`);
         const dirCompiledResources: IProcessResource[] = resource.content;
 
-        await ensureDir(documentTarget);
+        await ensureDir(dirDocumentTarget);
 
         const writeResourcePromises: Promise<IProcessResource>[] = dirCompiledResources.map(async (compiledResource: IProcessResource) => {
+
+            const compiledSubResourceDoc: ResourceDoc = getResourceDoc(compiledResource);
+
+            let overridePathPostfix: string | undefined = undefined;
+            if (compiledSubResourceDoc.outputFormat === 'dir') {
+                overridePathPostfix = '/';
+            }
+            setTargetFromFormat(
+                compiledSubResourceDoc,
+                undefined,
+                dirDocumentTarget,
+                overridePathPostfix
+            );
+
+
+
             const processedChildResource: IProcessResource = await config.processor.processStages(compiledResource, config, [ 'writer' ]);
             return processedChildResource;
         });

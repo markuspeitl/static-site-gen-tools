@@ -1,7 +1,9 @@
+import { getCleanExt } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
+import { getResourceDoc, ResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
 
 export class FileWriter implements IResourceProcessor {
 
@@ -18,10 +20,10 @@ export class FileWriter implements IResourceProcessor {
             return false;
         }
 
-        const targetFilePath = resource.data?.document?.target;
+        /*const targetFilePath = resource.data?.document?.target;
         if (!targetFilePath) {
             return false;
-        }
+        }*/
 
         return true;
     }
@@ -30,37 +32,28 @@ export class FileWriter implements IResourceProcessor {
         if (!await this.canHandle(resource, config)) {
             return resource;
         }
+        const document: ResourceDoc = getResourceDoc(resource);
 
+        setTargetFromFormat(document);
+        const targetDir = path.dirname(document.target);
 
-        let targetFilePath = resource.data?.document?.target;
-        if (!targetFilePath) {
-            return resource;
-        }
-
-        console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${targetFilePath}`);
+        console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
         FileWriter.fileWriteCounter++;
-
-
-        const parsedTargetPath: path.ParsedPath = path.parse(targetFilePath);
-        const targetDir: string = parsedTargetPath.dir;
-
-        let cleanExtension = parsedTargetPath.ext;
-        if (cleanExtension) {
-            cleanExtension = cleanExtension.slice(1);
-        }
-        const outputFormat = resource.data?.document?.outputFormat;
-
-        if (outputFormat && outputFormat !== cleanExtension) {
-            targetFilePath = path.join(targetDir, parsedTargetPath.name + '.' + outputFormat);
-        }
-
 
         await fs.promises.mkdir(targetDir, { recursive: true });
 
-        await fs.promises.writeFile(targetFilePath, resource.content);
+        await fs.promises.writeFile(
+            document.target,
+            resource.content
+        );
+
+        return resource;
 
         //resource = addHandlerId(resource, 'writer', this);
         //return resource;
-        return resource;
+        /*let targetFilePath = document.target;
+        if (!targetFilePath) {
+            return resource;
+        }*/
     }
 }

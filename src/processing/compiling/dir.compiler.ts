@@ -19,14 +19,26 @@ export class DirCompiler implements IResourceProcessor {
         }
         const document: ResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
+        const documentTarget: string = document.target;
 
         console.log(`Reading ${this.id}: ${documentSrc}`);
         const dirFiles: string[] = resource.content;
         const resourceData: any = resource.data;
 
         const subDocProcessPromises: Promise<IProcessResource>[] = dirFiles.map(async (dirFile) => {
-            const subDocNodePath: string = path.join(documentSrc, dirFile);
-            const processedChildResource: IProcessResource = await config.processor.processDocument(subDocNodePath, config, [ 'reader', 'extractor', 'compiler' ]);
+            const srcSubDocPath: string = path.join(documentSrc, dirFile);
+            //const targetSubDocPath: string = path.join(documentTarget, dirFile);
+
+            const processedChildResource: IProcessResource = await config.processor.processDocument(
+                srcSubDocPath,
+                //undefined,
+                config,
+                [
+                    'reader',
+                    'extractor',
+                    'compiler'
+                ]
+            );
             //setKeyInDict(resource, 'document.processed', dirFile);
             return processedChildResource;
         });

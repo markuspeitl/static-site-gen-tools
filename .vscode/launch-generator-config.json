@@ -38,6 +38,12 @@
                     "outputFile": "sample/dist/sample-dir/"
                 }
             },
+            "11ty sample dir": {
+                "params": {
+                    "inputFile": "sample/eleventy-sample/",
+                    "outputFile": "sample/dist/eleventy-sample/"
+                }
+            },
             "compile current file": {
                 "params": {
                     "inputFile": "${file}",
