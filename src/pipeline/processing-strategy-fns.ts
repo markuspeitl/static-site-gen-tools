@@ -43,7 +43,12 @@ export async function checkAndProcessWith(resource: IProcessResource, config: an
     return transformedResource;
 }
 
-export async function passThroughProcessChain(resource: IProcessResource, config: any, chainToProcess: IResourceProcessor[]): Promise<IProcessResource> {
+export async function passThroughProcessChain(
+    resource: IProcessResource,
+    config: any,
+    chainToProcess: IResourceProcessor[]
+): Promise<IProcessResource> {
+
     let resultResource: IProcessResource = resource;
     for (const processor of chainToProcess) {
         resultResource = await callProcessorMergeResource(resultResource, config, processor);

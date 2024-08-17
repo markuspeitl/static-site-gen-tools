@@ -133,7 +133,8 @@ export async function evaluateLocalImportSymbols(resource: IProcessResource, con
 }
 
 export async function initDefaultImportSymbols(config: SsgConfig): Promise<ImportSymbolsToPaths> {
-    if (config.defaultImportSymbolPaths) {
+
+    if (config.defaultImportSymbolsInitialized) {
         return config.defaultImportSymbolPaths;
     }
     if (!config.defaultImportSymbolPaths) {
@@ -144,6 +145,8 @@ export async function initDefaultImportSymbols(config: SsgConfig): Promise<Impor
         config.defaultImportsDirs = [];
     }
     await registerImportDirs(config.defaultImportsDirs, config.defaultImportSymbolPaths);
+
+    config.defaultImportSymbolsInitialized = true;
     return config.defaultImportSymbolPaths;
 }
 
@@ -222,7 +225,7 @@ export async function getImportInstance(symbol: string, resource: IProcessResour
     return loadImportInstanceFromPath(symbolImportModulePath, config.globalImportsCache, config);
 }
 
-export async function loadImportInstanceFromPath(importFilePath: string, cache: Record<string, IImportInstance>, config: SsgConfig = {}): Promise<FalsyAble<IImportInstance>> {
+export async function loadImportInstanceFromPath(importFilePath: string, cache: Record<string, IImportInstance>, config: SsgConfig): Promise<FalsyAble<IImportInstance>> {
     if (cache[ importFilePath ]) {
         return cache[ importFilePath ];
     }

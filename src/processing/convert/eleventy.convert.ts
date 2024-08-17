@@ -2,7 +2,7 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { getKeyFromDict, loadDataAsync, wrapContents } from "@markus/ts-node-util-mk1";
-import { forkSubResourceProcessStages, processStagesOnResource } from "../../processing-tree-wrapper";
+
 import path from "path";
 import * as fs from 'fs';
 import * as lodash from 'lodash';
@@ -109,9 +109,9 @@ export class EleventyConvert implements IResourceProcessor {
 
         const inputDir = getKeyFromDict(resource, 'data.document.dir');
 
-        const ancestorData = loadInheritedDataFor(inputPath, inputDir, config.globalData);
+        const ancestorData = loadInheritedDataFor(inputPath, inputDir, config.data.globalData);
 
-        const dataExtractedResource: IProcessResource = await forkSubResourceProcessStages(
+        const dataExtractedResource: IProcessResource = await config.processor.processFork(
             resource,
             config,
             [ 'extractor' ]
@@ -132,7 +132,7 @@ export class EleventyConvert implements IResourceProcessor {
 
         if (dataExtractedResource.data.layout) {
 
-            const fullLayoutPath = path.join(config.includesDir, dataExtractedResource.data.layout);
+            const fullLayoutPath = path.join(config.data.includesDir, dataExtractedResource.data.layout);
             /*if (!config.defaultImportSymbolPaths) {
                 config.defaultImportSymbolPaths = []
                 config.defaultImportSymbolPaths.push(config.includesDir)
@@ -145,6 +145,6 @@ export class EleventyConvert implements IResourceProcessor {
 
         resource.content = wrappedRenderContent;
 
-        return processStagesOnResource(resource, config);
+        return config.processor.processStages(resource, config);
     }
 }

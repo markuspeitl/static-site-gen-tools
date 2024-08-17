@@ -1,6 +1,5 @@
 import type { SsgConfig } from "../config";
 import type { IProcessResource } from "../pipeline/i-processor";
-import { forkSubResourceProcessStages } from "../processing-tree-wrapper";
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
 import type { IInternalComponent } from "./base-component";
 
@@ -23,7 +22,7 @@ export async function deferContentCompile(resource: IProcessResource, config: Ss
     compileBodyResource.id = undefined;
 
 
-    const dataExtractedDocument: FalsyAble<IProcessResource> = await processStagesOnResource(compileBodyResource, config);
+    const dataExtractedDocument: FalsyAble<IProcessResource> = await config.processor.processStages(compileBodyResource, config);
     if (!dataExtractedDocument) {
         return compileBodyResource;
     }
@@ -33,10 +32,10 @@ export async function deferContentCompile(resource: IProcessResource, config: Ss
 export abstract class BaseCompileContentFormatComponent implements IInternalComponent {
     // TODO: currently this matches the 'inputFormat' as defined in the stages definition,
     // --> make more fine grain control possible to select specific 'processors' to use (html.extractor.ts, md.extractor.ts, .etc)
-    //public abstract getContentFormat(config?: SsgConfig): string;
+    //public abstract getContentFormat(config: SsgConfig): string;
     public abstract contentFormat: string;
 
-    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
         resource = resetDocumentSetInputFormat(resource, this.contentFormat);
         resource.id = undefined;
@@ -46,14 +45,14 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('extractor', resource, config);
 
-        const dataExtractedResource: IProcessResource = await forkSubResourceProcessStages(
+        const dataExtractedResource: IProcessResource = await config.processor.processFork(
             resource,
             config,
             [ 'extractor' ]
         );
         return dataExtractedResource;
     }
-    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
         resource = resetDocumentSetInputFormat(resource, this.contentFormat);
         resource.id = undefined;
@@ -61,7 +60,7 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('compiler', resource, config);
 
-        const compiledResource: IProcessResource = await forkSubResourceProcessStages(
+        const compiledResource: IProcessResource = await config.processor.processFork(
             resource,
             config,
             [ 'compiler' ]

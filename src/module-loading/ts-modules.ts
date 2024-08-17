@@ -241,10 +241,10 @@ export function findExistingPath(relOrAbsPath: string, relResolvePathRoots: Sing
 
 export async function getResolveTsModule<ModuleInterface>(moduleIdOrPath: string, resolvePathRoots: SingleOrArray<FalsyAble<string>>, tsModulesCache?: Record<string, Module>, config?: SsgConfig): Promise<ModuleInterface | null> {
     if (!config) {
-        config = {};
+        config = {} as any;
     }
     if (!tsModulesCache) {
-        tsModulesCache = config.tsModulesCache;
+        tsModulesCache = (config as any).tsModulesCache;
     }
     if (!resolvePathRoots) {
         resolvePathRoots = [];

@@ -4,7 +4,7 @@ import { SsgConfig } from "../config";
 //import { Environment } from "nunjucks";
 
 const defaultLibConstructors: ModuleConstructDict = {
-    'markdown': async (config?: SsgConfig, configOptions?: any) => {
+    'markdown': async (config: SsgConfig, configOptions?: any) => {
         const markdownit = await import('markdown-it');
 
         //Initialize &
@@ -42,7 +42,7 @@ const defaultLibConstructors: ModuleConstructDict = {
 };
 
 
-export async function getLibInstance(libName: string, config?: SsgConfig, configOptions?: any): Promise<any> {
+export async function getLibInstance(libName: string, config: SsgConfig, configOptions?: any): Promise<any> {
     if (!config) {
         return null;
     }

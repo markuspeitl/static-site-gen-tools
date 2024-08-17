@@ -1,11 +1,11 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
-import { forkSubResourceProcessStages, renderComponentBodyContent } from "../../../processing-tree-wrapper";
+
 import { getScopedEvalFn } from "@markus/ts-node-util-mk1";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 
 export abstract class IfComponent implements BaseComponent, IInternalComponent {
-    public canCompile(resource: IProcessResource, config?: SsgConfig): boolean {
+    public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
         if (!resource.data) {
             console.error("Can not compile 'if' component -> data needs to be set");
             return false;
@@ -19,11 +19,11 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
         return true;
     }
 
-    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         return resource;
     }
 
-    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         if (!this.canCompile(resource, config)) {
             return resource;
         }
@@ -36,7 +36,7 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
 
         if (truthyValue) {
             //const stagesRunId: string = "__if-body_" + conditionExpression;
-            return renderComponentBodyContent(resource, config, "__if-body_" + conditionExpression);
+            return config.processor.renderFork(resource, config, "__if-body_" + conditionExpression);
         }
 
         resource.content = '';

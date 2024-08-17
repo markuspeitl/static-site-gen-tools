@@ -5,10 +5,10 @@ import type { IProcessResource } from "../pipeline/i-processor";
 
 export type DocumentData = Record<string, any>;
 
-export type DataToParsedDocumentFn = (resource: DocumentData | IProcessResource, config?: SsgConfig) => Promise<IProcessResource | string>;
+export type DataToParsedDocumentFn = (resource: DocumentData | IProcessResource, config: SsgConfig) => Promise<IProcessResource | string>;
 export type DataToParsedDocumentOrString = DataToParsedDocumentFn | IProcessResource | string;
 
-export type DataFunction = (resource: DocumentData | IProcessResource, config?: SsgConfig) => Promise<IProcessResource | DocumentData>;
+export type DataFunction = (resource: DocumentData | IProcessResource, config: SsgConfig) => Promise<IProcessResource | DocumentData>;
 //export type RenderFunction = DataToParsedDocumentFn;
 
 //Possible formats of Component on disk (before the component is loaded into memory)
@@ -19,18 +19,18 @@ export interface BaseComponent {
     render: DataToParsedDocumentOrString;
 
     //control data -> for manipulating the data and or layout chain / components flow settings dynamically
-    //controlData?(dataCtx?: DocumentData | null, config?: SsgConfig): any;
+    //controlData?(dataCtx?: DocumentData | null, config: SsgConfig): any;
 }
 
 //Format the components after loading them into memory (normalized internal component)
 export interface IInternalComponent {
-    data: (resource: IProcessResource, config?: SsgConfig) => Promise<IProcessResource>;
-    render: (resource: IProcessResource, config?: SsgConfig) => Promise<IProcessResource>;
+    data: (resource: IProcessResource, config: SsgConfig) => Promise<IProcessResource>;
+    render: (resource: IProcessResource, config: SsgConfig) => Promise<IProcessResource>;
 }
 
 /*export interface FnBaseComponent {
-    data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | DocumentData>;
-    render(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | string>;
+    data(dataCtx?: DocumentData | null, config: SsgConfig): Promise<IProcessResource | DocumentData>;
+    render(dataCtx?: DocumentData | null, config: SsgConfig): Promise<IProcessResource | string>;
 }*/
 
 //export type StyleFunction = DataToParsedDocumentFn;
@@ -46,7 +46,7 @@ export interface ExtensiveComponent extends BaseComponent {
     'clientCode'
 ];
 
-export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config?: SsgConfig): Promise<IProcessResource> {
+export async function renderComponent(componentModule: BaseComponent, dataCtx: DocumentData | null, config: SsgConfig): Promise<IProcessResource> {
 
     if (!dataCtx) {
         dataCtx = {};
@@ -79,7 +79,7 @@ export async function renderComponent(componentModule: BaseComponent, dataCtx: D
     };
 }
 
-export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: SsgConfig = {}): Promise<IProcessResource | null> {
+export async function renderComponentAt(componentIdOrLocation: string, dataCtx: DocumentData | null, config: SsgConfig): Promise<IProcessResource | null> {
 
     if (config && !config.tsComponentsCache) {
         config.tsComponentsCache = {};

@@ -5,7 +5,7 @@ import { BaseCompileContentFormatComponent } from "../../base-body-compile-compo
 export abstract class DataComponent extends BaseCompileContentFormatComponent {
     public contentFormat: string = 'html';
 
-    public async render(resource: IProcessResource, config?: SsgConfig): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         return resource;
     }
 }

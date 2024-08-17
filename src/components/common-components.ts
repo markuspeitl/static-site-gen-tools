@@ -42,7 +42,7 @@ public clientCodeFile: string = './script.js';
 public renderFile: string = './index.html';*/
 
 export function dataTemplateFn(templateString: string): DataToParsedDocumentOrString {
-    const renderTemplateFn = async (resource: IProcessResource, config?: SsgConfig) => {
+    const renderTemplateFn = async (resource: IProcessResource, config: SsgConfig) => {
         if (!resource) {
             resource = {};
         }

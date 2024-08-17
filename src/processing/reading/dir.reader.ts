@@ -2,11 +2,8 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
-import { ensureKeyAtDict, getFsNodeStat, isDirPathOrDirectory } from "@markus/ts-node-util-mk1";
-import { isPath, possibleDirPath } from "@markus/ts-node-util-mk1";
-import { processStagesFromToPath } from "../../processing-tree-wrapper";
+import { isDirPathOrDirectory } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getDocumentTargetSubPath } from "../shared/document-helpers";
 
 export class DirReader implements IResourceProcessor {
 
@@ -48,7 +45,7 @@ export class DirReader implements IResourceProcessor {
             const fsNodePath: string = path.join(resolvedPath, dirFile);
             //const targetNodePath: string = path.join(getTargetDirPath(resource), dirFile);
 
-            const processedResource: IProcessResource = await processStagesFromToPath(fsNodePath, getDocumentTargetSubPath(resource, dirFile), config);
+            const processedResource: IProcessResource = await config.processor.processDocumentTo(fsNodePath, getDocumentTargetSubPath(resource, dirFile), config);
 
 
             setKeyInDict(resource, 'document.processed', dirFile);

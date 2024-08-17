@@ -1,7 +1,6 @@
 import type { SsgConfig } from './src/config';
 import type { IProcessResource } from './src/pipeline/i-processor';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
-import { processStagesFromToPath } from './src/processing-tree-wrapper';
 import http from 'node:http';
 import path from 'path';
 
@@ -65,7 +64,7 @@ async function main() {
 
     let config: SsgConfig = {
         fragmentCacheDisabled: true
-    };
+    } as SsgConfig;
     config = await parseArgsSetupInitializeConfig(config);
 
     if (!config.sourcePath || !config.targetPath) {
@@ -108,7 +107,7 @@ async function main() {
     }
     await Promise.all(tryMultiFileCompilePromises);*/
 
-    await processStagesFromToPath(config.sourcePath, config.targetPath, config);
+    await config.processor.processDocumentTo(config.sourcePath, config.targetPath, config);
 
     if (config.processedDocuments) {
         const processedDocuments: any[] = config.processedDocuments;

@@ -154,3 +154,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
     return ssgProcessorConfiguration;
 }
+
+const defaultProcessingTreeConfig: IProcessingNodeConfig = getDefaultProcessingRootNodeConfig();
+
+export default defaultProcessingTreeConfig;

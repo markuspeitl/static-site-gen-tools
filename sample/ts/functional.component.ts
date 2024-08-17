@@ -11,7 +11,7 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             content: '<div><span><img src="assets/test.png" /></span></div>'
         };
     }
-    async render(resource: IProcessResource, config?: SsgConfig): Promise<IProcessResource | string> {
+    async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource | string> {
 
         if (!resource) {
             resource = {};
@@ -36,14 +36,14 @@ class FunctionStyleDynamicComponent implements BaseComponent {
                 {{content}}
             </div>
 
-<md>
-# Markdown test
-        
-- lets
-- try
-- some
-- bulletpoints
-</md>
+            <md>
+            # Markdown test
+                    
+            - lets
+            - try
+            - some
+            - bulletpoints
+            </md>
 
         `, dataCtx);
 

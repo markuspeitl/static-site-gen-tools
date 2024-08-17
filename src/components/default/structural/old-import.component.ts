@@ -4,7 +4,7 @@ import { BaseComponent, DocumentData } from "../../base-component";
 
 export abstract class ImportComponent implements BaseComponent {
 
-    public async data(dataCtx?: DocumentData | null, config: SsgConfig = {}): Promise<IProcessResource | DocumentData> {
+    public async data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | DocumentData> {
 
         if (!dataCtx) {
             return {};

@@ -241,7 +241,7 @@ export async function processResource(resource: IProcessResource, config: SsgCon
     //return resource;
 };
 
-export async function useReaderStageToRead(documentPath: string, config?: SsgConfig): Promise<IProcessResource> {
+export async function useReaderStageToRead(documentPath: string, config: SsgConfig): Promise<IProcessResource> {
     //Use process stage to read resource to memory
     const toReadResource = {
         id: documentPath,
@@ -251,6 +251,6 @@ export async function useReaderStageToRead(documentPath: string, config?: SsgCon
             }
         }
     };
-    const readResource: IProcessResource = await processConfStage('reader', toReadResource, config || {});
+    const readResource: IProcessResource = await processConfStage('reader', toReadResource, config);
     return readResource;
 }

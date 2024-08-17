@@ -2,7 +2,7 @@ import path from "path";
 import { SsgConfig } from "./config";
 import { ArgumentParser } from 'argparse';
 import * as lodash from 'lodash';
-import { getFsNodeStat } from "@markus/ts-node-util-mk1";
+import { FalsyString, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
 import { IProcessingNodeConfig } from "./pipeline/i-processor";
 import type { IProcessResource } from './pipeline/i-processor';
@@ -48,7 +48,7 @@ export function addCliConfigOptions(parser: ArgumentParser): void {
     });
 }
 
-export async function parseCliConfig(config: SsgConfig = {}): Promise<SsgConfig> {
+export async function parseCliConfig(config: SsgConfig): Promise<SsgConfig> {
 
     const parser = new ArgumentParser({
         description: 'Generated a populated container from a template'
@@ -71,107 +71,136 @@ export async function parseCliConfig(config: SsgConfig = {}): Promise<SsgConfig>
 
     //config = Object.assign(config, args);
     config = lodash.merge(config, args);
+
+    config.options = args;
+
     return config;
 }
 
-export async function parseArgsSetupInitializeConfig(config: SsgConfig = {}): Promise<SsgConfig> {
-    config = setUpDefaultConfig(config);
+export async function parseArgsSetupInitializeConfig(config: SsgConfig): Promise<SsgConfig> {
+    config = await setUpDefaultConfig(config);
     config = await parseCliConfig(config);
     config = await loadUserConfig(config);
     config = await initializeConfig(config);
+
+    console.time('init_loading_user_runtime_config');
+
     config = await loadUserRuntimeConfig(config);
+
+    console.timeEnd('init_loading_user_runtime_config');
+
+
     return config;
 }
 
-export function setUpDefaultConfig(config: SsgConfig = {}): SsgConfig {
+export async function loadProcessingTreeConfig(processingTreeConfigPath: string): Promise<IProcessingNodeConfig> {
+
+    processingTreeConfigPath = path.resolve(processingTreeConfigPath);
+
+    const processingTreeConfigDir = path.dirname(processingTreeConfigPath);
+
+    const processingTreeConfig: IProcessingNodeConfig = await loadOrCallConfigFile({}, processingTreeConfigPath);
+    //const processingTreeConfig: IProcessingNodeConfig = processingTreeModule.default;
+    //The root path in the config should resolve like it would from the config origin file
+    processingTreeConfig.srcDirs = processingTreeConfig?.srcDirs?.map((topLevelDirPath: string) => path.resolve(processingTreeConfigDir, topLevelDirPath));
+    return processingTreeConfig;
+}
+
+export function initUnsetConfigDicts(keys: string[], config: SsgConfig) {
+    for (const key of keys) {
+        if (!config[ key ]) {
+            config[ key ] = {};
+        }
+    }
+}
+
+export function initUnsetConfigDefaults(config: SsgConfig, defaultsDict: any) {
+    for (const key in defaultsDict) {
+        if (!config[ key ]) {
+            config[ key ] = defaultsDict[ key ];
+        }
+    }
+}
+
+export function getDefaultImportDirs(): string[] {
+    let defaultImportsDirs = [
+        './src/components/default/'
+    ];
+    defaultImportsDirs = resolveRelativePaths(defaultImportsDirs, path.dirname(__dirname));
+    return defaultImportsDirs;
+}
+
+export async function setUpDefaultConfig(config: SsgConfig): Promise<SsgConfig> {
     if (!config) {
-        config = {};
+        config = {} as SsgConfig;
     }
 
-    `config.defaultComponentImportDirs = [
-        './src/components/default/'
-    ];
-    config.defaultComponentsMatchGlobs = [
-        '**.component.*',
-        '*.component.*',
-        '.component.*',
-        '**/*.component.*',
-        '/**/*.component.*',
-        '**.component.ts',
-        '*.component.ts',
-        '.component.ts',
-        '**/*.component.ts',
-        '/**/*.component.ts',
-    ];`;
+    const pipelinePath: string = path.join(__dirname, './ssg-pipeline-conf.ts');
 
-    config.defaultImportsDirs = [
-        './src/components/default/'
-    ];
+    const configDefaults: any = {
+        processingTreeConfig: await loadProcessingTreeConfig(pipelinePath),
+        //processingTree:
+        defaultResourceProcessorDirs: [
+            './src/processing'
+        ],
+        processor: defaultProcessingWrapper,
+        defaultImportsDirs: getDefaultImportDirs(),
+        scopeManager: defaultScopeManager,
+        processedDocuments: [],
+        fragmentCacheDisabled: true,
+        outDir: './dist',
+        outFile: 'index.html',
+        cacheDir: path.join('.dist', '/cache')
+    };
 
-    config.defaultImportsDirs = resolveRelativePaths(config.defaultImportsDirs, path.dirname(__dirname));
+    initUnsetConfigDefaults(config, configDefaults);
+    initUnsetConfigDicts(
+        [
+            'globalImportsCache',
+            'subTreePathCache',
+            //'tsModulesCache'
+            'libConstructors',
+            'data',
+            'defaultImportSymbolPaths',
+            'options'
+        ],
+        config
+    );
 
-    /*config.defaultRunnerDirs = [
-        './src/compilers'
-    ];
-    config.defaultRunnersMatchGlobs = [
-        '**.runner.ts',
-        '*.runner.ts'
-    ];*/
-
-    config.defaultResourceProcessorDirs = [
-        './src/processing'
-    ];
-    //const processingStages: ProcessingStagesInfo = getDefaultProcessingStages();
-
-    const processingTreeRootNode: IProcessingNodeConfig = getDefaultProcessingRootNodeConfig();
-    //const configToThisPath: string = path.relative("./ssg-pipeline-conf", __dirname);
-    processingTreeRootNode.srcDirs = processingTreeRootNode?.srcDirs?.map((topLevelDirPath: string) => path.resolve('./ssg-pipeline-conf', topLevelDirPath));
-
-    config.processingTreeConfig = processingTreeRootNode;
-
-    //config.masterCompileRunnerPath = './src/compilers/generic.runner.ts';
-
-    config.outDir = './dist';
-    config.cacheDir = path.join(config.outDir, '/cache');
-    config.outFile = 'index.html';
-
-    config.scopeManager = defaultScopeManager;
-
-    config.processor = defaultProcessingWrapper;
     return config;
 }
 
-async function loadOrCallConfigFile(defaultConfig: SsgConfig, configPath?: string): Promise<SsgConfig> {
+async function loadOrCallConfigFile(targetDict: object, configPath?: FalsyString): Promise<any> {
     if (!configPath) {
-        return defaultConfig;
+        return targetDict;
     }
 
     if (!await getFsNodeStat(configPath)) {
         console.log(`Can not load configPath at ${configPath} -- file does not exist`);
-        return defaultConfig;
+        return targetDict;
     }
 
     const resolvedModulePath: string = path.resolve(configPath);
 
     const configModule = await import(resolvedModulePath);
     if (configPath.endsWith('.json')) {
-        return Object.assign(defaultConfig, configModule);
+        return Object.assign(targetDict, configModule);
     }
     const defaultExport = configModule.default;
     if (typeof defaultExport === 'object') {
-        return Object.assign(defaultConfig, configModule);
+        return Object.assign(targetDict, defaultExport);
     }
     if (typeof defaultExport === 'function') {
-        return defaultExport(defaultConfig);
+        return defaultExport(targetDict);
     }
     if (configModule.configure) {
-        return configModule.configure(defaultConfig);
+        return configModule.configure(targetDict);
     }
-    return defaultConfig;
+    return targetDict;
 }
 
 //Json, ts or js
-export async function loadUserConfig(defaultConfig: SsgConfig, configPath?: string): Promise<SsgConfig> {
+export async function loadUserConfig(defaultConfig: SsgConfig, configPath?: FalsyString): Promise<SsgConfig> {
     if (!configPath) {
         configPath = defaultConfig.userConfigPath;
     }
@@ -225,19 +254,42 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     console.log("Loading default components");
     //await loadDefaultComponents(config);
     await initDefaultImportSymbols(config);
-    const initializedConfig = await loadUserRuntimeConfig(config);
+    //const initializedConfig = await loadUserRuntimeConfig(config);
 
     console.timeEnd('init_loading_default_components');
 
 
     console.timeEnd('init');
 
-    return initializedConfig;
+    return config;
 }
 
-export async function loadUserRuntimeConfig(setUpConfig: SsgConfig, configPath?: string): Promise<SsgConfig> {
+export async function loadUserRuntimeConfig(setUpConfig: SsgConfig, configPath?: FalsyString): Promise<SsgConfig> {
     if (!configPath) {
         configPath = setUpConfig.runtimeConfigPath;
     }
     return loadOrCallConfigFile(setUpConfig, configPath);
 }
+
+`config.defaultComponentImportDirs = [
+        './src/components/default/'
+    ];
+    config.defaultComponentsMatchGlobs = [
+        '**.component.*',
+        '*.component.*',
+        '.component.*',
+        '**/*.component.*',
+        '/**/*.component.*',
+        '**.component.ts',
+        '*.component.ts',
+        '.component.ts',
+        '**/*.component.ts',
+        '/**/*.component.ts',
+    ];`;
+/*config.defaultRunnerDirs = [
+    './src/compilers'
+];
+config.defaultRunnersMatchGlobs = [
+    '**.runner.ts',
+    '*.runner.ts'
+];*/

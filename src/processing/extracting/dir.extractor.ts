@@ -2,7 +2,6 @@ import path from 'path';
 import type { SsgConfig } from "../../config";
 import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
 import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
-import { processStagesOnInputPath } from "../../processing-tree-wrapper";
 import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
 
 
@@ -37,7 +36,7 @@ export class DirReader implements IResourceProcessor {
 
             //TODO this should fork a sub resource from the current dir context data instead (these fns should also be on the config itself)
             //When cleaning the types it should be possible to write a processor without importing any external functionality
-            const dataFileResource: IProcessResource = await processStagesOnInputPath(dirDataFile, config, [ 'reader', 'extractor' ]);
+            const dataFileResource: IProcessResource = await config.processor.processDocument(dirDataFile, config, [ 'reader', 'extractor' ]);
             //Merge this or is assign enough
             Object.assign(resourceData, dataFileResource.data);
         }

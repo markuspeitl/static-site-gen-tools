@@ -137,7 +137,7 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
     //return getComponentFromPath(componentPath, config);
 }
 
-/*export async function getComponent(dataCtx?: DocumentData | null, moduleContent?: FalsyAble<string>, config?: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+/*export async function getComponent(dataCtx?: DocumentData | null, moduleContent?: FalsyAble<string>, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
     const modulePath: FalsyAble<string> = getTargetModulePath(dataCtx);
     return getComponentFrom(modulePath, config, moduleContent);
 }*/

@@ -1,6 +1,5 @@
 import type { SsgConfig } from "../../../config";
 import type { IProcessResource } from "../../../pipeline/i-processor";
-import { forkSubResourceProcessStages, renderComponentBodyContent } from "../../../processing-tree-wrapper";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { BaseComponent, IInternalComponent } from "../../base-component";
 import { filterFalsy } from "@markus/ts-node-util-mk1";
@@ -8,7 +7,7 @@ import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
-    public canCompile(resource: IProcessResource, config?: SsgConfig): boolean {
+    public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
         if (!resource.data) {
             console.error("Can not compile 'for' component -> data needs to be set");
             return false;
@@ -26,11 +25,11 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         return true;
     }
 
-    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         return resource;
     }
 
-    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         if (!this.canCompile(resource, config)) {
             return resource;
         }
@@ -55,7 +54,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             //Set local variable for current iteration
             (resource.data as any)[ iteratorItemName ] = itemValue;
             const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
-            return forkSubResourceProcessStages([ 'extractor', 'compiler' ], resource, config, stagesRunId);
+            return config.processor.processFork([ 'extractor', 'compiler' ], resource, config, stagesRunId);
             //const renderedBody = renderedIterationResource?.content || '';
             //const renderedBody = forkedResource.content;
         });
@@ -74,7 +73,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
             (resource.data as any)[ iteratorItemName ] = itemValue;
             const forkedResourceRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
 
-            let renderedIterationResource: IProcessResource | null = await renderComponentBodyContent(
+            let renderedIterationResource: IProcessResource | null = await config.processor.renderFork(
                 resource,
                 config,
                 /*[

@@ -7,7 +7,7 @@ function renderSpan(content: string): string {
     return `<span>${content}</span>`;
 }
 
-export async function render(resouce: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+export async function render(resouce: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
     let data = resouce.data;
     const content: string = resouce.content;
 

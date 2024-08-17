@@ -3,10 +3,10 @@ import type { IProcessResource } from "../../pipeline/i-processor";
 import type { IInternalComponent } from "../base-component";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { resetDocumentSetInputFormat } from "../../processing/i-resource-processor";
-import { processStagesOnInputPath, processStagesOnResource } from "../../processing-tree-wrapper";
+
 
 /*const cachedFileResources: Record<string, IProcessResource> = {};
-export async function getFileResource(documentPath: string, config?: SsgConfig): Promise<FalsyAble<IProcessResource>> {
+export async function getFileResource(documentPath: string, config: SsgConfig): Promise<FalsyAble<IProcessResource>> {
 
     if (cachedFileResources[ documentPath ]) {
         return cachedFileResources[ documentPath ];
@@ -55,7 +55,7 @@ export class FileComponent implements IInternalComponent {
             return null;
         }
 
-        let readResource: IProcessResource = await processStagesOnInputPath([ 'extractor', 'compiler' ], documentPath, config);
+        let readResource: IProcessResource = await config.processor.processDocument([ 'extractor', 'compiler' ], documentPath, config);
 
         if (!readResource.content || !readResource.data?.document?.inputFormat) {
             return null;
@@ -67,7 +67,7 @@ export class FileComponent implements IInternalComponent {
     }*/
 
 
-    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
         const dataPath: string | undefined = this.path || resource.data?.path;
         if (!dataPath) {
@@ -75,7 +75,7 @@ export class FileComponent implements IInternalComponent {
         }
         this.path = dataPath;
 
-        const readResource: FalsyAble<IProcessResource> = await processStagesOnInputPath(
+        const readResource: FalsyAble<IProcessResource> = await config.processor.processDocument(
             this.path,
             config,
             [ 'reader' ]
@@ -93,7 +93,7 @@ export class FileComponent implements IInternalComponent {
         //resetDocumentSetInputFormat(resource, readResource.data?.document?.inputFormat);
 
         //resource.content = readResource.content;
-        this.dataExtractedResource = await processStagesOnResource(readResource, config, [ 'extractor' ]);
+        this.dataExtractedResource = await config.processor.processStages(readResource, config, [ 'extractor' ]);
 
         if (!this.dataExtractedResource) {
             this.dataExtractedResource = readResource;
@@ -103,7 +103,7 @@ export class FileComponent implements IInternalComponent {
             data: this.dataExtractedResource.data
         };
     }
-    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
         if (!this.dataExtractedResource) {
             this.data(resource, config);
@@ -113,7 +113,7 @@ export class FileComponent implements IInternalComponent {
 
         resourceToCompile.data.content = resource.content;
 
-        return await processStagesOnResource(resourceToCompile, config, [ 'compiler' ]);
+        return await config.processor.processStages(resourceToCompile, config, [ 'compiler' ]);
     }
 
 }

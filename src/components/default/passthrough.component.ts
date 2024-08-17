@@ -4,10 +4,10 @@ import { BaseComponent, IInternalComponent } from "../base-component";
 
 export class PassthroughComponent implements BaseComponent, IInternalComponent {
 
-    public async data(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         return resource;
     }
-    public async render(resource: IProcessResource, config: SsgConfig = {}): Promise<IProcessResource> {
+    public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         return {
             content: resource?.content || '',
             data: resource?.data,

@@ -2,10 +2,7 @@ import path from "path";
 import { SsgConfig } from "../../config";
 import { IProcessResource, IResourceProcessor } from "../../pipeline/i-processor";
 import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
-import { processStagesOnInputPath, processStagesOnResource } from "../../processing-tree-wrapper";
 import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull, filterFalsy } from '@markus/ts-node-util-mk1';
-import { existsSync, Stats } from "fs";
-import * as fs from 'fs';
 
 export class DirWriter implements IResourceProcessor {
 
@@ -30,7 +27,7 @@ export class DirWriter implements IResourceProcessor {
         await ensureDir(documentTarget);
 
         const writeResourcePromises: Promise<IProcessResource>[] = dirCompiledResources.map(async (compiledResource: IProcessResource) => {
-            const processedChildResource: IProcessResource = await processStagesOnResource(compiledResource, config, [ 'writer' ]);
+            const processedChildResource: IProcessResource = await config.processor.processStages(compiledResource, config, [ 'writer' ]);
             return processedChildResource;
         });
 

@@ -40,7 +40,7 @@ export function registerProcessedDocument(
     return processedResource;
 }*/
 
-export async function processStagesOnResourceRegisterDoc(
+async function processStagesOnResourceRegisterDoc(
     resource: IProcessResource,
     config: SsgConfig,
     stagesToProcess?: string[]
@@ -81,7 +81,7 @@ export function extractSubChainNode(
 }
 
 //Very rudimentary and specific currently, only 1 level beneath top
-export async function processStagesOnResource(
+async function processStagesOnResource(
     resource: IProcessResource,
     config: SsgConfig,
     stagesToProcess?: string[]
@@ -112,7 +112,7 @@ export async function processStagesOnResource(
     return processedResource;
 }
 
-export async function forkSubResourceProcessStages(
+async function forkSubResourceProcessStages(
     parentResource: IProcessResource,
     config: SsgConfig,
     stagesToProcess: string[] | undefined,
@@ -137,7 +137,7 @@ export async function forkSubResourceProcessStages(
 }
 
 //Example: Use process stage to read resource to memory
-export async function processStagesOnInputPath(documentPath: string, config: SsgConfig, stagesToProcess?: string[]): Promise<IProcessResource> {
+async function processStagesOnInputPath(documentPath: string, config: SsgConfig, stagesToProcess?: string[]): Promise<IProcessResource> {
 
     const toReadResource = {
         id: documentPath,
@@ -149,9 +149,9 @@ export async function processStagesOnInputPath(documentPath: string, config: Ssg
     };
 
     return processStagesOnResource(toReadResource, config, stagesToProcess);
-}
+};
 
-export async function processStagesFromToPath(
+async function processStagesFromToPath(
     inputPath: string,
     outputPath: string | null,
     config: SsgConfig,
@@ -172,11 +172,11 @@ export async function processStagesFromToPath(
     return processStagesOnResource(toProcessResource, config, stagesToProcess);
 }
 
-//export const processStagesFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(inputPath, outputPath, config, undefined);
+//const processStagesFromToPath = (inputPath: string, outputPath: string | null, config: SsgConfig) => processStagesFromToPath(inputPath, outputPath, config, undefined);
 
 //Render the resource content with predefined 'extractor' and 'compiler' stages
 //Mainly for rendering generated sub content/body from within components (return render control to bssg)
-export async function renderComponentBodyContent(
+async function renderComponentBodyContent(
     resource: IProcessResource,
     config: SsgConfig,
     processRunId?: string
@@ -193,7 +193,7 @@ export async function renderComponentBodyContent(
         ],
         processRunId
     );
-}
+};
 
 export interface ProcessingWrapper {
     renderFork: (

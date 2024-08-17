@@ -2,7 +2,6 @@ import path from "path";
 import { SsgConfig } from "../../config";
 import { IProcessResource, IResourceProcessor } from "../../pipeline/i-processor";
 import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
-import { processStagesOnInputPath } from "../../processing-tree-wrapper";
 import { filterFalsy, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
 
 export class DirCompiler implements IResourceProcessor {
@@ -27,7 +26,7 @@ export class DirCompiler implements IResourceProcessor {
 
         const subDocProcessPromises: Promise<IProcessResource>[] = dirFiles.map(async (dirFile) => {
             const subDocNodePath: string = path.join(documentSrc, dirFile);
-            const processedChildResource: IProcessResource = await processStagesOnInputPath(subDocNodePath, config, [ 'reader', 'extractor', 'compiler' ]);
+            const processedChildResource: IProcessResource = await config.processor.processDocument(subDocNodePath, config, [ 'reader', 'extractor', 'compiler' ]);
             //setKeyInDict(resource, 'document.processed', dirFile);
             return processedChildResource;
         });
