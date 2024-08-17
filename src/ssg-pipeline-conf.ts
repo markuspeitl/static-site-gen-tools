@@ -35,6 +35,8 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         '.+\.njk': [ 'file' ],
                         '.+\.ts': [ 'pass-path' ],
                         '.+\.js': [ 'file' ],
+                        '.+\.yml': [ 'file' ],
+                        '.+\.json': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
                         '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         '.+\.scss': [ 'file' ],
@@ -63,7 +65,11 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'html': [ 'html' ],
                         'md': [ 'md', 'html' ],
                         'njk': [ 'md', 'html' ],
-                        'ts': [ 'md', 'ts' ]
+                        'ts': [ 'md', 'ts' ],
+
+                        'js': [ 'data' ],
+                        'json': [ 'data' ],
+                        'yml': [ 'data' ],
                     },
                 }
             },

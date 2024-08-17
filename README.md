@@ -1484,3 +1484,34 @@ first -> should be more general mechanism to select what is treats as what forma
 (maybe add some helper fns that simplify that management)
 --> todo refactor current 11ty fns to not be dependent on globaldata and not dependent on the `page` variable
 and all of this data can be extracted from the result resource chain (with .parent property)
+
+
+# Data merging:
+Props that are not merged (specific the current resource)
+- content
+- document
+- control
+
+New format:
+```
+{
+    id: string,
+    document: {
+        src: string,
+        target: string,
+        inputFormat: string,
+        outputFormat: string
+    },
+    content: any
+
+    title: 'test',
+    description: 'test'
+    
+    exclude: [
+        'id',
+        'document',
+        'content',
+        'exclude'
+    ]
+}
+```

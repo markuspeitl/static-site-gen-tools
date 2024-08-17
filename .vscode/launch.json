@@ -42,6 +42,30 @@
                 "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
                 "NODE_OPTIONS": "--enable-source-maps"
             },
+            "name": "11ty sample dir debug",
+            "args": [
+                "${workspaceRoot}/cli.ts",
+                "sample/eleventy-sample/",
+                "sample/dist/eleventy-sample/"
+            ]
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "20.9.0",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--enable-source-maps"
+            ],
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceRoot}/tsconfig.json",
+                "NODE_OPTIONS": "--enable-source-maps"
+            },
             "name": "compile current file debug",
             "args": [
                 "${workspaceRoot}/cli.ts",

@@ -9,6 +9,10 @@ export interface IScopeManager {
     forkChildResource(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource;
 }
 
+export function mergeData(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {
+    return resource1;
+}
+
 export class DefaultScopeManager implements IScopeManager {
 
     combineResources(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {

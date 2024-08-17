@@ -5,7 +5,11 @@ import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
 import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
 
 
-const dataFilePathRegex = new RegExp(/^.+\.data\..+$/i);
+const dataFilePathRegexes: RegExp[] = [
+    new RegExp(/^.+\.data\..+$/i),
+    new RegExp(/^.+\.11tydata\..+$/i),
+    new RegExp(/_data/i)
+];
 
 export class DirReader implements IResourceProcessor {
 
@@ -23,9 +27,14 @@ export class DirReader implements IResourceProcessor {
         const document: ResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
 
-        console.log(`Reading ${this.id}: ${documentSrc}`);
+        console.log(`Extracting ${this.id}: ${documentSrc}`);
         const dirFiles: string[] = resource.content;
-        const dirDataFiles: string[] = mapFilterRegexMatches(dirFiles, dataFilePathRegex, (dirPath: string) => path.basename(dirPath));
+        //const dirFiles: string[] = [];
+        const dirDataFiles: string[] = mapFilterRegexMatches(
+            dirFiles,
+            dataFilePathRegexes,
+            (dirPath: string) => path.basename(dirPath)
+        );
 
         const resourceData: any = resource.data;
 
@@ -38,6 +47,7 @@ export class DirReader implements IResourceProcessor {
             //When cleaning the types it should be possible to write a processor without importing any external functionality
             const dataFileResource: IProcessResource = await config.processor.processDocument(dirDataFile, config, [ 'reader', 'extractor' ]);
             //Merge this or is assign enough
+            delete dataFileResource.data.document;
             Object.assign(resourceData, dataFileResource.data);
         }
 
