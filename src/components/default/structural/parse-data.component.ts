@@ -1,6 +1,6 @@
-import type { SsgConfig } from "../../../config";
-import type { IProcessResource } from "../../../processing-tree/i-processor";
-import { BaseCompileContentFormatComponent } from "../../base-body-compile-component";
+import type { SsgConfig } from "../../../config/ssg-config";
+import type { IProcessResource } from "../../../processors/shared/i-processor-resource";
+import { BaseCompileContentFormatComponent } from "../../base/base-body-compile-component";
 
 export abstract class DataComponent extends BaseCompileContentFormatComponent {
     public contentFormat: string = 'html';

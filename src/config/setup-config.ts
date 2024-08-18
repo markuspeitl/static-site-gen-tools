@@ -1,15 +1,14 @@
-import type { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
 import type { SsgConfig } from "./ssg-config";
-
 import { ArgumentParser } from 'argparse';
 import { FalsyString, getFsNodeStat, resolveRelativePaths } from "@markus/ts-node-util-mk1";
 import { initDefaultImportSymbols } from "../components/imports-loading";
 import { defaultScopeManager } from "../data-merge/scope-manager";
-import { defaultProcessingWrapper } from "../processing-tree-wrapper";
+import { defaultProcessingHelper } from "../processing-helper";
 import { initProcessingTreeFromConf } from "../processing-tree/init-processing-node";
 
 import path from "path";
 import * as lodash from 'lodash';
+import { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -141,7 +140,7 @@ export async function setUpDefaultConfig(config: SsgConfig): Promise<SsgConfig> 
         /*defaultResourceProcessorDirs: [
             './src/processing'
         ],*/
-        processor: defaultProcessingWrapper,
+        processor: defaultProcessingHelper,
         defaultImportsDirs: getDefaultImportDirs(),
         scopeManager: defaultScopeManager,
         processedDocuments: [],

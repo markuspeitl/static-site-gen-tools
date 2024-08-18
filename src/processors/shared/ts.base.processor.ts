@@ -1,9 +1,9 @@
-import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor, ProcessFunction } from '../../processing-tree/i-processor';
-import type { IInternalComponent } from '../../components/base-component';
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource, IResourceProcessor, ProcessFunction } from '../../processors/shared/i-processor-resource';
+import type { IInternalComponent } from '../../components/base/i-component';
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getTsComponentFromResource } from "../../components/components";
+import { getTsComponentFromResource } from "../../components/components-loading";
 
 export abstract class TsBaseProcessor implements IResourceProcessor {
     abstract id: string;

@@ -1,16 +1,18 @@
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import type { SsgConfig } from '../config';
-import type { IProcessor } from '../processing-tree/i-processor';
-import type { IInternalComponent } from './base-component';
-import type fs from 'fs';
+import type { SsgConfig } from '../config/ssg-config';
+import type { IResourceDoc } from '../processors/shared/i-processor-resource';
+import type { IInternalComponent } from './base/i-component';
+import type { IProcessor } from "../processing-tree/i-processor";
 import type { IProcessResource } from "../processors/shared/i-processor-resource";
+import type fs from 'fs';
 
-import { getComponentFromPath } from './components';
+import { getComponentFromPath } from './components-loading';
 import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1";
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
-import { resolveDataRefPathsFromDocDir } from './component-imports';
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
+import { getResourceDoc } from "../processors/shared/document-helpers";
+import { resolveDataRefs } from "./resolve-component-path-refs";
 
 import path from 'path';
 
@@ -250,6 +252,22 @@ export async function loadImportInstanceFromPath(importFilePath: string, cache: 
 
     return getComponentFromPath(importFilePath, config);
     //TODO handle all the different importable file types
+}
+
+export async function resolveDataRefPathsFromDocDir(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+    if (!resource) {
+        return resource;
+    }
+    let currentDocumentDir: string = "";
+
+    const document: IResourceDoc = getResourceDoc(resource);
+
+    if (document.src) {
+        currentDocumentDir = path.parse(document.src).dir;
+    }
+
+    resource = resolveDataRefs(currentDocumentDir, resource, config);
+    return resource;
 }
 
 //export async function loadDefaultImportSymbols

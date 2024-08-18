@@ -1,8 +1,8 @@
-import type { SsgConfig } from "../config";
+import type { SsgConfig } from "../../config/ssg-config";
 import * as fs from 'fs';
-import { DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "./base-component";
+import { DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "./i-component";
 import { curvyTemplate } from "@markus/ts-node-util-mk1";
-import { IProcessResource } from "../processing-tree/i-processor";
+import { IProcessResource } from "../../processors/shared/i-processor-resource";
 
 export function readFileFn(filePath: string): () => Promise<string> {
     return async () => {

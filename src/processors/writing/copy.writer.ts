@@ -1,5 +1,5 @@
-import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processing-tree/i-processor';
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
 import { ensureFileDir, type FalsyStringPromise } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';

@@ -1,11 +1,15 @@
-import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../processing-tree/i-processor";
-import type { IInternalComponent } from "./base-component";
+import type { SsgConfig } from "../config/ssg-config";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
+import type { IInternalComponent } from "./base/i-component";
 import { registerCompileArgsResource, type DeferCompileArgs } from "./deferred-component-compiling";
 import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "@markus/ts-node-util-mk1";
 import { getFlatResourceImportSymbols } from "./imports-loading";
 
-export async function processTopLevelNodesOfSymbols(html: string, symbolsToDetect: string[], processNodeFn: TaggedCheerioNodeFn<any>): Promise<string> {
+export async function processTopLevelNodesOfSymbols(
+    html: string,
+    symbolsToDetect: string[],
+    processNodeFn: TaggedCheerioNodeFn<any>
+): Promise<string> {
 
     const $ = loadHtml(html);
     const currentNode = $.root();

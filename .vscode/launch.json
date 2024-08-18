@@ -20,7 +20,7 @@
             },
             "name": "compile sample dir debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/sample-dir/",
                 "sample/dist/sample-dir/"
             ]
@@ -44,7 +44,7 @@
             },
             "name": "11ty sample dir debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/eleventy-sample/",
                 "sample/dist/eleventy-sample/"
             ]
@@ -68,7 +68,7 @@
             },
             "name": "compile current file debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "${file}",
                 "sample/dist/${fileBasename}"
             ]
@@ -92,7 +92,7 @@
             },
             "name": ".ts functional.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/functional.component.ts",
                 "sample/dist/functional.component.html"
             ]
@@ -116,7 +116,7 @@
             },
             "name": ".ts prop-styled.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/prop-styled.component.ts",
                 "sample/dist/prop-styled.component.html"
             ]
@@ -140,7 +140,7 @@
             },
             "name": ".ts sample.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/sample.component.ts",
                 "sample/dist/sample.component.html"
             ]
@@ -164,7 +164,7 @@
             },
             "name": ".ts simple.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/simple.component.ts",
                 "sample/dist/simple.component.html"
             ]
@@ -188,7 +188,7 @@
             },
             "name": ".ts sub-sample.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/sub-sample.component.ts",
                 "sample/dist/sub-sample.component.html"
             ]
@@ -212,7 +212,7 @@
             },
             "name": ".ts very-simple.component component",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/ts/very-simple.component.ts",
                 "sample/dist/very-simple.component.html"
             ]
@@ -236,7 +236,7 @@
             },
             "name": "sample-markdown.md debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/sample-markdown.md",
                 "sample/dist/sample-markdown.html"
             ]
@@ -260,7 +260,7 @@
             },
             "name": "nested-for.md debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/nested-for.md",
                 "sample/dist/nested-for.html"
             ]
@@ -284,7 +284,7 @@
             },
             "name": "sub-content-compile.html debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/sub-content-compile.html",
                 "sample/dist/sub-content-compile.html"
             ]
@@ -308,7 +308,7 @@
             },
             "name": "content-to-insert.md debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "sample/content-to-insert.md",
                 "sample/dist/content-to-insert.html"
             ]
@@ -332,7 +332,7 @@
             },
             "name": "assembled cv debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "application-cv/assembled-cv.ehtml",
                 "application-cv/dist/index.html"
             ]
@@ -356,7 +356,7 @@
             },
             "name": "business-card.md debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "application-cv/business-card.md",
                 "application-cv/dist/business-card.html"
             ]
@@ -380,7 +380,7 @@
             },
             "name": "sub-content-compile.html debug",
             "args": [
-                "${workspaceRoot}/cli.ts",
+                "${workspaceRoot}/src/cli.ts",
                 "application-cv/sub-content-compile.html",
                 "application-cv/dist/sub-content-compile.html"
             ]

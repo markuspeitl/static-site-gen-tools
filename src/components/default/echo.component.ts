@@ -1,7 +1,6 @@
-import type { SsgConfig } from "../../config";
-import { IProcessResource } from "../../processing-tree/i-processor";
-
-import { BaseComponent, IInternalComponent } from "../base-component";
+import type { SsgConfig } from "../../config/ssg-config";
+import type { BaseComponent, IInternalComponent } from "../base/i-component";
+import type { IProcessResource } from "../../processors/shared/i-processor-resource";
 
 export class EchoComponent implements BaseComponent, IInternalComponent {
 

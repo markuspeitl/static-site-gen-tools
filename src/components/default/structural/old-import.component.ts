@@ -1,6 +1,6 @@
-import type { SsgConfig } from "../../../config";
-import type { IProcessResource } from "../../../processing-tree/i-processor";
-import { BaseComponent, DocumentData } from "../../base-component";
+import type { SsgConfig } from "../../../config/ssg-config";
+import type { IProcessResource } from "../../../processors/shared/i-processor-resource";
+import { BaseComponent, DocumentData } from "../../base/i-component";
 
 export abstract class ImportComponent implements BaseComponent {
 

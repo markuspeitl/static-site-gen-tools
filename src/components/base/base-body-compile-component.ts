@@ -1,33 +1,7 @@
-import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../processing-tree/i-processor";
-import { resetDocumentSetInputFormat } from "../processors/i-resource-processor";
-import type { IInternalComponent } from "./base-component";
-
-/*export function normalizeArgsToIProcessResource(dataCtx?: DocumentData | null): IProcessResource {
-    if (dataCtx?.content && dataCtx?.data) {
-        return dataCtx as IProcessResource;
-    }
-    const toCompileResource: IProcessResource = {
-        content: dataCtx?.content,
-        data: dataCtx,
-    };
-    return toCompileResource;
-}
-
-export async function deferContentCompile(resource: IProcessResource, config: SsgConfig, inputFormat: string = 'html'): Promise<IProcessResource | DocumentData> {
-    let compileBodyResource: IProcessResource = normalizeArgsToIProcessResource(resource);
-
-    //const bodyFormat = this.getContentFormat(config);
-    compileBodyResource = resetDocumentSetInputFormat(compileBodyResource, inputFormat);
-    compileBodyResource.id = undefined;
-
-
-    const dataExtractedDocument: FalsyAble<IProcessResource> = await config.processor.processStages(compileBodyResource, config);
-    if (!dataExtractedDocument) {
-        return compileBodyResource;
-    }
-    return dataExtractedDocument;
-}*/
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource } from "../../processors/shared/i-processor-resource";
+import { resetDocumentSetInputFormat } from "../../processors/i-resource-processor";
+import type { IInternalComponent } from "./i-component";
 
 export abstract class BaseCompileContentFormatComponent implements IInternalComponent {
     // TODO: currently this matches the 'inputFormat' as defined in the stages definition,
@@ -68,3 +42,29 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         return compiledResource;
     }
 }
+
+/*export function normalizeArgsToIProcessResource(dataCtx?: DocumentData | null): IProcessResource {
+    if (dataCtx?.content && dataCtx?.data) {
+        return dataCtx as IProcessResource;
+    }
+    const toCompileResource: IProcessResource = {
+        content: dataCtx?.content,
+        data: dataCtx,
+    };
+    return toCompileResource;
+}
+
+export async function deferContentCompile(resource: IProcessResource, config: SsgConfig, inputFormat: string = 'html'): Promise<IProcessResource | DocumentData> {
+    let compileBodyResource: IProcessResource = normalizeArgsToIProcessResource(resource);
+
+    //const bodyFormat = this.getContentFormat(config);
+    compileBodyResource = resetDocumentSetInputFormat(compileBodyResource, inputFormat);
+    compileBodyResource.id = undefined;
+
+
+    const dataExtractedDocument: FalsyAble<IProcessResource> = await config.processor.processStages(compileBodyResource, config);
+    if (!dataExtractedDocument) {
+        return compileBodyResource;
+    }
+    return dataExtractedDocument;
+}*/

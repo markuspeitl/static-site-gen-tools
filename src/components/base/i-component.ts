@@ -1,5 +1,5 @@
-import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../processing-tree/i-processor";
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource } from "../../processors/shared/i-processor-resource";
 
 //export type FunctionOrStatic<FnParams, ReturnType> = ((args: FnParams) => ReturnType) | ReturnType;
 

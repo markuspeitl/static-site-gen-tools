@@ -1,4 +1,4 @@
-import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "../../src/components/base-component";
+import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "../../src/components/base/i-component";
 import { css, curvyTemplate, html, ts } from "@markus/ts-node-util-mk1/src/html/pre-processors";
 
 export class PropStyleComponent implements ExtensiveComponent {

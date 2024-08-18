@@ -1,5 +1,5 @@
 import type { IProcessor } from "./i-processor";
-import { getConstructFirstMatchedInModule, getModuleId, getOrCreateCacheItem, settleValueOrNullFilter } from "@markus/ts-node-util-mk1";
+import { getFirstMatchedInModuleConstruct, getModuleId, getOrCreateCacheItem, settleValueOrNullFilter } from "@markus/ts-node-util-mk1";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import path from "path";
 
@@ -19,7 +19,7 @@ export async function loadNewProcessorFromPath<InstanceType extends IProcessor>(
         return importedModule as InstanceType;
     }
 
-    const moduleInstance: InstanceType | null = getConstructFirstMatchedInModule(
+    const moduleInstance: InstanceType | null = getFirstMatchedInModuleConstruct(
         importedModule,
         '.+',
         [ 'process' ]

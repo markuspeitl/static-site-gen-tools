@@ -1,6 +1,6 @@
-import type { SsgConfig } from "../../config";
-import type { IProcessResource } from "../../processing-tree/i-processor";
-import type { IInternalComponent } from "../base-component";
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource } from "../../processors/shared/i-processor-resource";
+import type { IInternalComponent } from "../base/i-component";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { resetDocumentSetInputFormat } from "../../processors/i-resource-processor";
 
@@ -21,6 +21,10 @@ export async function getFileResource(documentPath: string, config: SsgConfig): 
 
     return readResource;
 }*/
+
+export interface IFileResource extends IProcessResource {
+    path: string,
+}
 
 export class FileComponent implements IInternalComponent {
     protected path: string | null = null;
@@ -69,7 +73,7 @@ export class FileComponent implements IInternalComponent {
 
     public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
-        const dataPath: string | undefined = this.path || resource.path;
+        const dataPath: string | undefined = this.path || (resource as IFileResource).path;
         if (!dataPath) {
             return resource;
         }

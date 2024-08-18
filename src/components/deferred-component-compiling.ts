@@ -1,17 +1,16 @@
 
-import type { IProcessor, IProcessResource, ProcessFunction } from "../processing-tree/i-processor";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import type { SsgConfig } from "../config";
-import type { IInternalComponent } from "./base-component";
+import type { SsgConfig } from "../config/ssg-config";
+import type { ProcessFunction, IProcessor } from "../processing-tree/i-processor";
+import type { IInternalComponent } from "./base/i-component";
 import { calcHash } from "../data-merge/fragement-cache";
-import { cheerioReplaceIdsWithUpdatesHtml } from "@markus/ts-node-util-mk1";
+import { cheerioReplaceIdsWithUpdatesHtml, passThroughFnChain } from "@markus/ts-node-util-mk1";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { removeBaseBlockIndent } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { resolveDataFromParentResource } from "./resolve-component-path-refs";
 import { getImportInstance, IImportInstance } from "./imports-loading";
-import { passThroughFnChain } from "../processing-tree/processing-strategy-fns";
-
 export interface DeferCompileArgs {
     name?: string,
     placeholder?: string,
@@ -30,7 +29,12 @@ export function hashObjGetHtmlId(obj: Object): string {
     return uniqueHtmlId;
 }
 
-export function getDeferCompileArgs(componentName: string, componentBody: FalsyAble<string>, attrs: FalsyAble<any>): DeferCompileArgs {
+export function getDeferCompileArgs(
+    componentName: string,
+    componentBody: FalsyAble<string>,
+    attrs: FalsyAble<any>
+): DeferCompileArgs {
+
     //const componentName: string = tag;
     const content: FalsyAble<string> = componentBody;
 
@@ -50,7 +54,13 @@ export function getDeferCompileArgs(componentName: string, componentBody: FalsyA
 }
 
 
-export function registerCompileArgsResource(resource: IProcessResource, componentName: string, componentBody: FalsyAble<string>, attrs: FalsyAble<any>): DeferCompileArgs {
+export function registerCompileArgsResource(
+    resource: IProcessResource,
+    componentName: string,
+    componentBody: FalsyAble<string>,
+    attrs: FalsyAble<any>
+): DeferCompileArgs {
+
     if (!resource) {
         resource = {};
     }
@@ -133,7 +143,12 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
         toProcessResourceFunctions.push((selectedImportedInstance as IProcessor).process);
     }
 
-    return passThroughFnChain(resource, config, toProcessResourceFunctions, selectedImportedInstance);
+    return passThroughFnChain(
+        toProcessResourceFunctions,
+        resource,
+        selectedImportedInstance,
+        config
+    );
 
 
     //const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.componentTag ];

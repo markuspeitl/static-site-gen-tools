@@ -1,6 +1,6 @@
 import { getCleanExt } from "@markus/ts-node-util-mk1";
-import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processing-tree/i-processor';
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
 import * as fs from 'fs';
 import path from 'path';
 import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";

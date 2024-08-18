@@ -1,9 +1,11 @@
-import { FalseAbleVal } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "./config/ssg-config";
-import type { IProcessingNode, IProcessor, IResourceProcessor, ProcessFunction } from "./processing-tree/i-processor";
-import * as lodash from 'lodash';
+import type { IProcessingNode, IProcessor } from "./processing-tree/i-processor";
+import type { FalseAbleVal } from "@markus/ts-node-util-mk1";
+import type { IProcessResource } from "./processors/shared/i-processor-resource";
+
 import { forkFromResource } from "./data-merge/manage-scopes";
-import { IProcessResource } from "./processors/shared/i-processor-resource";
+import * as lodash from 'lodash';
+
 
 export function registerProcessedDocument(
     resource: IProcessResource,
@@ -152,7 +154,7 @@ async function renderComponentBodyContent(
     );
 };
 
-export interface ProcessingWrapper {
+export interface ProcessingHelper {
     renderFork: (
         parentResource: IProcessResource,
         config: SsgConfig,
@@ -184,14 +186,21 @@ export interface ProcessingWrapper {
         config: SsgConfig,
         stagesToProcess?: string[]
     ) => Promise<IProcessResource>;
+
+    process: (
+        resource: IProcessResource,
+        config: SsgConfig,
+        stagesToProcess?: string[]
+    ) => Promise<IProcessResource>;
 }
 
-export const defaultProcessingWrapper: ProcessingWrapper = {
+export const defaultProcessingHelper: ProcessingHelper = {
     renderFork: renderComponentBodyContent,
     processFork: forkSubResourceProcessStages,
     processDocument: processStagesOnInputPath,
     processDocumentTo: processStagesFromToPath,
-    processStages: processStagesOnResource
+    processStages: processStagesOnResource,
+    process: processStagesOnResource
 };
 
 /*export async function processRegisterDocument(

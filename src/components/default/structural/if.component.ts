@@ -1,11 +1,15 @@
-import type { SsgConfig } from "../../../config";
-import type { IProcessResource } from "../../../processing-tree/i-processor";
+import type { SsgConfig } from "../../../config/ssg-config";
+import type { IProcessResource } from "../../../processors/shared/i-processor-resource";
 
 import { getScopedEvalFn } from "@markus/ts-node-util-mk1";
-import { BaseComponent, IInternalComponent } from "../../base-component";
+import { BaseComponent, IInternalComponent } from "../../base/i-component";
+
+export interface IIfResource extends IProcessResource {
+    cond: string,
+}
 
 export abstract class IfComponent implements BaseComponent, IInternalComponent {
-    public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
+    public canCompile(resource: IIfResource, config: SsgConfig): boolean {
         if (!resource) {
             console.error("Can not compile 'if' component -> data needs to be set");
             return false;
@@ -24,7 +28,7 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
     }
 
     public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        if (!this.canCompile(resource, config)) {
+        if (!this.canCompile(resource as IIfResource, config)) {
             return resource;
         }
 

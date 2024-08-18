@@ -1,8 +1,10 @@
-import path from "path";
-import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../processing-tree/i-processor";
+import type { SsgConfig } from "../config/ssg-config";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
+
 import { resolveRelativePaths } from "@markus/ts-node-util-mk1";
 import { arrayify } from "@markus/ts-node-util-mk1";
+
+import path from "path";
 
 export function resolveImportPropToPath(importObj: any): string {
     /*if (typeof importObj === 'string') {

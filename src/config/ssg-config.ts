@@ -1,9 +1,9 @@
-import type Module from "module";
-import { IImportInstance } from "../components/imports-loading";
-import { IScopeManager } from "../data-merge/scope-manager";
-import { ProcessingWrapper } from "../processing-tree-wrapper";
-import { IProcessingNode, IResourceProcessor } from "../processing-tree/i-processor";
-import { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
+import type { IImportInstance } from "../components/imports-loading";
+import type { IScopeManager } from "../data-merge/scope-manager";
+import type { ProcessingHelper } from "../processing-helper";
+import type { ModulesCache } from "@markus/ts-node-util-mk1";
+import type { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
+import type { IProcessingNode, IResourceProcessor } from "../processing-tree/i-processor";
 
 export interface SsgConfig {
     //sourcePath?: string;
@@ -15,7 +15,7 @@ export interface SsgConfig {
     //to their children which should process the resource(if targeted through several conditions)
     processingTree: IProcessingNode;
     //Helper fns for using the 'processingTree' to process resources
-    processor: ProcessingWrapper;
+    processor: ProcessingHelper;
     //Cache collection of called processing stages used in tandem for reuse
     subTreePathCache: Record<string, IResourceProcessor>;
     //defaultResourceProcessorDirs: string[];
@@ -33,7 +33,7 @@ export interface SsgConfig {
     scopeManager: IScopeManager;
 
     libConstructors: Record<string, any | (() => any)>;
-    tsModulesCache: Record<string, Module>;
+    modulesCache: ModulesCache;
 
     data: any;
 

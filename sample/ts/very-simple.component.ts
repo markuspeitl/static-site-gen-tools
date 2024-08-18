@@ -1,5 +1,5 @@
-import { BaseComponent } from "../../src/components/base-component";
-import { dataTemplateFn } from "../../src/components/common-components";
+import { BaseComponent } from "../../src/components/base/i-component";
+import { dataTemplateFn } from "../../src/components/base/common-components";
 
 const verySimpleComponentExample: BaseComponent = {
     data: {

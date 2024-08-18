@@ -1,13 +1,18 @@
-import type { SsgConfig } from "../../../config";
-import type { IProcessResource } from "../../../processing-tree/i-processor";
+import type { SsgConfig } from "../../../config/ssg-config";
+import type { IProcessResource } from "../../../processors/shared/i-processor-resource";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
-import { BaseComponent, IInternalComponent } from "../../base-component";
+import { BaseComponent, IInternalComponent } from "../../base/i-component";
 import { filterFalsy } from "@markus/ts-node-util-mk1";
 import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 
+export interface IForResource extends IProcessResource {
+    it: string,
+    of: string;
+}
+
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
-    public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
+    public canCompile(resource: IForResource, config: SsgConfig): boolean {
         if (!resource) {
             console.error("Can not compile 'for' component -> data needs to be set");
             return false;
@@ -30,7 +35,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
     }
 
     public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        if (!this.canCompile(resource, config)) {
+        if (!this.canCompile(resource as IForResource, config)) {
             return resource;
         }
         const data: any = resource;

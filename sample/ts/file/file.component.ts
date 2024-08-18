@@ -1,4 +1,4 @@
-import { StaticAssembledFileComponent } from "../../../src/components/common-components";
+import { StaticAssembledFileComponent } from "../../../src/components/base/common-components";
 
 export class FileComponent extends StaticAssembledFileComponent {
     public files: Record<string, string> = {

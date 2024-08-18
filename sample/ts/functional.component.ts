@@ -1,7 +1,7 @@
 import { curvyTemplate, html } from "@markus/ts-node-util-mk1";
-import { BaseComponent, DocumentData } from "../../src/components/base-component";
+import { BaseComponent, DocumentData } from "../../src/components/base/i-component";
 import { SsgConfig } from "../../src/config";
-import { IProcessResource } from "../../src/processing-tree/i-processor";
+import { IProcessResource } from "../../src/processors/shared/i-processor-resource";
 
 class FunctionStyleDynamicComponent implements BaseComponent {
     async data(dataCtx?: DocumentData | null, config?: SsgConfig): Promise<IProcessResource | DocumentData> {

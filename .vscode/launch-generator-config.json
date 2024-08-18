@@ -27,7 +27,7 @@
             "default": {
                 "name": "$params.key debug",
                 "args": [
-                    "${workspaceRoot}/cli.ts",
+                    "${workspaceRoot}/src/cli.ts",
                     "$params.inputFile",
                     "$params.outputFile"
                 ]
@@ -54,7 +54,7 @@
                 "default": {
                     "name": ".ts $params.key component",
                     "args": [
-                        "${workspaceRoot}/cli.ts",
+                        "${workspaceRoot}/src/cli.ts",
                         "sample/ts/$params.key$.ts",
                         "sample/dist/$params.key$.html"
                     ]
@@ -71,7 +71,7 @@
             "sampleToDictDirDebug": {
                 "default": {
                     "args": [
-                        "${workspaceRoot}/cli.ts",
+                        "${workspaceRoot}/src/cli.ts",
                         "sample/$params.inputFile",
                         "sample/dist/$params.outputFile"
                     ]
@@ -103,7 +103,7 @@
             "sampleCVDebug": {
                 "default": {
                     "args": [
-                        "${workspaceRoot}/cli.ts",
+                        "${workspaceRoot}/src/cli.ts",
                         "application-cv/$params.inputFile",
                         "application-cv/dist/$params.outputFile"
                     ]

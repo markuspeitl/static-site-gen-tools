@@ -1,24 +1,16 @@
-import type { SsgConfig } from "../config";
-import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import { callClassConstructor, getFirstInstanceTargetClass, getModuleId, getTsModule } from "../module-loading/ts-modules";
-import { BaseComponent, DocumentData, IInternalComponent } from "./base-component";
+import type { SsgConfig } from "../config/ssg-config";
+import type Module from "module";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
+
+import { BaseComponent, DocumentData, IInternalComponent } from "./base/i-component";
 import { PassthroughComponent } from "./default/passthrough.component";
 import { FileComponent } from "./default/file.component";
-import type Module from "module";
-import type { IProcessResource } from "../processing-tree/i-processor";
 
+import { constructFromClassType, getFirstMatchedInModuleConstruct, getModuleId, loadModuleFromPath, loadModuleFromString, loadModulesFromPaths, type FalsyAble } from "@markus/ts-node-util-mk1";
 
 export function getComponentIdFromPath(runnerPath: string): string {
     return getModuleId(runnerPath, '.component');
 }
-
-/*export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble<string> {
-    if (!dataCtx) {
-        return null;
-    }
-    const componentModulePath: string = dataCtx?.inputPath || dataCtx?.path || dataCtx?.src;
-    return componentModulePath;
-}*/
 
 export interface IExternalComponentModule extends Module {
     default?: any,
@@ -36,7 +28,7 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     if (defaultExport) {
         if (defaultExport.constructor) {
             //A component class is exported
-            componentInstance = callClassConstructor(defaultExport.constructor);
+            componentInstance = constructFromClassType(defaultExport.constructor);
         }
         if (defaultExport.render || module.data) {
             //A component instance is exported through default
@@ -55,7 +47,8 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     }
 
     if (!componentInstance) {
-        componentInstance = getFirstInstanceTargetClass(module, '.+Component.*', [ 'render' ]);
+
+        componentInstance = getFirstMatchedInModuleConstruct(module, '.+Component.*', [ 'render' ]);
     }
 
     if (!componentInstance) {
@@ -97,30 +90,19 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     return componentInstance as FalsyAble<IInternalComponent>;
 }
 
-export async function getTsComponentFrom(componentPath: FalsyAble<string>, config: SsgConfig, moduleBuffer: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
-    let loadedModule: any = await getTsModule(moduleBuffer, componentPath, config?.tsModulesCache);
-    if (!loadedModule) {
-        return null;
-    }
-
-    return moduleToComponentInstance(loadedModule);
-
-    //const componentInstance: BaseComponent = loadedModule.default;
-
-    /*if (componentPath) {
-        const componentId: string = getComponentIdFromPath(componentPath);
-        (componentInstance as any).id = componentId;
-    }*/
-
-    //return componentInstance;
-}
-
 export async function getTsComponentFromBuffer(moduleBuffer: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
 
     if (!moduleBuffer) {
         return null;
     }
-    return getTsComponentFrom(null, config, moduleBuffer);
+
+    const loadedModule: any | null = loadModuleFromString(
+        moduleBuffer,
+        config.modulesCache,
+        'ts'
+    );
+
+    return moduleToComponentInstance(loadedModule);
 }
 
 export async function getComponentFromPath(componentPath: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
@@ -129,8 +111,12 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
         return null;
     }
 
-    if (componentPath.endsWith('.ts')) {
-        return getTsComponentFrom(componentPath, config, null);
+    if (componentPath.endsWith('.ts') || componentPath.endsWith('.js')) {
+        const loadedModule: any | null = loadModuleFromPath(
+            componentPath,
+            config.modulesCache
+        );
+        return moduleToComponentInstance(loadedModule);
     }
 
     return new FileComponent(componentPath);
@@ -143,7 +129,7 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
 }*/
 
 export async function getTsComponentFromResource(resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
-    if (resource.document?.inputFormat !== 'ts') {
+    if (resource.document?.inputFormat !== 'ts' && resource.document?.inputFormat !== 'js') {
         return null;
     }
 
@@ -162,3 +148,20 @@ export async function getTsComponentFromResource(resource: IProcessResource, con
 
     return null;
 }
+
+/*export async function getTsComponentFrom(componentPath: FalsyAble<string>, config: SsgConfig, moduleBuffer: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {
+    let loadedModule: any = await getTsModule(moduleBuffer, componentPath, config?.tsModulesCache);
+    if (!loadedModule) {
+        return null;
+    }
+
+    return moduleToComponentInstance(loadedModule);
+}*/
+
+/*export function getTargetModulePath(dataCtx: FalsyAble<DocumentData>): FalsyAble<string> {
+    if (!dataCtx) {
+        return null;
+    }
+    const componentModulePath: string = dataCtx?.inputPath || dataCtx?.path || dataCtx?.src;
+    return componentModulePath;
+}*/

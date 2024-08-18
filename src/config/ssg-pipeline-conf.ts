@@ -1,4 +1,4 @@
-import type { IProcessingNodeConfig } from "./processing-tree/i-processor";
+import type { IProcessingNodeConfig } from "./../processing-tree/i-processor-config";
 
 export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 

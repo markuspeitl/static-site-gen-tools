@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import type { IProcessResource } from '../processing-tree/i-processor';
+import type { IProcessResource } from '../processors/shared/i-processor-resource';
 
 export function calcHash(content: any): string {
 

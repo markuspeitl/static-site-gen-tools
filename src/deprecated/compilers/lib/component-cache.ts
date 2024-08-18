@@ -1,5 +1,5 @@
 import Module from "module";
-import { BaseComponent } from "../../../components/base-component";
+import { BaseComponent } from "../../../components/base/i-component";
 import { FalsyAble } from "../../../components/helpers/generic-types";
 import { SsgConfig } from "../../../config";
 import { anchorAndGlob } from "../../../utils/globbing";

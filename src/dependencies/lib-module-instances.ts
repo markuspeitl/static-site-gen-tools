@@ -1,15 +1,19 @@
 
+import type { SsgConfig } from "../config/ssg-config";
 import { getLibModuleInstance, ModuleConstructDict, setUnsetCfgLibConstructors } from "@markus/ts-node-util-mk1";
-import { SsgConfig } from "../config";
-//import { Environment } from "nunjucks";
+
+export function getSimpleDynamicImportFn(modulePath: string): any {
+    return async () => {
+        const module = import(modulePath);
+        return module;
+    };
+}
 
 const defaultLibConstructors: ModuleConstructDict = {
     'markdown': async (config: SsgConfig, configOptions?: any) => {
         const markdownit = await import('markdown-it');
-
         //Initialize &
         //Disable indented code blocks (break formatting when mixing templating syntaxes)
-
         //info: https://github.com/11ty/eleventy/issues/2438
         return markdownit.default(configOptions).disable('code');
 
@@ -18,10 +22,7 @@ const defaultLibConstructors: ModuleConstructDict = {
         //remark
 
     },
-    'matter': async () => {
-        const module = await import('gray-matter');
-        return module;
-    },
+    'matter': getSimpleDynamicImportFn('gray-matter'),
     'nunjucks': async () => {
         const nunjucksModule = await import('nunjucks');
         const nunjucks = nunjucksModule.default;
@@ -31,14 +32,8 @@ const defaultLibConstructors: ModuleConstructDict = {
         //const njkEnvironment: nunjucks.Environment = nunjucks.configure({ autoescape: true });
         //return nunjucks;
     },
-    'cheerio': async () => {
-        const module = import('cheerio');
-        return module;
-    },
-    'xml2js': async () => {
-        const module = import('xml2js');
-        return module;
-    }
+    'cheerio': getSimpleDynamicImportFn('cheerio'),
+    'xml2js': getSimpleDynamicImportFn('xml2js')
 };
 
 
