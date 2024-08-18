@@ -143,11 +143,11 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
 }*/
 
 export async function getTsComponentFromResource(resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
-    if (resource.data?.document?.inputFormat !== 'ts') {
+    if (resource.document?.inputFormat !== 'ts') {
         return null;
     }
 
-    const inputPath: string | undefined = resource.data?.document?.src;
+    const inputPath: string | undefined = resource.document?.src;
     if (inputPath) {
         const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
         return filePathComponent;

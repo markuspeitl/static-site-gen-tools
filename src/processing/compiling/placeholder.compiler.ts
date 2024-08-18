@@ -8,8 +8,8 @@ export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
 
     protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
-    public canHandle = this.htmlCompilerSubject.canHandle;
-    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    //public canHandle = this.htmlCompilerSubject.canHandle;
+    /*/*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         return this.htmlCompilerSubject.canHandle(resource, config);
     }*/
 

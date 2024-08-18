@@ -1,8 +1,8 @@
 import path from 'path';
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../pipeline/i-processor';
 import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
-import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+import { getResourceDoc } from "../shared/document-helpers";
 
 
 const dataFilePathRegexes: RegExp[] = [
@@ -15,16 +15,16 @@ export class DirReader implements IResourceProcessor {
 
     public id: string = 'dir.reader';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         //Check should already be handled by stage guard match
         return true;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
 
         console.log(`Extracting ${this.id}: ${documentSrc}`);
@@ -36,7 +36,7 @@ export class DirReader implements IResourceProcessor {
             (dirPath: string) => path.basename(dirPath)
         );
 
-        const resourceData: any = resource.data;
+        const resourceData: any = resource;
 
         for (let dirDataFile of dirDataFiles) {
             if (!path.isAbsolute(dirDataFile)) {
@@ -47,7 +47,7 @@ export class DirReader implements IResourceProcessor {
             //When cleaning the types it should be possible to write a processor without importing any external functionality
             const dataFileResource: IProcessResource = await config.processor.processDocument(dirDataFile, config, [ 'reader', 'extractor' ]);
             //Merge this or is assign enough
-            delete dataFileResource.data.document;
+            delete dataFileResource.document;
             Object.assign(resourceData, dataFileResource.data);
         }
 

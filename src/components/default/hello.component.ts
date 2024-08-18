@@ -7,10 +7,10 @@ export class HelloWorldComponent implements BaseComponent, IInternalComponent {
 
     public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
-        if (!resource.data) {
-            resource.data = {};
+        if (!resource) {
+            resource = {};
         }
-        resource.data.message = "Hello world from component subrenderer";
+        resource.message = "Hello world from component subrenderer";
         return resource;
     }
     public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
@@ -20,7 +20,7 @@ export class HelloWorldComponent implements BaseComponent, IInternalComponent {
         const message = `\
 ${renderedContent?.content}
 This is the message from hello:
-${resource?.data?.message}`;
+${resource.message}`;
 
         resource.content = message;
         return resource;

@@ -5,7 +5,7 @@ import { setKeyInDict } from "@markus/ts-node-util-mk1";
 export class HtmlCompiler implements IResourceProcessor {
     id: string = 'html.compiler';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -23,7 +23,7 @@ export class HtmlCompiler implements IResourceProcessor {
 
         return false;
 
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {

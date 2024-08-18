@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { isDirPathOrDirectory } from "@markus/ts-node-util-mk1";
@@ -9,26 +9,26 @@ export class DirReader implements IResourceProcessor {
 
     public id: string = 'dir.reader';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return false;
         }
         return isDirPathOrDirectory(resourceId);
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        if (!resource.data) {
-            resource.data = {};
+        if (!resource) {
+            resource = {};
         }
-        if (!resource.data.document) {
-            resource.data.document = {};
+        if (!resource.document) {
+            resource.document = {} as IResourceDoc;
         }
 
-        console.log(`Reading ${this.id}: ${resource.data?.document?.src}`);
+        console.log(`Reading ${this.id}: ${resource.document?.src}`);
 
         const resolvedPath: string = path.resolve(resourceId);
         const dirFiles: string[] = await fs.promises.readdir(resolvedPath);

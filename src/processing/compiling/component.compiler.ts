@@ -8,8 +8,8 @@ export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component.compiler';
 
     protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
-    public canHandle = this.htmlCompilerSubject.canHandle;
-    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    //public canHandle = this.htmlCompilerSubject.canHandle;
+    /*/*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         return this.htmlCompilerSubject.canHandle(resource, config);
     }*/
 
@@ -19,10 +19,10 @@ export class ComponentCompiler implements IResourceProcessor {
             return resource;
         }
         resource.content = resourceContent;
-        if (!resource.data) {
+        if (!resource) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
         return compilePendingChildren(resource, config);
     }
 }

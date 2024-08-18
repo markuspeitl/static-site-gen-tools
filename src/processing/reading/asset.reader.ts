@@ -1,16 +1,16 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../pipeline/i-processor';
 import * as fs from 'fs';
 import path from 'path';
 import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+import { getResourceDoc } from "../shared/document-helpers";
 
 export class AssetReader implements IResourceProcessor {
 
     public id: string = 'asset.reader';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return false;
@@ -23,13 +23,13 @@ export class AssetReader implements IResourceProcessor {
         }
         return true;
 
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         console.log(`Reading ${this.id}: ${document.src}`);
         //const resolvedPath: string = path.resolve(resourceId);
         //const parsedPath: path.ParsedPath = path.parse(resolvedPath);

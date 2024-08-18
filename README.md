@@ -1134,7 +1134,7 @@ and while designing you want all possibilities at your disposal. (for layouts, s
     - Add a wrapper component which does the assembling operation
     - Automatically import and add the imported component frame around the content, if the layout prop is defined
 - *permalink* property: 
-    - rewrites the output path: --> just rewrite `resource.data.document.target` to save it to another location
+    - rewrites the output path: --> just rewrite `resource.document.target` to save it to another location
 - *tags* property --> mainly for adding rendered results to a collection that is available to other places of the applications
     - leverage the fragment cache to get rendered pages/fragments which can also be filtered based on data
     - the page that is "indexing" the fragments/pages/posts/etc should import and render the sub pages
@@ -1496,22 +1496,42 @@ New format:
 ```
 {
     id: string,
+    content: any
+    control: {
+
+    }
+    exclude: [
+        'id',
+        'document',
+        'content',
+        'exclude'
+    ],
+
     document: {
         src: string,
         target: string,
         inputFormat: string,
         outputFormat: string
     },
-    content: any
 
     title: 'test',
-    description: 'test'
-    
-    exclude: [
-        'id',
-        'document',
-        'content',
-        'exclude'
-    ]
+    description: 'test' 
 }
 ```
+
+## Data merging and forking:
+- Provide fns in config to set content and data target resource
+- Provide fns in config to merge resources (should only be necessary in .extractor processors)
+--> data merging should be moved into the extractors (maybe add a base class that performs data merging)
+
+### Forking ->
+compile a new sub component -> data props (non data merging excluded) are inherited.
+and other props are reset or set to the unique props of the sub component
+
+Modifying the data in sub components should not affect parent resource.
+(parent decides whether it want to add the sub scope to its own)
+
+Examples:
+    - Nested components
+    - dir sub file components
+

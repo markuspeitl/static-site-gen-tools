@@ -1,42 +1,55 @@
-import type { IInternalComponent } from "../components/base-component";
-import type { DeferCompileArgs } from "../components/deferred-component-compiling";
-
-export interface IProcessResource {
-    id?: string,
-    control?: {
-        parent?: IProcessResource,
-        handledProcIds?: string[];
-        pendingChildren?: DeferCompileArgs[];
-        importScope?: Record<string, IInternalComponent | IProcessor>;
-    };
-    content?: any,
-    data?: any,
+export interface IGenericControl {
+    parent?: IGenericResource,
+    handledProcIds?: string[];
+}
+export interface IGenericResource extends DataProps {
+    control?: IGenericControl;
+}
+export interface DataProps {
+    [ key: string ]: any;
 }
 
-
 export type ProcessFunction = (
-    resource: IProcessResource,
+    resource: IGenericResource,
     config: any,
     ...args: any[]
-) => Promise<IProcessResource>;
+) => Promise<IGenericResource>;
 
-export type CanHandleFunction = (
-    resource: IProcessResource,
+export type CanProcessFn = (
+    resource: IGenericResource,
     config: any,
     ...args: any[]
-) => Promise<boolean>;
+) => Promise<boolean> | boolean;
 
-export type ProcessStrategy = 'serial' | 'parallel' | 'firstMatch' | 'lastMatch';
+export type CanProcessEvaluator = CanProcessFn | boolean;
+
+export type ProcessStrategy = string; // = 'serial' | 'parallel' | 'firstMatch' | 'lastMatch'
 
 export interface IProcessor {
     id: string;
     process: ProcessFunction;
+    canProcess?: CanProcessEvaluator;
 }
 
 export interface IResourceProcessor extends IProcessor {
     id: string;
-    canHandle: CanHandleFunction;
+    //canHandle: CanHandleFunction;
 }
+
+export interface IPrePostProcessing {
+    postProcess?: (resource: IGenericResource, config: any) => Promise<IGenericResource>;
+    preProcess?: (resource: IGenericResource, config: any) => Promise<IGenericResource>;
+}
+
+
+export interface IProcessingNode extends IProcessor, IPrePostProcessing {
+    parent?: IProcessingNode;
+    processors?: Array<IProcessingNode | IProcessor>;
+
+    //Not really needed after init (necessary for file processor init)
+    srcDirs?: string[],
+}
+
 
 /*export interface IProcessorConfigProps {
     //matchProperty?: string;
@@ -45,49 +58,3 @@ export interface IResourceProcessor extends IProcessor {
     srcDir?: string;
     matchProcessorIds?: string;
 }*/
-
-export interface IPrePostProcessing {
-    postProcess?: (resource: IProcessResource, config: any) => Promise<IProcessResource>;
-    preProcess?: (resource: IProcessResource, config: any) => Promise<IProcessResource>;
-}
-
-export type ChainAbleProcessorId = string | IProcessingNode | IProcessingNodeConfig;
-
-export interface FileChainProcessorConfig {
-    matchProp: string,
-    strategy?: ProcessStrategy;
-    fileIdPostfix: string,
-    processors: Record<string, Array<ChainAbleProcessorId>>;
-}
-
-export interface InputGuardConfig {
-    matchProp: string;
-    matchCondition: any | ((resourceProp: any) => boolean);
-}
-
-export interface SubProcessorsConfig {
-    srcDirs?: string[];
-    strategy?: ProcessStrategy;
-    processors?: Array<IProcessingNodeConfig | IProcessingNode>;
-    fileProcessorChains?: FileChainProcessorConfig;
-    /*{
-        [ processorId: string ]: IProcessingNodeConfig | IProcessingNodeConfig;
-    } | {
-        [ matchGuard: string ]: string[];
-    };*/
-}
-
-export interface IProcessingNodeConfig extends IPrePostProcessing, SubProcessorsConfig {
-    id: string;
-    inputGuard?: InputGuardConfig;
-    //children?: SubProcessorsConfig;
-}
-
-export interface IProcessingNode extends IResourceProcessor, IPrePostProcessing {
-    parent?: IProcessingNode;
-    processors?: Array<IProcessingNode | IProcessor>;
-
-    //Not really needed after init (necessary for file processor init)
-    srcDirs?: string[],
-
-}

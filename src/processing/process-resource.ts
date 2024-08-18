@@ -1,7 +1,6 @@
 import * as lodash from 'lodash';
-import { forkDataScope } from "../manage-scopes";
 import { settleValueOrNull, settleValueOrNullFilter } from "@markus/ts-node-util-mk1";
-import { loadProcessorInstancesFromPaths } from "../load-glob-modules";
+import { loadProcessorInstancesFromPaths } from "../pipeline/load-file-processors";
 import type { SsgConfig } from "../config";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";

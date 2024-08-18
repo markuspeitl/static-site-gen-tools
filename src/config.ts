@@ -1,27 +1,30 @@
 import type Module from "module";
 import type { FragmentCache } from "./fragement-cache";
 import type { IInternalComponent } from "./components/base-component";
-import type { IProcessingNode, IProcessingNodeConfig, IResourceProcessor } from "./pipeline/i-processor";
+import type { IProcessingNode, IResourceProcessor } from "./pipeline/i-processor";
 import type { IScopeManager } from "./data/scope-manager";
 import type { IImportInstance } from "./module-loading/imports-loading";
 import { ProcessingWrapper } from "./processing-tree-wrapper";
+import { IProcessingNodeConfig } from "./pipeline/i-processor-config";
 
 export interface SsgConfig {
-    sourcePath?: string;
-    targetPath?: string;
+    //sourcePath?: string;
+    //targetPath?: string;
 
+    //Configuration of the processing tree (from this config the runtime processing tree is initialized/compiled)
     processingTreeConfig: IProcessingNodeConfig;
+    //Processing tree -> recursive tree of nodes that pass the resource down 
+    //to their children which should process the resource(if targeted through several conditions)
     processingTree: IProcessingNode;
-    //processingTreeWrapper?: ProcessingTreeWrapper;
+    //Helper fns for using the 'processingTree' to process resources
+    processor: ProcessingWrapper;
+    //Cache collection of called processing stages used in tandem for reuse
     subTreePathCache: Record<string, IResourceProcessor>;
-
-    defaultResourceProcessorDirs: string[];
+    //defaultResourceProcessorDirs: string[];
 
     //paths to the config extensions and mods to load
     userConfigPath: string | null;
     runtimeConfigPath: string | null;
-
-    processor: ProcessingWrapper;
 
     globalImportsCache: Record<string, IImportInstance>;
     //symbol/alias --> file path

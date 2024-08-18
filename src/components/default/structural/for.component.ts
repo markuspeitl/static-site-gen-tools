@@ -8,16 +8,16 @@ import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 export abstract class ForComponent implements BaseComponent, IInternalComponent {
 
     public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
-        if (!resource.data) {
+        if (!resource) {
             console.error("Can not compile 'for' component -> data needs to be set");
             return false;
         }
 
-        if (!resource.data.it) {
+        if (!resource.it) {
             console.error("Invalid 'for' component -> needs to have a condition with the 'it' attribute");
             return false;
         }
-        if (!resource.data.of) {
+        if (!resource.of) {
             console.error("Invalid 'for' component -> needs to have a condition with the 'of' attribute");
             return false;
         }
@@ -33,7 +33,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         if (!this.canCompile(resource, config)) {
             return resource;
         }
-        const data: any = resource.data;
+        const data: any = resource;
 
         if (!data.it || !data.of) {
             console.log("Invalid 'for' component -> needs to have 'item' and 'of attribute");
@@ -52,7 +52,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         /*console.time('parrallel_for');
         const renderLoopItPromises: Promise<IProcessResource>[] = selectedArray.map((itemValue: any) => {
             //Set local variable for current iteration
-            (resource.data as any)[ iteratorItemName ] = itemValue;
+            (resource as any)[ iteratorItemName ] = itemValue;
             const stagesRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
             return config.processor.processFork([ 'extractor', 'compiler' ], resource, config, stagesRunId);
             //const renderedBody = renderedIterationResource?.content || '';
@@ -70,7 +70,7 @@ export abstract class ForComponent implements BaseComponent, IInternalComponent 
         for (const itemValue of selectedArray) {
 
             //Set local variable for current iteration
-            (resource.data as any)[ iteratorItemName ] = itemValue;
+            (resource as any)[ iteratorItemName ] = itemValue;
             const forkedResourceRunId: string = "__loop-iteration_" + itemValue + "_of_" + listItemName;
 
             let renderedIterationResource: IProcessResource | null = await config.processor.renderFork(

@@ -1,12 +1,12 @@
 import path from "path";
-import { IProcessResource } from "../../pipeline/i-processor";
+import { IProcessResource, IResourceDoc } from "../../pipeline/i-processor";
 
 export function getDocumentTargetPath(resource: IProcessResource): string | null {
-    if (!resource.data?.document?.target) {
+    if (!resource.document?.target) {
         return null;
     }
 
-    return path.resolve(resource.data.document.target);
+    return path.resolve(resource.document.target);
 }
 export function getDocumentTargetSubPath(resource: IProcessResource, relativePath: string): string | null {
 
@@ -18,21 +18,14 @@ export function getDocumentTargetSubPath(resource: IProcessResource, relativePat
     return path.join(targetDirPath, relativePath);
 }
 
-export interface ResourceDoc {
-    inputFormat: string,
-    outputFormat: string,
-    src: string,
-    target: string;
-}
-
-export function getResourceDoc(resource: IProcessResource): ResourceDoc {
-    if (!resource.data) {
-        resource.data = {};
+export function getResourceDoc(resource: IProcessResource): IResourceDoc {
+    if (!resource) {
+        resource = {};
     }
-    if (!resource.data.document) {
-        resource.data.document = {};
+    if (!resource.document) {
+        resource.document = {} as IResourceDoc;
     }
-    return resource.data.document;
+    return resource.document as IResourceDoc;
 }
 
 export function getTargetFromFormat(
@@ -56,7 +49,7 @@ export function getTargetFromFormat(
 }
 
 export function getTargetFromDocFormat(
-    document: ResourceDoc,
+    document: IResourceDoc,
     outputFormat?: string,
     targetDirPath?: string,
     overridePostFix?: string,
@@ -80,7 +73,7 @@ export function getTargetFromDocFormat(
 }
 
 export function setTargetFromFormat(
-    document: ResourceDoc,
+    document: IResourceDoc,
     outputFormat?: string,
     targetDirPath?: string,
     overridePostFix?: string,

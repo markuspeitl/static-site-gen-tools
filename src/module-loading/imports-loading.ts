@@ -1,9 +1,10 @@
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from '../config';
-import type { IProcessor, IProcessResource } from '../pipeline/i-processor';
+import type { IProcessor } from '../pipeline/i-processor';
 import type { IInternalComponent } from '../components/base-component';
 import type fs from 'fs';
-import path from 'path';
+import type { IProcessResource } from "../processing/shared/i-processor-resource";
+
 import { getComponentFromPath } from '../components/components';
 import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1";
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
@@ -11,9 +12,10 @@ import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import { resolveDataRefPathsFromDocDir } from '../components/component-imports';
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 
+import path from 'path';
+
+
 export type IImportInstance = IProcessor | IInternalComponent;
-
-
 export type PathOrNameSpace = string | Record<string, string>;
 export type ImportSymbolsToPaths = Record<string, PathOrNameSpace>;
 
@@ -44,7 +46,11 @@ export function getImportAliasFromFilePath(importPath: string): string {
 // + importRef.as defined --> auto detect symbol for file names ++ apply those symbols under the specified 'namespace' (importRef.as)
 
 //importRef.path refers to a dir --> same as a glob that matches all subfiles (import files under specified importRef.as namespace || import file aliases in current scope)
-export async function registerImportReferenceSymbol(importRef: ImportReference | string, importSymbolsToPaths: ImportSymbolsToPaths, namespace?: string): Promise<void> {
+export async function registerImportReferenceSymbol(
+    importRef: ImportReference | string,
+    importSymbolsToPaths: ImportSymbolsToPaths,
+    namespace?: string
+): Promise<void> {
 
     if (typeof importRef === 'string') {
         importRef = {
@@ -116,14 +122,17 @@ export async function registerImportDirs(dirsToImport: string[], targetSymbolPat
     }
 }
 
-export async function evaluateLocalImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<ImportSymbolsToPaths> {
+export async function evaluateLocalImportSymbols(
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<ImportSymbolsToPaths> {
 
     const localImportSymbolPaths: ImportSymbolsToPaths = {};
 
     //Make any path in data fully qualified
     await resolveDataRefPathsFromDocDir(resource, config);
 
-    const importRefs: ImportReference[] = resource.data.import;
+    const importRefs: ImportReference[] = resource.import;
 
     for (const importRef of importRefs) {
         await registerImportReferenceSymbol(importRef, localImportSymbolPaths);
@@ -150,13 +159,17 @@ export async function initDefaultImportSymbols(config: SsgConfig): Promise<Impor
     return config.defaultImportSymbolPaths;
 }
 
-export async function initLocalImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<ImportSymbolsToPaths> {
-    if (resource.data.localImportSymbols) {
-        return resource.data.localImportSymbols;
+export async function initLocalImportSymbols(
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<ImportSymbolsToPaths> {
+
+    if (resource.localImportSymbols) {
+        return resource.localImportSymbols;
     }
     const localImportSymbolPaths: ImportSymbolsToPaths = await evaluateLocalImportSymbols(resource, config);
-    resource.data.localImportSymbols = localImportSymbolPaths;
-    return resource.data.localImportSymbols;
+    resource.localImportSymbols = localImportSymbolPaths;
+    return resource.localImportSymbols;
 }
 
 export async function initResourceImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<ImportSymbolsToPaths> {
@@ -165,7 +178,7 @@ export async function initResourceImportSymbols(resource: IProcessResource, conf
     const localImportSymbolPaths: ImportSymbolsToPaths = await initLocalImportSymbols(resource, config);
 
     const currentImportSymbolsToPaths: ImportSymbolsToPaths = Object.assign({}, defaultImportSymbolPaths, localImportSymbolPaths);
-    resource.data.currentImportSymbols = currentImportSymbolsToPaths;
+    resource.currentImportSymbols = currentImportSymbolsToPaths;
     return currentImportSymbolsToPaths;
 }
 
@@ -195,8 +208,13 @@ export async function getFlatResourceImportSymbols(resource: IProcessResource, c
 }
 
 
-export async function getImportInstance(symbol: string, resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IImportInstance>> {
-    const currentImportSymbolsToPaths: ImportSymbolsToPaths = resource.data.currentImportSymbols;
+export async function getImportInstance(
+    symbol: string,
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<FalsyAble<IImportInstance>> {
+
+    const currentImportSymbolsToPaths: ImportSymbolsToPaths = resource.currentImportSymbols;
 
     const symbolParts: string[] = symbol.split('.');
 
@@ -372,7 +390,7 @@ export async function loadDefaultComponentImportLoaders(config: SsgConfig): Prom
 export async function getCurrentScopeImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<string[]> {
     await resolveImportsFromDocDir(resource, config);
 
-    if (!resource?.data?.imports || resource.data.imports.length === 0) {
+    if (!resource.imports || resource.imports.length === 0) {
         return config.defaultImportSymbols || [];
     }
     if (resource.control?.importScope) {
@@ -385,7 +403,7 @@ export async function getCurrentScopeImportSymbols(resource: IProcessResource, c
         resource.control = {};
     }
 
-    const importPaths: string[] = resource.data.imports;
+    const importPaths: string[] = resource.imports;
     const currentScopeImportLoaders: Record<string, IImportLoader> = await getImportLoadersFrom(importPaths, [], config, config.importLoadersCache);
     return Object.keys(currentScopeImportLoaders);
 }

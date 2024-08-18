@@ -16,7 +16,7 @@ async function compileMarkdownResource(resource: IProcessResource, config: SsgCo
 
         //If any from outside accessible data properties or functions get defined within the component evaluated from 
         //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
-        data: resource.data
+        data: resource
     };
     return compiledOutput;
 }
@@ -24,7 +24,7 @@ async function compileMarkdownResource(resource: IProcessResource, config: SsgCo
 export class MarkdownCompiler implements IResourceProcessor {
     id: string = 'md.compiler';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -35,13 +35,13 @@ export class MarkdownCompiler implements IResourceProcessor {
 
         return true;
 
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
 
         resource.content = resourceContent;
         const dataResource: IProcessResource = await compileMarkdownResource(resource, config);

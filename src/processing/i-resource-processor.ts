@@ -1,15 +1,15 @@
 import { ensureKeyAtDict } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../config";
-import type { IProcessResource, IResourceProcessor } from "../pipeline/i-processor";
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from "../pipeline/i-processor";
 
 export function addResourceDocProp(resource: IProcessResource, newValuesDict: any): IProcessResource {
-    if (!resource.data) {
-        resource.data = {};
+    if (!resource) {
+        resource = {};
     }
-    if (!resource.data.document) {
-        resource.data.document = {};
+    if (!resource.document) {
+        resource.document = {} as IResourceDoc;
     }
-    Object.assign(resource.data.document, newValuesDict);
+    Object.assign(resource.document, newValuesDict);
     return resource;
 }
 
@@ -29,12 +29,12 @@ export function addExtractorId(resource: IProcessResource, extractorInstance: IR
 }
 
 export function resetDocumentSetProp(resource: IProcessResource, docPropKey: string, docPropValue: any): IProcessResource {
-    if (!resource.data) {
-        resource.data = {};
+    if (!resource) {
+        resource = {};
     }
 
-    resource.data.document = {};
-    resource.data.document[ docPropKey ] = docPropValue;
+    resource.document = {} as IResourceDoc;
+    resource.document[ docPropKey ] = docPropValue;
 
     return resource;
 }

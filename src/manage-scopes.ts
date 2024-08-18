@@ -1,7 +1,7 @@
 import * as lodash from 'lodash';
 import type { IProcessResource } from './pipeline/i-processor';
 
-export function forkDataScope(resource: any): any {
+/*export function forkDataScope(resource: any): any {
     //Inefficient but simple
     return lodash.cloneDeep(resource) as any;
 }
@@ -10,7 +10,6 @@ export function forkResourceScope(resource: any): any {
     //Inefficient but simple
     return lodash.cloneDeep(resource) as any;
 }
-
 
 //parentScope: available variables unless shadowed by any component specific data.
 //passDataScope: Things like html attributes or data specifically passed to component. (data passed into component)
@@ -31,17 +30,18 @@ export function mergeResourceScopes(parentScope: IProcessResource, passDataScope
 }
 
 export function forkResourceChild(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource {
-    const childForkedResource: IProcessResource = {
-        id: childResourceId || resource.id,
-        content: childResourceContent,
-        control: {
-            parent: resource,
-            handledProcIds: [],
-        },
-        data: lodash.cloneDeep(resource.data),
+
+    const childForkedResource: IProcessResource = lodash.cloneDeep(resource);
+    childForkedResource.id = childResourceId || resource.id;
+    childForkedResource.content = childResourceContent;
+    childForkedResource.control = {
+        parent: resource,
+        handledProcIds: [],
     };
+
     return childForkedResource;
 }
+*/
 
 
 //Some props would need to be merged in the sub component instead:
@@ -56,3 +56,54 @@ export function forkResourceChild(resource: IProcessResource, childResourceConte
 //data.compileRunner: should be scoped and shadowed (sub components should have to define their own compile chain/ format)
 //data.extractRunner: should be scoped and shadowed (sub components should have to define their own data extract chain/ format)
 //When to fork??
+
+
+
+const defaultMergeExcludedKeys = [
+    'id',
+    'document',
+    'content',
+    'exclude'
+];
+
+const defaultResourceTemplate: IProcessResource = {
+    id: undefined,
+    control: {},
+    document: {},
+    exclude: defaultMergeExcludedKeys
+};
+
+export function forkResourceData(resource: IProcessResource): IProcessResource {
+
+    const resourceTemplate: IProcessResource = lodash.cloneDeep(defaultResourceTemplate);
+    if (!resource) {
+        return lodash.cloneDeep(defaultResourceTemplate);
+    }
+
+    const mergeExcludedKeys: string[] = resource.exclude || defaultMergeExcludedKeys;
+
+    for (const key in resource) {
+        const baseResourceProp: any = resource[ key ];
+        if (!mergeExcludedKeys.includes(key)) {
+            resourceTemplate[ key ] = baseResourceProp;
+        }
+    }
+
+    if (!resourceTemplate.control) {
+        resourceTemplate.control = {};
+    }
+    resourceTemplate.control.parent = resource;
+
+    return resourceTemplate;
+}
+
+//Use this when compiling a sub component with current data scope
+export function forkFromResource(
+    baseResource: IProcessResource,
+    forkedResourceProps: Record<string, any>
+): IProcessResource {
+
+    const resourceTemplate: IProcessResource = forkResourceData(baseResource);
+    const subResource: IProcessResource = Object.assign(resourceTemplate, forkedResourceProps);
+    return subResource;
+}

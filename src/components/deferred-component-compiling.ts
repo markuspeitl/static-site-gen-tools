@@ -51,8 +51,8 @@ export function getDeferCompileArgs(componentName: string, componentBody: FalsyA
 
 
 export function registerCompileArgsResource(resource: IProcessResource, componentName: string, componentBody: FalsyAble<string>, attrs: FalsyAble<any>): DeferCompileArgs {
-    if (!resource.data) {
-        resource.data = {};
+    if (!resource) {
+        resource = {};
     }
     if (!resource.control) {
         resource.control = {};
@@ -80,15 +80,14 @@ export function convertDeferCompileArgsToResource(parentResource: IProcessResour
     setKeyInDict(parentForkedResource, 'data.document.outputFormat', undefined);
     setKeyInDict(parentForkedResource, 'data.document.target', undefined);
 
-    const deferInfoResource: IProcessResource = {
-        id: pendingArgs.name + "_" + pendingArgs.id,
-        content: pendingArgs.content,
-        data: {
-            placeholder: pendingArgs.placeholder,
-            componentTag: pendingArgs.name,
-            componentId: pendingArgs.id,
-        }
+    const placeHolderInfo: any = {
+        placeholder: pendingArgs.placeholder,
+        componentTag: pendingArgs.name,
+        componentId: pendingArgs.id,
     };
+
+    const deferInfoResource: IProcessResource = Object.assign({}, placeHolderInfo);
+
     Object.assign(deferInfoResource, pendingArgs.attrs);
     parentForkedResource = config.scopeManager.combineResources(parentForkedResource, deferInfoResource);
     Object.assign(parentForkedResource.data, pendingArgs.attrs);
@@ -100,8 +99,8 @@ export function convertDeferCompileArgsToResource(parentResource: IProcessResour
     //componentToCompileResource = resolveDataFromParentResource(resource, componentToCompileResource, config);
     //componentToCompileResource.data.compileAfter = [];
 
-    //componentToCompileResource.data.importCache = resource.data.importCache;
-    /*componentToCompileResource.data.document = {
+    //componentToCompileResource.data.importCache = resource.importCache;
+    /*componentToCompileresource.document = {
         inputFormat: 'html'
     };*/
 }
@@ -110,10 +109,10 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
     //const componentResource: IProcessResource = await processResource(resource, config, false);
     //const compiledComponentResource: IProcessResource = await processResource(componentResource, config, false);
 
-    if (!resource.data?.componentTag) {
+    if (!resource.componentTag) {
         return resource;
     }
-    const componentRefSymbol: string = resource.data?.componentTag;
+    const componentRefSymbol: string = resource.componentTag;
 
     const selectedImportedInstance: FalsyAble<IImportInstance> = await getImportInstance(componentRefSymbol, resource, config);
     if (!selectedImportedInstance) {
@@ -137,8 +136,8 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
     return passThroughFnChain(resource, config, toProcessResourceFunctions, selectedImportedInstance);
 
 
-    //const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
-    /*const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.data?.componentTag ];
+    //const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.componentTag ];
+    /*const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.componentTag ];
 
 
     if (!selectedSubComponent) {
@@ -173,8 +172,8 @@ export function replacePlaceholdersWithCompiledResources(targetResource: IProces
 
     const placeholderIdReplaceMap: Record<string, string> = {};
     for (let compiledComponentResource of componentResources) {
-        if (compiledComponentResource && compiledComponentResource.data?.componentId) {
-            placeholderIdReplaceMap[ compiledComponentResource.data?.componentId ] = compiledComponentResource.content;
+        if (compiledComponentResource && compiledComponentResource.componentId) {
+            placeholderIdReplaceMap[ compiledComponentResource.componentId ] = compiledComponentResource.content;
         }
     }
 
@@ -279,12 +278,12 @@ export async function compileDeferred(deferredCompileArgs: DeferCompileArgs[], r
         return null;
     }
 
-    const parentData: any = resource.data;
+    const parentData: any = resource;
 
     const deferredCompilePromises: Promise<DeferCompileArgs>[] = deferredCompileArgs.map((args) => {
         const deferCompiledArgs: DeferCompileArgs = args;
 
-        if (resource.data) {
+        if (resource) {
             removeArrayItem(resource.control?.pendingChildren, deferCompiledArgs);
         }
 

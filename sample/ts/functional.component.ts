@@ -16,10 +16,6 @@ class FunctionStyleDynamicComponent implements BaseComponent {
         if (!resource) {
             resource = {};
         }
-        let dataCtx = resource;
-        if (!dataCtx) {
-            dataCtx = {};
-        }
 
         /*const htmlContent: string = html`
             <h1>${dataCtx.title}</h1>
@@ -45,15 +41,13 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             - bulletpoints
             </md>
 
-        `, dataCtx);
+        `, resource);
 
         htmlContent = htmlContent + "\n\n Try njk compile:";
         htmlContent = htmlContent + `\n\n beforenjk <njk> TITLE: {{ title }} -- DESC: {{ description }} </njk> afternjk`;
 
-        return {
-            content: htmlContent,
-            data: dataCtx
-        };
+        resource.content = htmlContent;
+        return resource;
     }
 }
 

@@ -68,15 +68,19 @@ async function main() {
     } as SsgConfig;
     config = await parseArgsSetupInitializeConfig(config);
 
-    if (!config.sourcePath || !config.targetPath) {
+
+    const sourcePath: string = config.options.sourcePath;
+    const targetPath: string = config.options.targetPath;
+
+    if (!sourcePath || !targetPath) {
         throw new Error('Source and target path need to be specified to compile component');
     }
 
     const toCompileResource: IProcessResource = {
         content: null,
-        data: {
-            src: config.sourcePath,
-            target: config.targetPath
+        document: {
+            src: sourcePath,
+            target: targetPath
         }
     };
 
@@ -104,13 +108,13 @@ async function main() {
     //Application was run with debugger attached and produced console output, things that might have affected performance
     /*const tryMultiFileCompilePromises: any[] = [];
     for (let i = 0; i < 5000; i++) {
-        tryMultiFileCompilePromises.push(processFsNodeAtPath(config.sourcePath, config.targetPath, config));
+        tryMultiFileCompilePromises.push(processFsNodeAtPath(sourcePath, targetPath, config));
     }
     await Promise.all(tryMultiFileCompilePromises);*/
 
     console.time('full_processing');
 
-    await config.processor.processDocumentTo(config.sourcePath, config.targetPath, config);
+    await config.processor.processDocumentTo(sourcePath, targetPath, config);
 
     console.timeEnd('full_processing');
 
@@ -161,7 +165,7 @@ async function main() {
     console.timeEnd('compile');
 
     //return compileFileTo(args.sourceFilePath, args.targetFilePath, data, config);
-    //return compileResourceTo(config.sourcePath, config.targetPath, config.data, config);
+    //return compileResourceTo(sourcePath, targetPath, config.data, config);
 }
 
 if (require.main?.filename === __filename) {

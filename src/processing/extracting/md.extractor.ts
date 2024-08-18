@@ -16,10 +16,9 @@ export async function parseMarkdownData(resource: IProcessResource, config: SsgC
 
     //return dataParsedMdFile.data;
 
-    return {
-        content: dataParsedMdFile.content,
-        data: dataParsedMdFile.data,
-    };
+    resource.content = dataParsedMdFile.content;
+    Object.assign(resource, dataParsedMdFile.data);
+    return resource;
 }
 
 
@@ -27,7 +26,7 @@ export async function parseMarkdownData(resource: IProcessResource, config: SsgC
 export class MarkdownExtractor implements IResourceProcessor {
     id: string = 'md.extractor';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -44,13 +43,13 @@ export class MarkdownExtractor implements IResourceProcessor {
 
         return false;
 
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Extracting '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
 
         const dataResource: IProcessResource = await parseMarkdownData(resource, config);
         //The data is different here, as it only contains parsed data,

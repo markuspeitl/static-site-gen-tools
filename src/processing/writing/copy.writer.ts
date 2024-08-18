@@ -1,9 +1,9 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../pipeline/i-processor';
 import { ensureFileDir, type FalsyStringPromise } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';
 import path from 'path';
-import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+import { getResourceDoc } from "../shared/document-helpers";
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
@@ -26,21 +26,21 @@ export class CopyWriter implements IResourceProcessor {
 
     public id: string = 'copy.writer';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         if (document.target && document.src) {
             return true;
         }
         return false;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
 
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         console.log(`Writing ${this.id}: ${document.src} --> ${document.target}`);
         //resource = addHandlerId(resource, 'writer', this);
 

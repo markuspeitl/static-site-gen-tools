@@ -46,7 +46,7 @@ export class DefaultScopeManager implements IScopeManager {
                 handledProcIds: [],
                 pendingChildren: undefined,
             },
-            data: lodash.cloneDeep(resource.data),
+            data: lodash.cloneDeep(resource),
         };
         return childForkedResource;
     }

@@ -83,7 +83,7 @@ export function resourceTo11tyComponentData(
 export class EleventyConvert implements IResourceProcessor {
     id: string = 'eleventy.convert';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
         const inputFormat = getKeyFromDict(resource, 'data.document.inputFormat');
         const inputFormats = [
@@ -95,7 +95,7 @@ export class EleventyConvert implements IResourceProcessor {
             return true;
         }
         return false;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
@@ -117,7 +117,7 @@ export class EleventyConvert implements IResourceProcessor {
             [ 'extractor' ]
         );
         const currentData = lodash.merge(ancestorData, dataExtractedResource.data);
-        resource.data = currentData;
+        resource = currentData;
 
         const renderContent = dataExtractedResource.content;
 

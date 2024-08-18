@@ -9,7 +9,7 @@ export class PassPathReader implements IResourceProcessor {
 
     public id: string = 'pass-path.reader';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return false;
@@ -21,13 +21,13 @@ export class PassPathReader implements IResourceProcessor {
             return false;
         }
         return true;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        console.log(`Reading ${this.id}: ${resource.data?.document?.src}`);
+        console.log(`Reading ${this.id}: ${resource.document?.src}`);
 
         const resolvedPath: string = path.resolve(resourceId);
         const fileExtension: string = getCleanExt(resolvedPath);

@@ -1,9 +1,9 @@
-import { collectInSelfAndParents } from "@markus/ts-node-util-mk1";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import type { IProcessingNode, IProcessingNodeConfig, FileChainProcessorConfig, IProcessResource, ProcessFunction, CanHandleFunction, SubProcessorsConfig, ChainAbleProcessorId } from "./i-processor";
-import path from "path";
-import { loadProcessorArrayFromPaths } from "../load-glob-modules";
-import { compileSingleRunCanHandleFn, processWithStrategyFn } from "./processing-strategy-fns";
+import type { IProcessingNode, ProcessFunction, CanProcessEvaluator, IGenericResource } from "./i-processor";
+import type { IProcessingNodeConfig, ChainAbleProcessorId, SubProcessorsConfig, FileChainProcessorConfig } from "./i-processor-config";
+import { loadProcessorArrayFromPaths } from "./load-file-processors";
+import { canNodeProcess, processNode } from "./processing-strategy-fns";
+import { calculateProcessorFileSearchOpts, FileSearchOptions } from "./discover-processors";
 
 export function isProcessingNodeInstance(toCheck: any): boolean {
     if ((toCheck as IProcessingNode).process) {
@@ -12,28 +12,47 @@ export function isProcessingNodeInstance(toCheck: any): boolean {
     return false;
 }
 
-export function convertCurrentShallowConfigToNode(nodeConfig: IProcessingNodeConfig, parentNode: FalsyAble<IProcessingNode>): IProcessingNode {
+export async function passResource(resource: IGenericResource, ...args: any[]): Promise<IGenericResource> {
+    return resource;
+}
 
-    let processingFn: ProcessFunction | undefined = processWithStrategyFn(nodeConfig.strategy);
-    if (!processingFn) {
-        processingFn = async (resource: IProcessResource) => resource;
-    }
-    let canHandleFn: CanHandleFunction | undefined = compileSingleRunCanHandleFn(nodeConfig.inputGuard);
-    if (!canHandleFn) {
-        canHandleFn = async (resource: IProcessResource) => true;
-    }
+//Initialize only the current node --> not the full subtree
+export function initShallowConfigNode(nodeConfig: IProcessingNodeConfig, parentNode: FalsyAble<IProcessingNode>): IProcessingNode {
 
     //const parentNodeIdPrefix: string = parentNode?.id + "." || '';
-    const processingNodeInstance: IProcessingNode = {
+    const processingNodeInstance: Partial<IProcessingNode> = {
         id: nodeConfig.id,
         parent: parentNode as IProcessingNode | undefined,
-        canHandle: canHandleFn,
-        process: processingFn,
         preProcess: nodeConfig.preProcess,
         postProcess: nodeConfig.postProcess,
         processors: [],
         srcDirs: nodeConfig.srcDirs,
     };
+
+    const processNodeFn: ProcessFunction = (
+        resource: IGenericResource,
+        config: any,
+    ) => processNode(
+        processingNodeInstance as IProcessingNode,
+        resource,
+        config,
+        nodeConfig.strategy
+    );
+
+    processingNodeInstance.process = processNodeFn;
+
+    const canNodeProcessFn: CanProcessEvaluator = (
+        resource: IGenericResource,
+        config: any,
+    ) => canNodeProcess(
+        processingNodeInstance as IProcessingNode,
+        resource,
+        config,
+        nodeConfig.inputGuard
+    );
+
+    processingNodeInstance.canProcess = canNodeProcessFn;
+
     //Object.assign(processingNodeInstance, nodeConfig.inputGuard);
 
     /*const controlTreeNode: ControlProcessingNode<any> = new ControlProcessingNode();
@@ -44,22 +63,30 @@ export function convertCurrentShallowConfigToNode(nodeConfig: IProcessingNodeCon
     controlTreeNode.postProcess = nodeConfig.postProcess;
     controlTreeNode.processors = [];*/
 
-    return processingNodeInstance;
+    return processingNodeInstance as IProcessingNode;
 }
 
-export async function initConfChildProcessors(childProcessingNodeConfigs: FalsyAble<Array<IProcessingNodeConfig | IProcessingNode>>, parentNode?: FalsyAble<IProcessingNode>): Promise<IProcessingNode[]> {
+export async function initConfChildProcessors(
+    childProcessingNodeConfigs: FalsyAble<Array<IProcessingNodeConfig | IProcessingNode>>,
+    parentNode?: FalsyAble<IProcessingNode>
+): Promise<IProcessingNode[]> {
+
     if (!childProcessingNodeConfigs) {
         return [];
     }
     const initializedChildProcessors: IProcessingNode[] = [];
     for (const childProcessingNodeConfig of childProcessingNodeConfigs) {
-        const childProcessingNode: IProcessingNode = await initProcessorInstanceFromConf(childProcessingNodeConfig, parentNode);
+        const childProcessingNode: IProcessingNode = await initProcessingTreeFromConf(childProcessingNodeConfig, parentNode);
         initializedChildProcessors.push(childProcessingNode);
     }
     return initializedChildProcessors;
 }
 
-export async function loadFileProcessor(fileId: string, fileSearchConfig: FileSearchOptions): Promise<IProcessingNode> {
+export async function loadFileProcessor(
+    fileId: string,
+    fileSearchConfig: FileSearchOptions
+): Promise<IProcessingNode> {
+
     if (!fileSearchConfig.dirs) {
         throw new Error('No directories to search in, for processors to be loaded from by their file names/ids');
     }
@@ -98,7 +125,11 @@ export async function loadFileProcessor(fileId: string, fileSearchConfig: FileSe
 }
 
 
-export async function fileProcessorIdentityToInstance(processorIdentity: IProcessingNode | string | IProcessingNodeConfig, fileSearchConfig: FileSearchOptions): Promise<IProcessingNode> {
+export async function fileProcessorIdentityToInstance(
+    processorIdentity: IProcessingNode | string | IProcessingNodeConfig,
+    fileSearchConfig: FileSearchOptions
+): Promise<IProcessingNode> {
+
     if (isProcessingNodeInstance(processorIdentity)) {
         return processorIdentity as IProcessingNode;
     }
@@ -107,17 +138,16 @@ export async function fileProcessorIdentityToInstance(processorIdentity: IProces
         return chainProcessorInstance;
     }
     if (typeof processorIdentity === 'object') {
-        return initProcessorInstanceFromConf(processorIdentity, undefined);
+        return initProcessingTreeFromConf(processorIdentity, undefined);
     }
     throw new Error(`Unknown file processor identity type: ${typeof processorIdentity}`);
 }
 
-export interface FileSearchOptions {
-    dirs?: string[],
-    postfix?: string;
-}
+export async function initProcessorsFileChain(
+    chainProcessorsIdentities: Array<ChainAbleProcessorId>,
+    fileSearchConfig: FileSearchOptions
+): Promise<IProcessingNode[]> {
 
-export async function initProcessorsFileChain(chainProcessorsIdentities: Array<ChainAbleProcessorId>, fileSearchConfig: FileSearchOptions): Promise<IProcessingNode[]> {
     const fileToInstancePromises: Promise<any>[] = chainProcessorsIdentities.map((processorOfChainIdentity: any) => fileProcessorIdentityToInstance(processorOfChainIdentity, fileSearchConfig));
     return Promise.all(fileToInstancePromises);
 
@@ -130,69 +160,11 @@ export async function initProcessorsFileChain(chainProcessorsIdentities: Array<C
     return currentChainProcessors;*/
 }
 
-//Each array item in the input array represents the values of a nesting level
-//Similar to creating any binary permutation of values 0000 - 1111  => 2^4 = 16 possible result vectors: 0000, 0001, 0010, 0011, 0100, 0101, 0110, 0111, 1000 ....
-//,but extended to the general case and working with item entities rather than incrementable numbers
-//this example could be represented by: [[0,1],[0,1],[0,1],[0,1]] in the following algorithm
-//And should result in such array: [[0,0,0,0], [0,0,0,1], [0,0,1,0] ...]
-export function getLeveledPermutations<ItemType>(nestLeveledArray: ItemType[][]): ItemType[][] {
+export async function initFileChildProcessors(
+    subProcessorsConfig: SubProcessorsConfig,
+    currentNode: IProcessingNode
+): Promise<IProcessingNode[]> {
 
-    const cursorLevelArray = nestLeveledArray.at(0);
-    if (!cursorLevelArray) {
-        return [];
-    }
-
-    const followingLevels: ItemType[][] = nestLeveledArray.slice(1);
-    const followingPermutations: ItemType[][] = getLeveledPermutations(followingLevels);
-
-    const resultPermutationVectors: ItemType[][] = [];
-
-    for (const item of cursorLevelArray) {
-
-        if (!followingPermutations || followingPermutations.length <= 0) {
-            resultPermutationVectors.push([ item ]);
-        }
-        else {
-            for (const followingPermutation of followingPermutations) {
-                const currentPermutationVector: ItemType[] = [ item ].concat(followingPermutation);
-                resultPermutationVectors.push(currentPermutationVector);
-            }
-        }
-    }
-    return resultPermutationVectors;
-}
-
-export function collectParentPermutations<PropItemType>(parentAble: { parent?: any; }, key: string): PropItemType[][] {
-
-    const collectedLeveledItemVectors: PropItemType[][] = collectInSelfAndParents<PropItemType[]>(parentAble, key);
-    const permutedVectors: PropItemType[][] = getLeveledPermutations(collectedLeveledItemVectors);
-    return permutedVectors;
-}
-export function collectNestedPathPermutations(parentAble: { parent?: any; }, pathArrayKey: string): string[] {
-    const dirPermutationArrays: string[][] = collectParentPermutations(parentAble, pathArrayKey);
-    const permutedJoinedPathOptions: string[] = dirPermutationArrays.map((pathParts: string[]) => path.resolve(path.join(...pathParts)));
-    return permutedJoinedPathOptions;
-}
-
-export function calculateProcessorFileSearchOpts(fileProcessorChainsConfig: FileChainProcessorConfig, currentNode: IProcessingNode): FileSearchOptions {
-    const fileSearchConfig: FileSearchOptions = {
-        postfix: fileProcessorChainsConfig.fileIdPostfix
-    };
-
-    //TODO: filter absolute paths and add to search options
-    /*if (currentNode?.srcDirs) {
-        for (const dir of currentNode?.srcDirs) {
-        }
-    }*/
-
-    //Wrong place to recompute this each time, if many deeply nested paths are to be expected
-    const selectedTargetDirs: string[] = collectNestedPathPermutations(currentNode, 'srcDirs');
-    fileSearchConfig.dirs = selectedTargetDirs;
-
-    return fileSearchConfig;
-}
-
-export async function initFileChildProcessors(subProcessorsConfig: SubProcessorsConfig, currentNode: IProcessingNode): Promise<IProcessingNode[]> {
     if (!subProcessorsConfig.fileProcessorChains) {
         return [];
     }
@@ -221,9 +193,12 @@ export async function initFileChildProcessors(subProcessorsConfig: SubProcessors
         };
 
         const chainProcessorsIdentities: ChainAbleProcessorId[] = targetProcessorChainsConfigs[ key ];
-        chainParentProcessorConfig.processors = await initProcessorsFileChain(chainProcessorsIdentities, fileSearchConfig);
+        chainParentProcessorConfig.processors = await initProcessorsFileChain(
+            chainProcessorsIdentities,
+            fileSearchConfig
+        );
 
-        const chainProcessorInstance: IProcessingNode = await initProcessorInstanceFromConf(chainParentProcessorConfig, currentNode);
+        const chainProcessorInstance: IProcessingNode = await initProcessingTreeFromConf(chainParentProcessorConfig, currentNode);
         setChildProcessorsParent(chainProcessorInstance);
 
         subProcessors.push(chainProcessorInstance);
@@ -241,7 +216,11 @@ export function setChildProcessorsParent(node: IProcessingNode): void {
     }
 }
 
-export async function initChildProcessors(targetInitNode: IProcessingNode, nodeConfig: IProcessingNodeConfig): Promise<IProcessingNode> {
+export async function initChildProcessors(
+    targetInitNode: IProcessingNode,
+    nodeConfig: IProcessingNodeConfig
+): Promise<IProcessingNode> {
+
     if (nodeConfig.processors && nodeConfig.fileProcessorChains) {
         throw new Error(`Both 'processors' children and 'fileProcessorChains' children are defined in '${nodeConfig.id}' which is not allowed`);
     }
@@ -262,12 +241,19 @@ export async function initChildProcessors(targetInitNode: IProcessingNode, nodeC
 }
 
 
-export async function initProcessorInstanceFromConf(nodeConfig: IProcessingNodeConfig, parentNode: FalsyAble<IProcessingNode>): Promise<IProcessingNode> {
+export async function initProcessingTreeFromConf(
+    nodeConfig: IProcessingNodeConfig,
+    parentNode: FalsyAble<IProcessingNode>
+): Promise<IProcessingNode> {
+
     if (isProcessingNodeInstance(nodeConfig)) {
         return nodeConfig as IProcessingNode;
     }
 
-    let initializedProcessingNode: IProcessingNode = convertCurrentShallowConfigToNode(nodeConfig, parentNode);
+    let initializedProcessingNode: IProcessingNode = initShallowConfigNode(
+        nodeConfig,
+        parentNode
+    );
 
     if (parentNode) {
         initializedProcessingNode.parent = parentNode;

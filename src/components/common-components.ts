@@ -46,11 +46,11 @@ export function dataTemplateFn(templateString: string): DataToParsedDocumentOrSt
         if (!resource) {
             resource = {};
         }
-        if (!resource.data) {
+        if (!resource) {
             return templateString;
         }
 
-        return curvyTemplate(templateString, resource.data);
+        return curvyTemplate(templateString, resource);
     };
     return renderTemplateFn;
 }

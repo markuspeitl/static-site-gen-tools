@@ -17,23 +17,23 @@ export function resolveImportPropToPath(importObj: any): string {
 export function resolveDataPaths(fromRootDirPath: string, resource: IProcessResource, config: SsgConfig): IProcessResource {
     if (fromRootDirPath) {
         //const currentDocumentDir: string = path.parse(fromRootPath).dir;
-        resource.data = resolveRelativePaths(resource.data, fromRootDirPath);
+        resource = resolveRelativePaths(resource, fromRootDirPath);
     }
     return resource;
 }
 
 export function resolveDataRefs(fromRootDirPath: string, resource: IProcessResource, config: SsgConfig): IProcessResource {
-    if (!resource.data) {
-        resource.data = {};
+    if (!resource) {
+        resource = {};
     }
     //assignAttribsToSelf(dataExtractedDoc.data, 'import');
-    if (!resource.data.import) {
-        resource.data.import = [];
+    if (!resource.import) {
+        resource.import = [];
     }
-    if (!Array.isArray(resource.data.import)) {
-        resource.data.import = arrayify(resource.data.import);
+    if (!Array.isArray(resource.import)) {
+        resource.import = arrayify(resource.import);
     }
-    resource.data.import = resource.data.import.map(resolveImportPropToPath);
+    resource.import = resource.import.map(resolveImportPropToPath);
 
     resource = resolveDataPaths(fromRootDirPath, resource, config);
 
@@ -51,18 +51,23 @@ export function resolveDataFromParentFile(parentFilePath: string, resource: IPro
 }
 
 export function resolveDataFromParentResource(parentResource: IProcessResource, resource: IProcessResource, config: SsgConfig): IProcessResource {
-    if (!parentResource || !parentResource.data?.document?.src) {
+    if (!parentResource || !parentResource.document?.src) {
         return resource;
     }
-    return resolveDataFromParentFile(parentResource.data?.document?.src, resource, config);
+    return resolveDataFromParentFile(parentResource.document?.src, resource, config);
 }
 
 
 export async function resolveDataFromSrc(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-    if (!resource?.data?.document?.src) {
+    if (!resource.document?.src) {
         return resource;
     }
-    const currentDocumentDir: string = path.dirname(resource.data.document.src);
+
+    if (!resource.document?.src) {
+        return resource;
+    }
+
+    const currentDocumentDir: string = path.dirname(resource.document.src);
     const dataResolvedResource: IProcessResource = resolveDataRefs(currentDocumentDir, resource, config);
 
     return dataResolvedResource;

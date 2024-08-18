@@ -9,7 +9,7 @@ export class WatchReader implements IResourceProcessor {
 
     public id: string = 'watch.reader';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         return false;
 
         /*const resourceId: string | undefined = resource.id;
@@ -38,14 +38,14 @@ export class WatchReader implements IResourceProcessor {
             return true;
         }
 
-        return false;*/
-    }
+        return false;
+}*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        console.log(`Reading ${this.id}: ${resource.data?.document?.src}`);
+        console.log(`Reading ${this.id}: ${resource.document?.src}`);
 
         // track files or dirs passed to this and reread/recompile/rewrite if necessary
         //https://www.npmjs.com/package/chokidar

@@ -1,7 +1,7 @@
 import path from "path";
 import { SsgConfig } from "../../config";
-import { IProcessResource, IResourceProcessor } from "../../pipeline/i-processor";
-import { getResourceDoc, ResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
+import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../pipeline/i-processor";
+import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
 import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull, filterFalsy } from '@markus/ts-node-util-mk1';
 
 
@@ -9,16 +9,16 @@ export class DirWriter implements IResourceProcessor {
 
     public id: string = 'dir.writer';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         //Check should already be handled by stage guard match
         return true;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
         //const documentTarget: string = makeAbsolute(document.target);
         const dirDocumentTarget: string = document.target;
@@ -30,7 +30,7 @@ export class DirWriter implements IResourceProcessor {
 
         const writeResourcePromises: Promise<IProcessResource>[] = dirCompiledResources.map(async (compiledResource: IProcessResource) => {
 
-            const compiledSubResourceDoc: ResourceDoc = getResourceDoc(compiledResource);
+            const compiledSubResourceDoc: IResourceDoc = getResourceDoc(compiledResource);
 
             let overridePathPostfix: string | undefined = undefined;
             if (compiledSubResourceDoc.outputFormat === 'dir') {
@@ -55,7 +55,7 @@ export class DirWriter implements IResourceProcessor {
 
         resource.content = filterFalsy(processedResources);
         //resource.id = undefined;
-        //resource.data.document = undefined;
+        //resource.document = undefined;
 
         return resource;
     }

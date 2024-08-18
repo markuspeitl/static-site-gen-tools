@@ -6,12 +6,12 @@ import { BaseComponent, IInternalComponent } from "../../base-component";
 
 export abstract class IfComponent implements BaseComponent, IInternalComponent {
     public canCompile(resource: IProcessResource, config: SsgConfig): boolean {
-        if (!resource.data) {
+        if (!resource) {
             console.error("Can not compile 'if' component -> data needs to be set");
             return false;
         }
 
-        if (!resource.data.cond) {
+        if (!resource.cond) {
             console.error("Invalid 'if' component -> needs to have a condition with the 'cond' attribute");
             return false;
         }
@@ -28,7 +28,7 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
             return resource;
         }
 
-        const data: any = resource.data;
+        const data: any = resource;
         const conditionExpression: string = data.cond;
 
         const conditionFn = getScopedEvalFn(data, conditionExpression);

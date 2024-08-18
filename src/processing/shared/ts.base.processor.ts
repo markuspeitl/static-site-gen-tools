@@ -38,9 +38,9 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         return component;
     }
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         return Boolean(await this.getComponentCompiler(resource, config));
-    }
+    }*/
 
 
     public async process(
@@ -49,7 +49,7 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         componentProcessingFnKey: string = 'render',
         outputFormat: string = 'html'
     ): Promise<IProcessResource> {
-        //console.log(`LOG: Extracting '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
 
         const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
         if (!component) {

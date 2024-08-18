@@ -18,7 +18,7 @@ async function compileMarkdownResource(resource: IProcessResource, config: SsgCo
 
         //If any from outside accessible data properties or functions get defined within the component evaluated from 
         //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
-        data: resource.data
+        data: resource
     };
     return compiledOutput;
 }
@@ -32,7 +32,7 @@ const njkSyntaxRegexes = [
 export class NunjucksCompiler implements IResourceProcessor {
     id: string = 'njk.compiler';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -51,14 +51,14 @@ export class NunjucksCompiler implements IResourceProcessor {
         }
 
         return false;
-    }
+    }*/
 
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
 
         resource.content = resourceContent;
 
@@ -67,7 +67,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         const compiledString: string = nunjucks.renderString(resource.content, resource?.data || {});
         const dataResource: IProcessResource = {
             content: compiledString,
-            data: resource.data
+            data: resource
         };
 
         //resource = setHtmlOutputFormat(resource);

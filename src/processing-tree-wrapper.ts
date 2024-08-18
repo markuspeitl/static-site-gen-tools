@@ -1,56 +1,20 @@
 import { FalseAbleVal } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "./config";
-import { forkDataScope } from "./manage-scopes";
 import type { CanHandleFunction, IProcessingNode, IProcessor, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
 import * as lodash from 'lodash';
-
-/*export class ProcessingTreeWrapper implements IResourceProcessor {
-    id: string = 'tree-wrapper';
-    private subjectProcessingNode: IProcessingNode;
-    canHandle: CanHandleFunction;
-    process: ProcessFunction;
-    constructor (subjectProcessingNode: IProcessingNode) {
-        this.subjectProcessingNode = subjectProcessingNode;
-        this.canHandle = this.subjectProcessingNode.canHandle;
-        this.process = this.subjectProcessingNode.process;
-    }
-}*/
-
+import { forkFromResource } from "./manage-scopes";
 
 export function registerProcessedDocument(
     resource: IProcessResource,
     config: SsgConfig,
 ): void {
-    if (resource?.data?.document?.src) {
+    if (resource.document?.src) {
         if (!config.processedDocuments) {
             config.processedDocuments = [];
         }
-        config.processedDocuments.push(resource?.data?.document);
+        config.processedDocuments.push(resource.document);
     }
 }
-
-/*export async function processRegisterDocument(
-    resource: IProcessResource,
-    config: SsgConfig,
-    processFn: ProcessFunction,
-    ...stagesToProcess: string[]
-): Promise<IProcessResource> {
-    const processedResource: IProcessResource = await processFn(resource, config, ...stagesToProcess);
-    registerProcessedDocument(processedResource, config);
-    return processedResource;
-}*/
-
-async function processStagesOnResourceRegisterDoc(
-    resource: IProcessResource,
-    config: SsgConfig,
-    stagesToProcess?: string[]
-): Promise<IProcessResource> {
-
-    const processedResource: IProcessResource = await processStagesOnResource(resource, config, stagesToProcess);
-    registerProcessedDocument(processedResource, config);
-    return processedResource;
-}
-
 
 export function extractSubChainNode(
     srcProcessorNode: IProcessingNode,
@@ -119,19 +83,13 @@ async function forkSubResourceProcessStages(
     processRunnerId?: string, //appended to resource id to track changes, not required
 ): Promise<IProcessResource> {
 
-    const childForkedResource: IProcessResource = forkDataScope(parentResource);
-
     if (!processRunnerId) {
         processRunnerId = 'child';
     }
-
-    childForkedResource.id = parentResource.id + '->' + processRunnerId;
-
-    //Reset control flow
-    childForkedResource.control = {
-        parent: parentResource,
-        handledProcIds: [],
+    const childProps: any = {
+        id: parentResource.id + '->' + processRunnerId
     };
+    const childForkedResource: IProcessResource = forkFromResource(parentResource, childProps);
 
     return processStagesOnResource(childForkedResource, config, stagesToProcess);
 }
@@ -161,12 +119,10 @@ async function processStagesFromToPath(
     const toProcessResource: IProcessResource = {
         id: inputPath,
         content: null,
-        data: {
-            document: {
-                src: inputPath,
-                target: outputPath
-            }
-        }
+        document: {
+            src: inputPath,
+            target: outputPath
+        } as any
     };
 
     return processStagesOnResource(toProcessResource, config, stagesToProcess);
@@ -236,3 +192,37 @@ export const defaultProcessingWrapper: ProcessingWrapper = {
     processDocumentTo: processStagesFromToPath,
     processStages: processStagesOnResource
 };
+
+/*export async function processRegisterDocument(
+    resource: IProcessResource,
+    config: SsgConfig,
+    processFn: ProcessFunction,
+    ...stagesToProcess: string[]
+): Promise<IProcessResource> {
+    const processedResource: IProcessResource = await processFn(resource, config, ...stagesToProcess);
+    registerProcessedDocument(processedResource, config);
+    return processedResource;
+}
+
+async function processStagesOnResourceRegisterDoc(
+    resource: IProcessResource,
+    config: SsgConfig,
+    stagesToProcess?: string[]
+): Promise<IProcessResource> {
+
+    const processedResource: IProcessResource = await processStagesOnResource(resource, config, stagesToProcess);
+    registerProcessedDocument(processedResource, config);
+    return processedResource;
+}*/
+
+/*export class ProcessingTreeWrapper implements IResourceProcessor {
+    id: string = 'tree-wrapper';
+    private subjectProcessingNode: IProcessingNode;
+    canHandle: CanHandleFunction;
+    process: ProcessFunction;
+    constructor (subjectProcessingNode: IProcessingNode) {
+        this.subjectProcessingNode = subjectProcessingNode;
+        this.canHandle = this.subjectProcessingNode.canHandle;
+        this.process = this.subjectProcessingNode.process;
+    }
+}*/

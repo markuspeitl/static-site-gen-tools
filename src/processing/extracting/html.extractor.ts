@@ -72,17 +72,16 @@ async function parseHtmlData(resource: IProcessResource, config: SsgConfig): Pro
     );
     const parsedDataInner: any = assignAllAttribsToSelf(parsedDataOuter.data);
 
-    return {
-        content: contentExtraction.content,
-        data: parsedDataInner
-    };
+    resource.content = contentExtraction;
+    Object.assign(resource, parsedDataInner);
+    return resource;
 }
 
 
 export class HtmlExtractor implements IResourceProcessor {
     id: string = 'html.extractor';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         if (typeof resource.content !== 'string') {
             return false;
         }
@@ -105,13 +104,13 @@ export class HtmlExtractor implements IResourceProcessor {
 
         return false;
 
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceContent: string | undefined = resource.content?.trim();
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Extracting '${this.id}': ${resource.data?.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
 
         const dataResource: IProcessResource = await parseHtmlData(resource, config);
         //The data is different here, as it only contains parsed data,

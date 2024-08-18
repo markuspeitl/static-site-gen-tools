@@ -1,29 +1,29 @@
 import path from "path";
 import { SsgConfig } from "../../config";
-import { IProcessResource, IResourceProcessor } from "../../pipeline/i-processor";
-import { getResourceDoc, ResourceDoc } from "../shared/document-helpers";
+import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../pipeline/i-processor";
+import { getResourceDoc } from "../shared/document-helpers";
 import { filterFalsy, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
 
 export class DirCompiler implements IResourceProcessor {
 
     public id: string = 'dir.compiler';
 
-    public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
+    /*/*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         //Check should already be handled by stage guard match
         return true;
-    }
+    }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
         const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
         }
-        const document: ResourceDoc = getResourceDoc(resource);
+        const document: IResourceDoc = getResourceDoc(resource);
         const documentSrc: string = document.src;
         const documentTarget: string = document.target;
 
         console.log(`Reading ${this.id}: ${documentSrc}`);
         const dirFiles: string[] = resource.content;
-        const resourceData: any = resource.data;
+        const resourceData: any = resource;
 
         const subDocProcessPromises: Promise<IProcessResource>[] = dirFiles.map(async (dirFile) => {
             const srcSubDocPath: string = path.join(documentSrc, dirFile);
