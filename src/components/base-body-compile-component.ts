@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../config";
 import type { IProcessResource } from "../processing-tree/i-processor";
-import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
+import { resetDocumentSetInputFormat } from "../processors/i-resource-processor";
 import type { IInternalComponent } from "./base-component";
 
 /*export function normalizeArgsToIProcessResource(dataCtx?: DocumentData | null): IProcessResource {

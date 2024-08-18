@@ -2,7 +2,7 @@ import type { SsgConfig } from "../../config";
 import type { IProcessResource } from "../../processing-tree/i-processor";
 import type { IInternalComponent } from "../base-component";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import { resetDocumentSetInputFormat } from "../../processing/i-resource-processor";
+import { resetDocumentSetInputFormat } from "../../processors/i-resource-processor";
 
 
 /*const cachedFileResources: Record<string, IProcessResource> = {};

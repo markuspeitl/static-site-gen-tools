@@ -3,7 +3,7 @@ import type { SsgConfig } from '../config';
 import type { IProcessor } from '../processing-tree/i-processor';
 import type { IInternalComponent } from '../components/base-component';
 import type fs from 'fs';
-import type { IProcessResource } from "../processing/shared/i-processor-resource";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
 
 import { getComponentFromPath } from '../components/components';
 import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1";
