@@ -3,7 +3,7 @@ import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-p
 import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { HtmlCompiler } from './html.compiler';
-import { compilePendingChildren } from '../../components/deferred-component-compiling';
+import { compilePendingChildren } from '../../components/compile-placeholders';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component.compiler';

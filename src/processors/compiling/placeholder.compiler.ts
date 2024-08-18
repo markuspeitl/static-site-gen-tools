@@ -4,7 +4,7 @@ import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/
 import type { IInternalComponent } from '../../components/base/i-component';
 
 import { HtmlCompiler } from './html.compiler';
-import { detectReplaceComponentsToPlaceholders } from '../../components/components-to-placeholders';
+import { replaceHtmlComponentsPlaceholders } from '../../components/replace-components';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
@@ -21,6 +21,7 @@ export class PlaceholderCompiler implements IResourceProcessor {
             return resource;
         }
         resource.content = resourceContent;
-        return detectReplaceComponentsToPlaceholders(resource, config);
+        const subComponentsReplacedResource: IProcessResource = await replaceHtmlComponentsPlaceholders(resource, config);
+        return subComponentsReplacedResource;
     }
 }

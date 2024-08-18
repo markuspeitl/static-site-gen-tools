@@ -9,6 +9,12 @@ export class PassthroughComponent implements BaseComponent, IInternalComponent {
     }
     public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
+        if (typeof resource === 'string') {
+            return {
+                content: resource
+            };
+        }
+
         if (!resource.content) {
             resource.content = '';
         }

@@ -1,4 +1,4 @@
-import type { IImportInstance } from "../components/imports-loading";
+import type { IImportInstance } from "../components/resolve-imports";
 import type { IScopeManager } from "../data-merge/scope-manager";
 import type { ProcessingHelper } from "../processing-helper";
 import type { ModulesCache } from "@markus/ts-node-util-mk1";
@@ -49,6 +49,8 @@ export interface SsgConfig {
     //fragmentCache?: FragmentCache;
     fragmentCacheDisabled: boolean;
     cacheDir: string | null;
+
+    placeholderChars?: number;
 }
 
 export interface PreInitConfig {

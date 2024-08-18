@@ -1,7 +1,7 @@
 import type { SsgConfig } from "./ssg-config";
 import { ArgumentParser } from 'argparse';
 import { FalsyString, getFsNodeStat, resolveRelativePaths } from "@markus/ts-node-util-mk1";
-import { initDefaultImportSymbols } from "../components/imports-loading";
+import { initDefaultImportSymbols } from "../components/resolve-imports";
 import { defaultScopeManager } from "../data-merge/scope-manager";
 import { defaultProcessingHelper } from "../processing-helper";
 import { initProcessingTreeFromConf } from "../processing-tree/init-processing-node";
@@ -121,7 +121,7 @@ export function initUnsetConfigDefaults(config: SsgConfig, defaultsDict: any) {
 
 export function getDefaultImportDirs(): string[] {
     let defaultImportsDirs = [
-        './src/components/default/'
+        '../src/components/default/'
     ];
     defaultImportsDirs = resolveRelativePaths(defaultImportsDirs, path.dirname(__dirname));
     return defaultImportsDirs;
@@ -147,7 +147,8 @@ export async function setUpDefaultConfig(config: SsgConfig): Promise<SsgConfig> 
         fragmentCacheDisabled: true,
         outDir: './dist',
         outFile: 'index.html',
-        cacheDir: path.join('.dist', '/cache')
+        cacheDir: path.join('.dist', '/cache'),
+        placeholderChars: 10
     };
 
     initUnsetConfigDefaults(config, configDefaults);

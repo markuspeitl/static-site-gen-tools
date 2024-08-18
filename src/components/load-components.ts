@@ -18,6 +18,20 @@ export interface IExternalComponentModule extends Module {
     render?: any;
 }
 
+export function addPostProcessingNormalization(componentInstance: BaseComponent): void {
+    //Convert to resource in postprocessing if the component render returns a string
+    const origRenderFn: any = componentInstance.render;
+    componentInstance.render = async (...args: any[]) => {
+        const resource: any = await origRenderFn(...args);
+        if (typeof resource === 'string') {
+            return {
+                content: resource
+            };
+        }
+        return resource;
+    };
+}
+
 //Only 1 component per file is allowed right now
 export function moduleToComponentInstance(module: IExternalComponentModule): FalsyAble<IInternalComponent> {
 
@@ -66,23 +80,27 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     if (componentInstance.render && typeof componentInstance.render === 'string') {
 
         const renderContent: string = componentInstance.render;
-        componentInstance.render = async (dataCtx?: DocumentData | null, config?: SsgConfig) => {
-            return {
+        componentInstance.render = async (resource: IProcessResource, config: SsgConfig) => {
+            return renderContent;
+            /*return {
                 content: renderContent,
                 data: dataCtx,
-            };
+            };*/
         };
     }
     if (componentInstance.data && typeof componentInstance.data === 'object') {
 
         const staticData: Object = componentInstance.data;
-        componentInstance.data = async (dataCtx?: DocumentData | null, config?: SsgConfig) => {
-            return {
+        componentInstance.data = (resource: IProcessResource, config: SsgConfig) => {
+            return staticData;
+            /*return {
                 content: '',
                 data: staticData //Object.assign(staticData, dataCtx),
-            };
+            };*/
         };
     }
+
+    addPostProcessingNormalization(componentInstance);
 
     //TODO add special component: not function and export is specified, but the 'data', 'config' properties can be assumed to
     //be available during runtime and the compiled document string is printed to std.out

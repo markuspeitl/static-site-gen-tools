@@ -6,7 +6,7 @@ import type { IProcessor } from "../processing-tree/i-processor";
 import type { IProcessResource } from "../processors/shared/i-processor-resource";
 import type fs from 'fs';
 
-import { getComponentFromPath } from './components-loading';
+import { getComponentFromPath } from './load-components';
 import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1";
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";

@@ -10,7 +10,7 @@ import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { removeBaseBlockIndent } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { resolveDataFromParentResource } from "./resolve-component-path-refs";
-import { getImportInstance, IImportInstance } from "./imports-loading";
+import { getImportInstance, IImportInstance } from "./resolve-imports";
 export interface DeferCompileArgs {
     name?: string,
     placeholder?: string,
@@ -22,17 +22,24 @@ export interface DeferCompileArgs {
     compiled?: string;
 }
 
-export function hashObjGetHtmlId(obj: Object): string {
+export function hashObjGetHtmlId(obj: Object, nChars?: number): string {
     const objHash: string = calcHash(obj);
     //Filter for simple characters (special chars are not allowed in html id)
     const uniqueHtmlId: string = objHash.replace(/[^a-zA-Z0-9]/g, "");
+
+    if (nChars) {
+        return uniqueHtmlId.slice(nChars);
+    }
+
     return uniqueHtmlId;
 }
 
+const placeHolderTagPostfix = 'placeholder';
 export function getDeferCompileArgs(
     componentName: string,
     componentBody: FalsyAble<string>,
-    attrs: FalsyAble<any>
+    attrs: FalsyAble<any>,
+    config: FalsyAble<SsgConfig>
 ): DeferCompileArgs {
 
     //const componentName: string = tag;
@@ -44,22 +51,27 @@ export function getDeferCompileArgs(
         content: content || '',
         attrs: attrs
     };
-    const componentArgsId = hashObjGetHtmlId(deferCompileArgs);
+    const componentArgsId = hashObjGetHtmlId(
+        deferCompileArgs,
+        config?.placeholderChars
+    );
     deferCompileArgs.id = componentArgsId;
 
-    const placeholderName: string = `${componentName}-placeholder`;
-    const placeholderFull = `<${placeholderName} id="${deferCompileArgs.id}"/>`;
-    deferCompileArgs.placeholder = placeholderFull;
+    const placeholderTagName: string = `${componentName}-${placeHolderTagPostfix}`;
+    const placeholderFullTagHtml = `<${placeholderTagName} id="${deferCompileArgs.id}"/>`;
+    deferCompileArgs.placeholder = placeholderFullTagHtml;
     return deferCompileArgs;
 }
 
 
-export function registerCompileArgsResource(
+export function registerCompileArgsInResource(
+    deferCompileArgs: DeferCompileArgs,
     resource: IProcessResource,
-    componentName: string,
-    componentBody: FalsyAble<string>,
-    attrs: FalsyAble<any>
-): DeferCompileArgs {
+): void {
+
+    if (!deferCompileArgs) {
+        return;
+    }
 
     if (!resource) {
         resource = {};
@@ -71,12 +83,14 @@ export function registerCompileArgsResource(
         resource.control.pendingChildren = [];
     }
 
-    const deferCompileArgs: DeferCompileArgs = getDeferCompileArgs(componentName, componentBody, attrs);
     resource.control.pendingChildren.push(deferCompileArgs);
-    return deferCompileArgs;
 }
 
-export function convertDeferCompileArgsToResource(parentResource: IProcessResource, pendingArgs: DeferCompileArgs, config: SsgConfig): IProcessResource {
+export function convertDeferCompileArgsToResource(
+    parentResource: IProcessResource,
+    pendingArgs: DeferCompileArgs,
+    config: SsgConfig
+): IProcessResource {
 
     if (!config.scopeManager) {
         return {};
@@ -115,7 +129,11 @@ export function convertDeferCompileArgsToResource(parentResource: IProcessResour
     };*/
 }
 
-export async function processWithResourceTargetComponent(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+export async function processWithResourceTargetComponent(
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<IProcessResource> {
+
     //const componentResource: IProcessResource = await processResource(resource, config, false);
     //const compiledComponentResource: IProcessResource = await processResource(componentResource, config, false);
 
@@ -179,7 +197,11 @@ export async function processWithResourceTargetComponent(resource: IProcessResou
     return lodash.merge({}, mergedDataResource, renderedResource);*/
 }
 
-export function replacePlaceholdersWithCompiledResources(targetResource: IProcessResource, componentResources: IProcessResource[], config: SsgConfig): IProcessResource {
+export function replacePlaceholdersWithCompiledResources(
+    targetResource: IProcessResource,
+    componentResources: IProcessResource[],
+    config: SsgConfig
+): IProcessResource {
 
     if (!componentResources) {
         return targetResource;
@@ -198,7 +220,11 @@ export function replacePlaceholdersWithCompiledResources(targetResource: IProces
     return targetResource;
 }
 
-export async function compilePendingChildren(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
+export async function compilePendingChildren(
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<IProcessResource> {
+
     //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
 
     if (!resource.control?.pendingChildren || !config.scopeManager) {

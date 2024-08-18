@@ -4,7 +4,7 @@ import type { IInternalComponent } from '../../components/base/i-component';
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { IResourceProcessor, ProcessFunction } from "../../processing-tree/i-processor";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getComponentFromResource } from "../../components/components-loading";
+import { getComponentFromResource } from "../../components/load-components";
 
 export abstract class TsBaseProcessor implements IResourceProcessor {
     abstract id: string;
@@ -65,13 +65,15 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         //The data is different here, as it only contains parsed data,
         // --> Data merging needs to be performed here, or at the caller!
 
-        if (typeof processedResource === 'string') {
+        /*if (typeof processedResource === 'string') {
             processedResource = {
                 content: processedResource
             };
-        }
+        }*/
+        Object.assign(resource, processedResource);
 
         setKeyInDict(resource, 'document.outputFormat', outputFormat);
-        return processedResource;
+        return resource;
+        //return processedResource;
     }
 }
