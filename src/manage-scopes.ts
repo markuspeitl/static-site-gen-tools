@@ -1,5 +1,5 @@
 import * as lodash from 'lodash';
-import type { IProcessResource } from './pipeline/i-processor';
+import type { IProcessResource } from './processing-tree/i-processor';
 
 /*export function forkDataScope(resource: any): any {
     //Inefficient but simple

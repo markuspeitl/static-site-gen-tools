@@ -1,6 +1,6 @@
 import type { IInternalComponent } from '../../components/base-component';
 import type { SsgConfig } from "../../config";
-import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../processing-tree/i-processor';
 import { HtmlCompiler } from './html.compiler';
 import { compilePendingChildren } from '../../components/deferred-component-compiling';
 

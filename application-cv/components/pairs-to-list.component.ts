@@ -1,6 +1,6 @@
 import { wrapContent } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../../src/config";
-import type { IProcessResource } from "../../src/pipeline/i-processor";
+import type { IProcessResource } from "../../src/processing-tree/i-processor";
 import { splitStringPreserve } from "@markus/ts-node-util-mk1";
 
 function renderSpan(content: string): string {

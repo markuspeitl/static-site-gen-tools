@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../pipeline/i-processor";
+import type { IProcessResource } from "../processing-tree/i-processor";
 import { resetDocumentSetInputFormat } from "../processing/i-resource-processor";
 import type { IInternalComponent } from "./base-component";
 

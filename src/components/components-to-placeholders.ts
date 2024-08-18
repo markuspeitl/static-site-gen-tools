@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../config";
-import type { IProcessResource } from "../pipeline/i-processor";
+import type { IProcessResource } from "../processing-tree/i-processor";
 import type { IInternalComponent } from "./base-component";
 import { registerCompileArgsResource, type DeferCompileArgs } from "./deferred-component-compiling";
 import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "@markus/ts-node-util-mk1";

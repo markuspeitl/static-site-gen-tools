@@ -1,6 +1,6 @@
 import { filterFalsy, mapDictListProp } from '@markus/ts-node-util-mk1';
 import type { SsgConfig } from './src/config';
-import type { IProcessResource } from './src/pipeline/i-processor';
+import type { IProcessResource } from './src/processing-tree/i-processor';
 import { parseArgsSetupInitializeConfig } from './src/setup-config';
 import http from 'node:http';
 import path from 'path';

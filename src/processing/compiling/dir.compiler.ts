@@ -1,6 +1,6 @@
 import path from "path";
 import { SsgConfig } from "../../config";
-import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../pipeline/i-processor";
+import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../processing-tree/i-processor";
 import { getResourceDoc } from "../shared/document-helpers";
 import { filterFalsy, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
 

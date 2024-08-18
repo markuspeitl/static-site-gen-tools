@@ -5,7 +5,7 @@ import { BaseComponent, DocumentData, IInternalComponent } from "./base-componen
 import { PassthroughComponent } from "./default/passthrough.component";
 import { FileComponent } from "./default/file.component";
 import type Module from "module";
-import type { IProcessResource } from "../pipeline/i-processor";
+import type { IProcessResource } from "../processing-tree/i-processor";
 
 
 export function getComponentIdFromPath(runnerPath: string): string {

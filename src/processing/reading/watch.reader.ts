@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceProcessor } from '../../processing-tree/i-processor';
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { isDirPath, isPath } from "@markus/ts-node-util-mk1";
 import * as fs from 'fs';

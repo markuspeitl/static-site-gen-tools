@@ -1,6 +1,6 @@
 import * as lodash from 'lodash';
 import { settleValueOrNull, settleValueOrNullFilter } from "@markus/ts-node-util-mk1";
-import { loadProcessorInstancesFromPaths } from "../pipeline/load-file-processors";
+import { loadProcessorInstancesFromPaths } from "../processing-tree/load-file-processors";
 import type { SsgConfig } from "../config";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";
@@ -8,7 +8,7 @@ import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { getKeyMatches, getKeyMatchValues, MatchedDictKeyRes } from "@markus/ts-node-util-mk1";
 import { filterFalsy } from "@markus/ts-node-util-mk1";
-import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../pipeline/i-processor';
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../processing-tree/i-processor';
 
 
 

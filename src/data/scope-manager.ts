@@ -1,4 +1,4 @@
-import { IProcessResource } from "../pipeline/i-processor";
+import { IProcessResource } from "../processing-tree/i-processor";
 import * as lodash from 'lodash';
 
 export interface IScopeManager {

@@ -1,6 +1,6 @@
 import { IInternalComponent } from "../../components/base-component";
 import { DeferCompileArgs } from "../../deprecated/runners/resolve-sub-html.runner";
-import { IGenericControl, IGenericResource, IProcessor } from "../../pipeline/i-processor";
+import { IGenericControl, IGenericResource, IProcessor } from "../../processing-tree/i-processor";
 
 export type MergeExcludeKeys = string[];
 

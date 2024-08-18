@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../../processing-tree/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import { HtmlCompiler } from './html.compiler';
 import { detectReplaceComponentsToPlaceholders } from '../../components/components-to-placeholders';

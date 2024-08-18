@@ -1,6 +1,6 @@
 import { FalseAbleVal } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "./config";
-import type { CanHandleFunction, IProcessingNode, IProcessor, IProcessResource, IResourceProcessor, ProcessFunction } from "./pipeline/i-processor";
+import type { CanHandleFunction, IProcessingNode, IProcessor, IProcessResource, IResourceProcessor, ProcessFunction } from "./processing-tree/i-processor";
 import * as lodash from 'lodash';
 import { forkFromResource } from "./manage-scopes";
 

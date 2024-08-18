@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import { IProcessResource } from "../../pipeline/i-processor";
+import { IProcessResource } from "../../processing-tree/i-processor";
 
 import { BaseComponent, IInternalComponent } from "../base-component";
 

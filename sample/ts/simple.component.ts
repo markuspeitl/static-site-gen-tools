@@ -2,7 +2,7 @@ import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData
 import { dataTemplateFn, StaticAssembledFileComponent } from "../../src/components/common-components";
 import { SsgConfig } from "../../src/config";
 import * as fs from 'fs';
-import { IProcessResource } from "../../src/pipeline/i-processor";
+import { IProcessResource } from "../../src/processing-tree/i-processor";
 import { css, curvyTemplate, html, ts } from "@markus/ts-node-util-mk1/src/html/pre-processors";
 
 

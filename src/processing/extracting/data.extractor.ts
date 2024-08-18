@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor, ProcessFunction } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor, ProcessFunction } from '../../processing-tree/i-processor';
 import type { IInternalComponent } from '../../components/base-component';
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { loadDataAsync, setKeyInDict } from "@markus/ts-node-util-mk1";

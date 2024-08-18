@@ -1,6 +1,6 @@
 import path from 'path';
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processing-tree/i-processor';
 import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
 import { getResourceDoc } from "../shared/document-helpers";
 

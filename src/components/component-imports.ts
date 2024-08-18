@@ -1,6 +1,6 @@
 import { resolveDataRefs } from "./resolve-component-path-refs";
 import type { SsgConfig } from "../config";
-import type { IProcessResource, IResourceDoc } from "../pipeline/i-processor";
+import type { IProcessResource, IResourceDoc } from "../processing-tree/i-processor";
 import type { IInternalComponent } from "./base-component";
 import path from "path";
 import { getResourceDoc } from "../processing/shared/document-helpers";

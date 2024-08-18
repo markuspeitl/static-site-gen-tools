@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceProcessor } from '../../processing-tree/i-processor';
 import type { Environment } from 'nunjucks';
 import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { HtmlCompiler } from './html.compiler';

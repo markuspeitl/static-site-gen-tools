@@ -1,6 +1,6 @@
 import { ensureKeyAtDict } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from "../pipeline/i-processor";
+import type { IProcessResource, IResourceDoc, IResourceProcessor } from "../processing-tree/i-processor";
 
 export function addResourceDocProp(resource: IProcessResource, newValuesDict: any): IProcessResource {
     if (!resource) {

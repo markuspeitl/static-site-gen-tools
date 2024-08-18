@@ -1,5 +1,5 @@
 import path from "path";
-import { IProcessResource, IResourceDoc } from "../../pipeline/i-processor";
+import { IProcessResource, IResourceDoc } from "../../processing-tree/i-processor";
 
 export function getDocumentTargetPath(resource: IProcessResource): string | null {
     if (!resource.document?.target) {

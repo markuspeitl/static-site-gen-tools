@@ -1,6 +1,6 @@
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from '../config';
-import type { IProcessor } from '../pipeline/i-processor';
+import type { IProcessor } from '../processing-tree/i-processor';
 import type { IInternalComponent } from '../components/base-component';
 import type fs from 'fs';
 import type { IProcessResource } from "../processing/shared/i-processor-resource";

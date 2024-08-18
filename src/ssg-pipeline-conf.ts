@@ -1,4 +1,4 @@
-import type { IProcessingNodeConfig } from "./pipeline/i-processor";
+import type { IProcessingNodeConfig } from "./processing-tree/i-processor";
 
 export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 

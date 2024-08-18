@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config";
-import type { IProcessResource, IResourceProcessor } from '../../pipeline/i-processor';
+import type { IProcessResource, IResourceProcessor } from '../../processing-tree/i-processor';
 import { getLibInstance } from "../../dependencies/lib-module-instances";
 //import type markdownit from "markdown-it/lib";
 import type * as matter from "gray-matter";

@@ -2,7 +2,7 @@ import type { SsgConfig } from "../config";
 import * as fs from 'fs';
 import { DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "./base-component";
 import { curvyTemplate } from "@markus/ts-node-util-mk1";
-import { IProcessResource } from "../pipeline/i-processor";
+import { IProcessResource } from "../processing-tree/i-processor";
 
 export function readFileFn(filePath: string): () => Promise<string> {
     return async () => {

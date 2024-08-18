@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../config";
 import type { FalsyAble } from "./helpers/generic-types";
-import type { IProcessResource } from "../pipeline/i-processor";
+import type { IProcessResource } from "../processing-tree/i-processor";
 import path from "path";
 import fs from 'fs';
 import { anchorAndGlob, globInDirsCollectFlat } from "../utils/globbing";
