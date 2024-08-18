@@ -3,7 +3,7 @@ import path from 'path';
 import markdownit from 'markdown-it';
 import { extractData } from './data-extract';
 import { setDefaultFragmentCache } from './defaults';
-import { defaultFragmentCache, FragmentCache } from '../fragement-cache';
+import { defaultFragmentCache, FragmentCache } from '../data-merge/fragement-cache';
 import { SsgConfig } from '../config';
 import { loadTsModuleFromPath } from '../module-loading/ts-modules';
 import { DataParsedDocument, DocumentCompileData, DocumentCompiler, DocumentData, getRunnerInstance } from './compilers/runners';

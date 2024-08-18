@@ -3,7 +3,7 @@ import type { IProcessResource } from "../processing-tree/i-processor";
 import type { IInternalComponent } from "./base-component";
 import { registerCompileArgsResource, type DeferCompileArgs } from "./deferred-component-compiling";
 import { cheerioDfsWalkFirstTop, CheerioNodeFn, loadHtml, TaggedCheerioNodeFn, unparseHtml } from "@markus/ts-node-util-mk1";
-import { getFlatResourceImportSymbols } from "../module-loading/imports-loading";
+import { getFlatResourceImportSymbols } from "./imports-loading";
 
 export async function processTopLevelNodesOfSymbols(html: string, symbolsToDetect: string[], processNodeFn: TaggedCheerioNodeFn<any>): Promise<string> {
 

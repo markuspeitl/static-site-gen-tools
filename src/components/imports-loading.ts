@@ -1,15 +1,15 @@
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from '../config';
 import type { IProcessor } from '../processing-tree/i-processor';
-import type { IInternalComponent } from '../components/base-component';
+import type { IInternalComponent } from './base-component';
 import type fs from 'fs';
 import type { IProcessResource } from "../processors/shared/i-processor-resource";
 
-import { getComponentFromPath } from '../components/components';
+import { getComponentFromPath } from './components';
 import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1";
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
-import { resolveDataRefPathsFromDocDir } from '../components/component-imports';
+import { resolveDataRefPathsFromDocDir } from './component-imports';
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 
 import path from 'path';

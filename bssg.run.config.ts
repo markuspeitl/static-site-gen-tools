@@ -1,4 +1,4 @@
-import { SsgConfig } from "./src/config";
+import type { SsgConfig } from "./src/config/ssg-config";
 
 export function configure(config: SsgConfig) {
     //Config with initialized/compiled processing tree

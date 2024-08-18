@@ -1,4 +1,4 @@
-import { defaultFragmentCache } from "../fragement-cache";
+import { defaultFragmentCache } from "../data-merge/fragement-cache";
 import { SsgConfig } from "../config";
 
 //These should modifyable through config

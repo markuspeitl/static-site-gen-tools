@@ -1,16 +1,15 @@
-import path from "path";
-import { SsgConfig } from "./config";
+import type { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
+import type { SsgConfig } from "./ssg-config";
+
 import { ArgumentParser } from 'argparse';
+import { FalsyString, getFsNodeStat, resolveRelativePaths } from "@markus/ts-node-util-mk1";
+import { initDefaultImportSymbols } from "../components/imports-loading";
+import { defaultScopeManager } from "../data-merge/scope-manager";
+import { defaultProcessingWrapper } from "../processing-tree-wrapper";
+import { initProcessingTreeFromConf } from "../processing-tree/init-processing-node";
+
+import path from "path";
 import * as lodash from 'lodash';
-import { FalsyString, getFsNodeStat } from "@markus/ts-node-util-mk1";
-import { getDefaultProcessingRootNodeConfig } from "./ssg-pipeline-conf";
-import type { IProcessResource } from './processing-tree/i-processor';
-import { defaultScopeManager } from "./data/scope-manager";
-import { initProcessingTreeFromConf, IProcessingNodeConfig } from "./processing-tree/init-processing-node";
-import { initDefaultImportSymbols } from "./module-loading/imports-loading";
-import { resolveDataFromParentFile } from "./components/resolve-component-path-refs";
-import { resolveRelativePaths } from "@markus/ts-node-util-mk1";
-import { defaultProcessingWrapper } from "./processing-tree-wrapper";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 

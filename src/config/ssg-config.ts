@@ -1,11 +1,9 @@
 import type Module from "module";
-import type { FragmentCache } from "./fragement-cache";
-import type { IInternalComponent } from "./components/base-component";
-import type { IProcessingNode, IResourceProcessor } from "./processing-tree/i-processor";
-import type { IScopeManager } from "./data/scope-manager";
-import type { IImportInstance } from "./module-loading/imports-loading";
-import { ProcessingWrapper } from "./processing-tree-wrapper";
-import { IProcessingNodeConfig } from "./processing-tree/i-processor-config";
+import { IImportInstance } from "../components/imports-loading";
+import { IScopeManager } from "../data-merge/scope-manager";
+import { ProcessingWrapper } from "../processing-tree-wrapper";
+import { IProcessingNode, IResourceProcessor } from "../processing-tree/i-processor";
+import { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
 
 export interface SsgConfig {
     //sourcePath?: string;
