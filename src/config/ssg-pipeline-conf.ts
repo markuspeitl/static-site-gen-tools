@@ -11,14 +11,16 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
         id: 'ssg-process',
         inputGuard: undefined,
 
-        srcDirs: [ '../src/processing' ], //where to load shorthand processors from
+        srcDirs: [ '../processors' ], //where to load shorthand processors from
         strategy: 'serial', //Default strategy == serial
         processors: [
             {
                 id: 'reader',
                 inputGuard: {
-                    matchProp: 'id',
-                    matchCondition: true,
+                    matchProp: 'document.src',
+                    matchCondition: true
+                    //matchProp: 'id',
+                    //matchCondition: true,
                     //matchCondition: '.+\.html'
                     //matchCondition: (id: string) => id.match(/.+\.html/) //Alternative notation
                 },
@@ -26,7 +28,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 srcDirs: [ './reading' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'id',
+                    matchProp: 'document.src',
                     strategy: 'serial',
                     fileIdPostfix: '.reader',
                     processors: {
@@ -50,14 +52,14 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'extractor',
                 inputGuard: {
-                    matchProp: 'data.document.inputFormat',
+                    matchProp: 'document.inputFormat',
                     matchCondition: true,
                 },
 
                 srcDirs: [ './extracting' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'data.document.inputFormat',
+                    matchProp: 'document.inputFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.extractor',
                     processors: {
@@ -76,14 +78,14 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'compiler',
                 inputGuard: {
-                    matchProp: 'data.document.inputFormat',
+                    matchProp: 'document.inputFormat',
                     matchCondition: true,
                 },
 
                 srcDirs: [ './compiling' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'data.document.inputFormat',
+                    matchProp: 'document.inputFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.compiler',
                     processors: {
@@ -123,7 +125,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'writer',
                 inputGuard: {
-                    matchProp: 'data.document.outputFormat',
+                    matchProp: 'document.outputFormat',
                     matchCondition: true,
                 },
                 srcDirs: [ './writing' ],
@@ -131,7 +133,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
                 fileProcessorChains: {
                     //matchProp: 'id',
-                    matchProp: 'data.document.outputFormat',
+                    matchProp: 'document.outputFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.writer',
                     processors: {

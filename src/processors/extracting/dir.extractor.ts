@@ -54,6 +54,6 @@ export class DirReader implements IResourceProcessor {
 
         return resource;
 
-        //setKeyInDict(resource, 'data.document.outputFormat', 'dir');
+        //setKeyInDict(resource, 'document.outputFormat', 'dir');
     }
 }

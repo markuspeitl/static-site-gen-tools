@@ -1,10 +1,11 @@
+import type { SsgConfig } from "../../src/config/ssg-config";
+import type { IProcessResource } from "../../src/processors/shared/i-processor-resource";
+
 import { BaseComponent, DataFunction, DataToParsedDocumentOrString, DocumentData, ExtensiveComponent } from "../../src/components/base/i-component";
 import { dataTemplateFn, StaticAssembledFileComponent } from "../../src/components/base/common-components";
-import { SsgConfig } from "../../src/config";
-import * as fs from 'fs';
-import { IProcessResource } from "../../src/processors/shared/i-processor-resource";
 import { css, curvyTemplate, html, ts } from "@markus/ts-node-util-mk1/src/html/pre-processors";
 
+import * as fs from 'fs';
 
 export class FileComponent extends StaticAssembledFileComponent {
 

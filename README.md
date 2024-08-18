@@ -1187,7 +1187,7 @@ and while designing you want all possibilities at your disposal. (for layouts, s
                 <h2>{{programmingpost.data.title}}</h2>
                 <p>{{programmingpost.data.description}}</p>
                 <summarize>{{programmingpost.content}}</summarize>
-                <url root="{{distdir}}" path="{{programmingpost.data.document.target}}">Read more ...</url>
+                <url root="{{distdir}}" path="{{programmingpost.document.target}}">Read more ...</url>
             </article>
 
             <!-- Alternatively use a component-->

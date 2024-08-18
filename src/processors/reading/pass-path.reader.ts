@@ -7,6 +7,7 @@ import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 import * as fs from 'fs';
 import path from 'path';
+import { getResourceDoc } from "../shared/document-helpers";
 export class PassPathReader implements IResourceProcessor {
 
     public id: string = 'pass-path.reader';
@@ -25,17 +26,19 @@ export class PassPathReader implements IResourceProcessor {
         return true;
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
-        }
-        console.log(`Reading ${this.id}: ${resource.document?.src}`);
+        }*/
 
-        const resolvedPath: string = path.resolve(resourceId);
+        const document: IResourceDoc = getResourceDoc(resource);
+        console.log(`Reading ${this.id}: ${document.src}`);
+
+        const resolvedPath: string = path.resolve(document.src);
         const fileExtension: string = getCleanExt(resolvedPath);
-        setKeyInDict(resource, 'data.document.inputFormat', fileExtension);
-        //setKeyInDict(resource, 'data.document.inputFormat', 'pass-path');
-        resource.content = resourceId;
+        setKeyInDict(resource, 'document.inputFormat', fileExtension);
+        //setKeyInDict(resource, 'document.inputFormat', 'pass-path');
+        resource.content = document.src;
         return resource;
     }
 }

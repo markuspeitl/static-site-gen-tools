@@ -7,6 +7,7 @@ import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 import * as fs from 'fs';
 import path from 'path';
+import { getResourceDoc } from "../shared/document-helpers";
 
 export class DirReader implements IResourceProcessor {
 
@@ -27,15 +28,13 @@ export class DirReader implements IResourceProcessor {
         if (!resource) {
             resource = {};
         }
-        if (!resource.document) {
-            resource.document = {} as IResourceDoc;
-        }
+        const document: IResourceDoc = getResourceDoc(resource);
 
-        console.log(`Reading ${this.id}: ${resource.document?.src}`);
+        console.log(`Reading ${this.id}: ${document.src}`);
 
         const resolvedPath: string = path.resolve(resourceId);
         const dirFiles: string[] = await fs.promises.readdir(resolvedPath);
-        setKeyInDict(resource, 'data.document.inputFormat', 'dir');
+        setKeyInDict(resource, 'document.inputFormat', 'dir');
         resource.content = dirFiles;
 
         return resource;

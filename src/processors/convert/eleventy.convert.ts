@@ -87,7 +87,7 @@ export class EleventyConvert implements IResourceProcessor {
 
     /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
-        const inputFormat = getKeyFromDict(resource, 'data.document.inputFormat');
+        const inputFormat = getKeyFromDict(resource, 'document.inputFormat');
         const inputFormats = [
             '.md',
             '.njk',
@@ -104,12 +104,12 @@ export class EleventyConvert implements IResourceProcessor {
             return resource;
         }
 
-        const inputPath = getKeyFromDict(resource, 'data.document.src');
+        const inputPath = getKeyFromDict(resource, 'document.src');
         if (!inputPath) {
             return resource;
         }
 
-        const inputDir = getKeyFromDict(resource, 'data.document.dir');
+        const inputDir = getKeyFromDict(resource, 'document.dir');
 
         const ancestorData = loadInheritedDataFor(inputPath, inputDir, config.data.globalData);
 

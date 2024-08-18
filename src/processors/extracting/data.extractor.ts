@@ -2,7 +2,6 @@ import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 import type { IInternalComponent } from '../../components/base/i-component';
-import { getTsComponentFromResource } from "../../components/components-loading";
 import { getResourceDoc } from "../shared/document-helpers";
 
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
@@ -37,8 +36,8 @@ export abstract class DataExtractor implements IResourceProcessor {
 
         Object.assign(resource, parsedData);
 
-        setKeyInDict(resource, 'data.document.inputFormat', undefined);
-        setKeyInDict(resource, 'data.document.outputFormat', undefined);
+        setKeyInDict(resource, 'document.inputFormat', undefined);
+        setKeyInDict(resource, 'document.outputFormat', undefined);
         return resource;
     }
 }

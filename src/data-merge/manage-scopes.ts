@@ -50,8 +50,8 @@ export function forkResourceChild(resource: IProcessResource, childResourceConte
 //data.compileAfter: Needs to be scoped + shadowed
 
 //data.src ??? (maybe give sub scopes access to some parent scope info but through different props) 
-//data.src-- > data.document.src;
-//data.target-- > data.document.target;
+//data.src-- > document.src;
+//data.target-- > document.target;
 
 //data.compileRunner: should be scoped and shadowed (sub components should have to define their own compile chain/ format)
 //data.extractRunner: should be scoped and shadowed (sub components should have to define their own data extract chain/ format)

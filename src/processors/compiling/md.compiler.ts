@@ -48,7 +48,7 @@ export class MarkdownCompiler implements IResourceProcessor {
         resource.content = resourceContent;
         const dataResource: IProcessResource = await compileMarkdownResource(resource, config);
 
-        setKeyInDict(dataResource, 'data.document.outputFormat', 'html');
+        setKeyInDict(dataResource, 'document.outputFormat', 'html');
         return dataResource;
         //resource = setHtmlOutputFormat(resource);
         //return addHandlerId(dataResource, 'compiler', this);

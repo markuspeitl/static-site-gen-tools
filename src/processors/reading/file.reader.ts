@@ -70,7 +70,7 @@ export class FileReader implements IResourceProcessor {
 
         const resolvedPath: string = path.resolve(resourceId);
         const fileExtension: string = getCleanExt(resolvedPath);
-        setKeyInDict(resource, 'data.document.inputFormat', fileExtension);
+        setKeyInDict(resource, 'document.inputFormat', fileExtension);
 
         const fileContents: FalsyString = await readFileAsString(resolvedPath);
         resource.content = fileContents;

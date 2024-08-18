@@ -1,4 +1,4 @@
-import type { IProcessingNode, ProcessStrategy, IPrePostProcessing } from "./i-processor";
+import type { IProcessingNode, ProcessStrategy, IPrePostProcessing, IProcessor } from "./i-processor";
 
 export type ChainAbleProcessorId = string | IProcessingNode | IProcessingNodeConfig;
 
@@ -19,7 +19,7 @@ export interface SubProcessorsConfig {
     processors?: Array<IProcessingNodeConfig | IProcessingNode>;
     fileProcessorChains?: FileChainProcessorConfig;
 }
-export interface IProcessingNodeConfig extends IPrePostProcessing, SubProcessorsConfig {
+export interface IProcessingNodeConfig extends IPrePostProcessing, SubProcessorsConfig, Partial<IProcessor> {
     id: string;
     inputGuard?: InputGuardConfig;
 }

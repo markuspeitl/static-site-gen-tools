@@ -1,11 +1,13 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
-import * as fs from 'fs';
-import path from 'path';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { getResourceDoc } from "../shared/document-helpers";
 
+import * as fs from 'fs';
+import path from 'path';
 export class AssetReader implements IResourceProcessor {
 
     public id: string = 'asset.reader';
@@ -34,9 +36,9 @@ export class AssetReader implements IResourceProcessor {
         //const resolvedPath: string = path.resolve(resourceId);
         //const parsedPath: path.ParsedPath = path.parse(resolvedPath);
 
-        setKeyInDict(resource, 'data.document.inputFormat', 'asset');
-        //setKeyInDict(resource, 'data.document.outputFormat', 'asset');
-        setKeyInDict(resource, 'data.document.outputFormat', getCleanExt(document.src));
+        setKeyInDict(resource, 'document.inputFormat', 'asset');
+        //setKeyInDict(resource, 'document.outputFormat', 'asset');
+        setKeyInDict(resource, 'document.outputFormat', getCleanExt(document.src));
 
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore

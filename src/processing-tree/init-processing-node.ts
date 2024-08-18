@@ -17,7 +17,10 @@ export async function passResource(resource: IGenericResource, ...args: any[]): 
 }
 
 //Initialize only the current node --> not the full subtree
-export function initShallowConfigNode(nodeConfig: IProcessingNodeConfig, parentNode: FalsyAble<IProcessingNode>): IProcessingNode {
+export function initShallowConfigNode(
+    nodeConfig: IProcessingNodeConfig,
+    parentNode: FalsyAble<IProcessingNode>
+): IProcessingNode {
 
     //const parentNodeIdPrefix: string = parentNode?.id + "." || '';
     const processingNodeInstance: Partial<IProcessingNode> = {
@@ -29,29 +32,38 @@ export function initShallowConfigNode(nodeConfig: IProcessingNodeConfig, parentN
         srcDirs: nodeConfig.srcDirs,
     };
 
-    const processNodeFn: ProcessFunction = (
-        resource: IGenericResource,
-        config: any,
-    ) => processNode(
-        processingNodeInstance as IProcessingNode,
-        resource,
-        config,
-        nodeConfig.strategy
-    );
+    if (nodeConfig.process) {
+        processingNodeInstance.process = nodeConfig.process;
+    }
+    else {
+        const processNodeFn: ProcessFunction = (
+            resource: IGenericResource,
+            config: any,
+        ) => processNode(
+            processingNodeInstance as IProcessingNode,
+            resource,
+            config,
+            nodeConfig.strategy
+        );
+        processingNodeInstance.process = processNodeFn;
+    }
 
-    processingNodeInstance.process = processNodeFn;
+    if (nodeConfig.canProcess) {
+        processingNodeInstance.canProcess = nodeConfig.canProcess;
+    }
+    else {
+        const canNodeProcessFn: CanProcessEvaluator = (
+            resource: IGenericResource,
+            config: any,
+        ) => canNodeProcess(
+            processingNodeInstance as IProcessingNode,
+            resource,
+            config,
+            nodeConfig.inputGuard
+        );
 
-    const canNodeProcessFn: CanProcessEvaluator = (
-        resource: IGenericResource,
-        config: any,
-    ) => canNodeProcess(
-        processingNodeInstance as IProcessingNode,
-        resource,
-        config,
-        nodeConfig.inputGuard
-    );
-
-    processingNodeInstance.canProcess = canNodeProcessFn;
+        processingNodeInstance.canProcess = canNodeProcessFn;
+    }
 
     //Object.assign(processingNodeInstance, nodeConfig.inputGuard);
 

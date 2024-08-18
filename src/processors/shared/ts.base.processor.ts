@@ -4,7 +4,7 @@ import type { IInternalComponent } from '../../components/base/i-component';
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { IResourceProcessor, ProcessFunction } from "../../processing-tree/i-processor";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getTsComponentFromResource } from "../../components/components-loading";
+import { getComponentFromResource } from "../../components/components-loading";
 
 export abstract class TsBaseProcessor implements IResourceProcessor {
     abstract id: string;
@@ -35,7 +35,7 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
             return true;
         }*/
 
-        const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
+        const component: FalsyAble<IInternalComponent> = await getComponentFromResource(resource, config);
         return component;
     }
 
@@ -52,7 +52,7 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
     ): Promise<IProcessResource> {
         //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
 
-        const component: FalsyAble<IInternalComponent> = await getTsComponentFromResource(resource, config);
+        const component: FalsyAble<IInternalComponent> = await this.getComponentCompiler(resource, config);
         if (!component) {
             return resource;
         }
@@ -71,7 +71,7 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
             };
         }
 
-        setKeyInDict(resource, 'data.document.outputFormat', outputFormat);
+        setKeyInDict(resource, 'document.outputFormat', outputFormat);
         return processedResource;
     }
 }

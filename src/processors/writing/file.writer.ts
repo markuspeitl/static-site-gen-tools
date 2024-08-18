@@ -2,7 +2,7 @@ import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
-import { getCleanExt } from "@markus/ts-node-util-mk1";
+import { getCleanExt, makeAbsolute } from "@markus/ts-node-util-mk1";
 import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
 
 import * as fs from 'fs';
@@ -41,7 +41,9 @@ export class FileWriter implements IResourceProcessor {
         setTargetFromFormat(document);
         const targetDir = path.dirname(document.target);
 
-        console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
+        console.log(`Writing ${this.id}: resource: ${document.src} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
+        console.log('file://' + makeAbsolute(document.target));
+
         FileWriter.fileWriteCounter++;
 
         await fs.promises.mkdir(targetDir, { recursive: true });

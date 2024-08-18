@@ -90,13 +90,13 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     return componentInstance as FalsyAble<IInternalComponent>;
 }
 
-export async function getTsComponentFromBuffer(moduleBuffer: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+export async function getComponentFromBuffer(moduleBuffer: string, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
 
     if (!moduleBuffer) {
         return null;
     }
 
-    const loadedModule: any | null = loadModuleFromString(
+    const loadedModule: any | null = await loadModuleFromString(
         moduleBuffer,
         config.modulesCache,
         'ts'
@@ -112,7 +112,7 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
     }
 
     if (componentPath.endsWith('.ts') || componentPath.endsWith('.js')) {
-        const loadedModule: any | null = loadModuleFromPath(
+        const loadedModule: any | null = await loadModuleFromPath(
             componentPath,
             config.modulesCache
         );
@@ -128,7 +128,11 @@ export async function getComponentFromPath(componentPath: string, config: SsgCon
     return getComponentFrom(modulePath, config, moduleContent);
 }*/
 
-export async function getTsComponentFromResource(resource: IProcessResource, config: SsgConfig): Promise<FalsyAble<IInternalComponent>> {
+export async function getComponentFromResource(
+    resource: IProcessResource,
+    config: SsgConfig
+): Promise<FalsyAble<IInternalComponent>> {
+
     if (resource.document?.inputFormat !== 'ts' && resource.document?.inputFormat !== 'js') {
         return null;
     }
@@ -140,7 +144,7 @@ export async function getTsComponentFromResource(resource: IProcessResource, con
     }
 
     if (resource.content) {
-        const bufferComponent: FalsyAble<IInternalComponent> = await getTsComponentFromBuffer(resource.content, config);
+        const bufferComponent: FalsyAble<IInternalComponent> = await getComponentFromBuffer(resource.content, config);
         if (bufferComponent) {
             return bufferComponent;
         }

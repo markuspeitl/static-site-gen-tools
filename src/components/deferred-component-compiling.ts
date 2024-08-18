@@ -5,7 +5,7 @@ import type { SsgConfig } from "../config/ssg-config";
 import type { ProcessFunction, IProcessor } from "../processing-tree/i-processor";
 import type { IInternalComponent } from "./base/i-component";
 import { calcHash } from "../data-merge/fragement-cache";
-import { cheerioReplaceIdsWithUpdatesHtml, passThroughFnChain } from "@markus/ts-node-util-mk1";
+import { replaceIdElemsWithHtmls, passThroughFnChain } from "@markus/ts-node-util-mk1";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 import { removeBaseBlockIndent } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
@@ -87,8 +87,8 @@ export function convertDeferCompileArgsToResource(parentResource: IProcessResour
         parentForkedResource.data = {};
     }
     //As this is a child resource it should not inherit getting written to disk (unless specified through its own properties)
-    setKeyInDict(parentForkedResource, 'data.document.outputFormat', undefined);
-    setKeyInDict(parentForkedResource, 'data.document.target', undefined);
+    setKeyInDict(parentForkedResource, 'document.outputFormat', undefined);
+    setKeyInDict(parentForkedResource, 'document.target', undefined);
 
     const placeHolderInfo: any = {
         placeholder: pendingArgs.placeholder,
@@ -192,7 +192,7 @@ export function replacePlaceholdersWithCompiledResources(targetResource: IProces
         }
     }
 
-    const componentReplacedContent: string = cheerioReplaceIdsWithUpdatesHtml(targetResource.content, placeholderIdReplaceMap);
+    const componentReplacedContent: string = replaceIdElemsWithHtmls(targetResource.content, placeholderIdReplaceMap);
     targetResource.content = componentReplacedContent;
 
     return targetResource;

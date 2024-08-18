@@ -178,23 +178,24 @@ export function canNodeProcess(
     resource: IGenericResource,
     config: IRuntimeConfig,
     inputGuard?: InputGuardConfig
-) {
+): boolean {
     //Oneshot check
     if (isNodeRegisteredInResource(node, resource)) {
         return false;
     }
 
-    if (node.canProcess !== undefined) {
-
+    /*if (node.canProcess !== undefined) {
         return evaluateNodeCanProcess(
             node,
             resource,
             config
         );
-    }
+    }*/
 
     //console.log(`Check can handle resource with '${this.id}': ${resource.id}`);
-    return checkInputGuardMatch(resource, inputGuard);
+    const isProcessingTarget: boolean = checkInputGuardMatch(resource, inputGuard);
+
+    return isProcessingTarget;
 }
 
 //Could be optimized (does a few unnecessary operations at runtime, like type checking of 'matchCondition')

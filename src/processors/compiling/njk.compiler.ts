@@ -73,7 +73,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         };
 
         //resource = setHtmlOutputFormat(resource);
-        setKeyInDict(dataResource, 'data.document.outputFormat', 'html');
+        setKeyInDict(dataResource, 'document.outputFormat', 'html');
         return dataResource;
         //return addHandlerId(dataResource, 'compiler', this);
     }

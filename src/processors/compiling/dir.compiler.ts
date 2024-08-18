@@ -50,7 +50,7 @@ export class DirCompiler implements IResourceProcessor {
 
         resource.content = filterFalsy(processedResources);
 
-        setKeyInDict(resource, 'data.document.outputFormat', 'dir');
+        setKeyInDict(resource, 'document.outputFormat', 'dir');
 
         //Currently workaround for writing
         resource.id = 'dir';
