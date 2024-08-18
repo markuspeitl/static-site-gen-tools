@@ -1,9 +1,11 @@
-import path from "path";
-import { SsgConfig } from "../../config/ssg-config";
-import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../processors/shared/i-processor-resource";
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource, IResourceDoc } from "../../processors/shared/i-processor-resource";
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
 import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull, filterFalsy } from '@markus/ts-node-util-mk1';
 
+import path from "path";
 
 export class DirWriter implements IResourceProcessor {
 

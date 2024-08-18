@@ -1,9 +1,12 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { ensureFileDir, type FalsyStringPromise } from "@markus/ts-node-util-mk1";
+import { getResourceDoc } from "../shared/document-helpers";
+
 import * as fs from 'fs';
 import path from 'path';
-import { getResourceDoc } from "../shared/document-helpers";
 
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {

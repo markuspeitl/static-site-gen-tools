@@ -1,10 +1,14 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor, ProcessFunction } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
 import type { IInternalComponent } from '../../components/base/i-component';
-import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import { loadDataAsync, setKeyInDict } from "@markus/ts-node-util-mk1";
 import { getTsComponentFromResource } from "../../components/components-loading";
 import { getResourceDoc } from "../shared/document-helpers";
+
+import type { FalsyAble } from "@markus/ts-node-util-mk1";
+import { loadDataAsync, setKeyInDict } from "@markus/ts-node-util-mk1";
+
+
 
 export abstract class DataExtractor implements IResourceProcessor {
     id: string = 'data.extractor';

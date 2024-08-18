@@ -1,5 +1,6 @@
 import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource } from '../../processors/shared/i-processor-resource';
+
 import { TsBaseProcessor } from "../shared/ts.base.processor";
 
 export class TsCompiler extends TsBaseProcessor {

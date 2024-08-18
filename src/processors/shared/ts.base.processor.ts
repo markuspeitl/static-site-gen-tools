@@ -1,7 +1,8 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceProcessor, ProcessFunction } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IInternalComponent } from '../../components/base/i-component';
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
+import type { IResourceProcessor, ProcessFunction } from "../../processing-tree/i-processor";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 import { getTsComponentFromResource } from "../../components/components-loading";
 

@@ -1,6 +1,6 @@
 import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource } from "../../processors/shared/i-processor-resource";
-import { resetDocumentSetInputFormat } from "../../processors/i-resource-processor";
+import { resetDocumentSetInputFormat } from "../../processors/shared/i-resource-processor";
 import type { IInternalComponent } from "./i-component";
 
 export abstract class BaseCompileContentFormatComponent implements IInternalComponent {

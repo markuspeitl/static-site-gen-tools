@@ -1,9 +1,10 @@
-import path from 'path';
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
 import { getResourceDoc } from "../shared/document-helpers";
-
+import path from 'path';
 
 const dataFilePathRegexes: RegExp[] = [
     new RegExp(/^.+\.data\..+$/i),

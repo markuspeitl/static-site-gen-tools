@@ -100,8 +100,12 @@ export function forkResourceData(resource: IProcessResource): IProcessResource {
 //Use this when compiling a sub component with current data scope
 export function forkFromResource(
     baseResource: IProcessResource,
-    forkedResourceProps: Record<string, any>
+    forkedResourceProps?: Record<string, any>
 ): IProcessResource {
+
+    if (!forkedResourceProps) {
+        forkedResourceProps = {};
+    }
 
     const resourceTemplate: IProcessResource = forkResourceData(baseResource);
     const subResource: IProcessResource = Object.assign(resourceTemplate, forkedResourceProps);

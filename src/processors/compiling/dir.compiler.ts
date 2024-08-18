@@ -1,9 +1,11 @@
-import path from "path";
-import { SsgConfig } from "../../config/ssg-config";
-import { IProcessResource, IResourceDoc, IResourceProcessor } from "../../processors/shared/i-processor-resource";
+import type { SsgConfig } from "../../config/ssg-config";
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { getResourceDoc } from "../shared/document-helpers";
 import { filterFalsy, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
 
+import path from "path";
 export class DirCompiler implements IResourceProcessor {
 
     public id: string = 'dir.compiler';

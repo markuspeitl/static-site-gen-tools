@@ -1,5 +1,5 @@
 import { wrapContent } from "@markus/ts-node-util-mk1";
-import type { SsgConfig } from "../../src/config";
+import type { SsgConfig } from "../../src/config/ssg-config";
 import type { IProcessResource } from "../../src/processors/shared/i-processor-resource";
 import { splitStringPreserve } from "@markus/ts-node-util-mk1";
 

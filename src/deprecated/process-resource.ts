@@ -3,12 +3,13 @@ import { settleValueOrNull, settleValueOrNullFilter } from "@markus/ts-node-util
 import { loadProcessorInstancesFromPaths } from "../processing-tree/load-file-processors";
 import type { SsgConfig } from "../config/ssg-config";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
-import { getFirstInstanceTargetClass, getModuleId } from "../module-loading/ts-modules";
 import { getKeyFromDict } from "@markus/ts-node-util-mk1";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import { getKeyMatches, getKeyMatchValues, MatchedDictKeyRes } from "@markus/ts-node-util-mk1";
 import { filterFalsy } from "@markus/ts-node-util-mk1";
-import type { IProcessingNode, IProcessResource, IResourceProcessor } from '../processors/shared/i-processor-resource';
+import { IProcessResource } from '../processors/shared/i-processor-resource';
+import { IProcessingNode, IResourceProcessor } from '../processing-tree/i-processor';
+import { forkFromResource } from '../data-merge/manage-scopes';
 
 
 
@@ -69,7 +70,7 @@ export async function findChainCanHandleResource(resource: IProcessResource, con
             const id = idsChain[ i ];
             const processorOfChain: IResourceProcessor | undefined = processingStage.instances[ id ];
 
-            if (processorOfChain && await processorOfChain.canHandle(resource, config)) {
+            if (processorOfChain && await (processorOfChain as any).canProcess(resource, config)) {
                 return idsChain.slice(i);
             }
         }
@@ -203,7 +204,7 @@ export async function processFsNodeAtPath(inputPath: string, outputPath: string 
 export async function processResource(resource: IProcessResource, config: SsgConfig, forkResourceData: boolean = false): Promise<IProcessResource> {
 
     if (forkResourceData) {
-        resource = forkDataScope(resource);
+        resource = forkFromResource(resource);
     }
 
     /*const resourceProcessorDirs = config.defaultResourceProcessorDirs || [];

@@ -1,9 +1,13 @@
-import { getCleanExt } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc, IResourceProcessor } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
+import { getCleanExt } from "@markus/ts-node-util-mk1";
+import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
+
 import * as fs from 'fs';
 import path from 'path';
-import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
+
 
 export class FileWriter implements IResourceProcessor {
 
@@ -20,34 +24,34 @@ export class FileWriter implements IResourceProcessor {
             return false;
         }
 
-        /*const targetFilePath = resource.document?.target;
+        const targetFilePath = resource.document?.target;
         if (!targetFilePath) {
             return false;
-        }*/
+        }
 
         return true;
     }*/
-    public async process(resource: IProcessResource, config: SsgConfig): Promise < IProcessResource > {
+    public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
-    if(!await this.canHandle(resource, config)) {
-    return resource;
-}
-const document: IResourceDoc = getResourceDoc(resource);
+        /*if (!await this.canHandle(resource, config)) {
+            return resource;
+        }*/
+        const document: IResourceDoc = getResourceDoc(resource);
 
-setTargetFromFormat(document);
-const targetDir = path.dirname(document.target);
+        setTargetFromFormat(document);
+        const targetDir = path.dirname(document.target);
 
-console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
-FileWriter.fileWriteCounter++;
+        console.log(`Writing ${this.id}: resource: ${resource?.id} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
+        FileWriter.fileWriteCounter++;
 
-await fs.promises.mkdir(targetDir, { recursive: true });
+        await fs.promises.mkdir(targetDir, { recursive: true });
 
-await fs.promises.writeFile(
-    document.target,
-    resource.content
-);
+        await fs.promises.writeFile(
+            document.target,
+            resource.content
+        );
 
-return resource;
+        return resource;
 
         //resource = addHandlerId(resource, 'writer', this);
         //return resource;

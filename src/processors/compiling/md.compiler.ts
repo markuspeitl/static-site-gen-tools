@@ -1,5 +1,7 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceProcessor } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { getLibInstance } from "../../dependencies/lib-module-instances";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 

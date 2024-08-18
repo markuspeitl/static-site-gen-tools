@@ -1,10 +1,12 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceProcessor } from '../../processors/shared/i-processor-resource';
-import * as fs from 'fs';
-import path from 'path';
+import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IResourceProcessor } from "../../processing-tree/i-processor";
+
 import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
+import * as fs from 'fs';
+import path from 'path';
 export class PassPathReader implements IResourceProcessor {
 
     public id: string = 'pass-path.reader';
