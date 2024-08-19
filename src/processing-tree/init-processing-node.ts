@@ -161,9 +161,17 @@ export async function initProcessorsFileChain(
     fileSearchConfig: FileSearchOptions
 ): Promise<IProcessingNode[]> {
 
-    const fileToInstancePromises: Promise<any>[] = chainProcessorsIdentities.map((processorOfChainIdentity: any) => fileProcessorIdentityToInstance(processorOfChainIdentity, fileSearchConfig));
-    return Promise.all(fileToInstancePromises);
 
+    const fileToInstancePromises: Promise<any>[] = [];
+    for (const processorChainIdentity of chainProcessorsIdentities) {
+        const initializeFileProcessorPromise: Promise<any> = fileProcessorIdentityToInstance(
+            processorChainIdentity,
+            fileSearchConfig,
+        );
+        fileToInstancePromises.push(initializeFileProcessorPromise);
+    }
+
+    return Promise.all(fileToInstancePromises);
     //const currentChainProcessors: IProcessingNode[] = [];
     //const chainProcessorsIdentities: Array<string | IProcessingNode> = targetProcessorChainsConfigs[ key ];
 

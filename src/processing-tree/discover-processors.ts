@@ -20,7 +20,14 @@ export function collectNestedPathPermutations(
         parentAble,
         pathArrayKey
     );
-    const permutedJoinedPathOptions: string[] = dirPermutationArrays.map((pathParts: string[]) => path.resolve(path.join(...pathParts)));
+
+    const permutedJoinedPathOptions: string[] = [];
+    for (let i = 0; i < dirPermutationArrays.length; i++) {
+        const pathParts: string[] = dirPermutationArrays[ i ];
+        const joinedPath: string = path.resolve(path.join(...pathParts));
+        permutedJoinedPathOptions.push(joinedPath);
+    }
+
     return permutedJoinedPathOptions;
 }
 

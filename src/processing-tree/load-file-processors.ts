@@ -65,11 +65,18 @@ export async function loadProcessorArrayFromPaths<InstanceType extends IProcesso
 
         const modulePaths: string[] = await anchorAndGlob(filesMatchGlobs, path.resolve(anchorPath), true);
 
-        const importModulePromises: Promise<any>[] = modulePaths.map((modulePath: string) => loadProcessorFromPath(modulePath, resultModulesDict, moduleNamePostfix));
+        const importModulePromises: Promise<InstanceType>[] = [];
+        for (const modulePath of modulePaths) {
+            const importModulePromise: Promise<InstanceType> = loadProcessorFromPath(
+                modulePath,
+                resultModulesDict,
+                moduleNamePostfix
+            );
+            importModulePromises.push(importModulePromise);
+        }
 
         const loadedModuleInstances: InstanceType[] = await settleValueOrNullFilter(importModulePromises);
         resultInstanceArrays.push(loadedModuleInstances);
-
     }
     return resultInstanceArrays.flat();
 }

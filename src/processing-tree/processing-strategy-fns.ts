@@ -44,7 +44,11 @@ export async function processParallel(
     config: IRuntimeConfig
 ): Promise<IGenericResource> {
 
-    const promises = processors.map((processor) => processor.process(resource, config));
+    const promises: Promise<IGenericResource>[] = [];
+    for (const processor of processors) {
+        promises.push(processor.process(resource, config));
+
+    }
     const resultResources: Array<IGenericResource | null> = await settleValueOrNull(promises);
 
     if (config.parrallelMergeFn) {

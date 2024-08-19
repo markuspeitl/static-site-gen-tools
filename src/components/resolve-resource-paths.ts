@@ -37,7 +37,10 @@ export function resolveDocPathsFrom(
     if (!Array.isArray(resource.import)) {
         resource.import = arrayify(resource.import);
     }
-    resource.import = resource.import.map(resolveImportPropToPath);
+
+    for (let i = 0; i < resource.import.length; i++) {
+        resource.import[ i ] = resolveImportPropToPath(resource.import[ i ]);
+    }
 
     resource = resolveRelativePaths(resource, fromRootDirPath);
 

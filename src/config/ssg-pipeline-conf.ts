@@ -1,3 +1,4 @@
+import { getCleanExt, setKeyInDict } from "@markus/ts-node-util-mk1";
 import type { IGenericResource } from "../processing-tree/i-processor";
 import type { IProcessingNodeConfig } from "./../processing-tree/i-processor-config";
 import type { SsgConfig } from "./ssg-config";
@@ -27,26 +28,38 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                     //matchCondition: (id: string) => id.match(/.+\.html/) //Alternative notation
                 },
 
+                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+
+                    const docSrc: string = resource.document.src;
+                    let extension: string = getCleanExt(docSrc);
+                    if (docSrc.endsWith('/')) {
+                        extension = '/';
+                    }
+
+                    setKeyInDict(resource, 'document.inputFormat', extension);
+                    return resource;
+                },
+
                 srcDirs: [ './reading' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'document.src',
+                    matchProp: 'document.inputFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.reader',
                     processors: {
-                        '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
-                        '.+\.md': [ 'file' ],
-                        '.+\.njk': [ 'file' ],
-                        '.+\.ts': [ 'pass-path' ],
-                        '.+\.js': [ 'file' ],
-                        '.+\.yml': [ 'file' ],
-                        '.+\.json': [ 'file' ],
+                        'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                        'md': [ 'file' ],
+                        'njk': [ 'file' ],
+                        'ts': [ 'pass-path' ],
+                        'js': [ 'file' ],
+                        'yml': [ 'file' ],
+                        'json': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        '.+\.jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                        '.+\.scss': [ 'file' ],
-                        '.+\.png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
+                        'jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        'scss': [ 'file' ],
+                        'png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
                         //'.+\/': [ 'dir', 'watch' ],
-                        '.+\/': [ 'dir' ],
+                        '/': [ 'dir' ],
                         //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
                 }

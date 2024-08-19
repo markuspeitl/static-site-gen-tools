@@ -7,6 +7,32 @@ import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull
 
 import path from "path";
 
+export async function writeDirChildResourceAt(
+    targetDirPath: string,
+    compiledResource: IProcessResource,
+    config: SsgConfig
+): Promise<IProcessResource> {
+
+    const compiledSubResourceDoc: IResourceDoc = getResourceDoc(compiledResource);
+
+    let overridePathPostfix: string | undefined = undefined;
+    if (compiledSubResourceDoc.outputFormat === 'dir') {
+        overridePathPostfix = '/';
+    }
+    setTargetFromFormat(
+        compiledSubResourceDoc,
+        undefined,
+        targetDirPath,
+        overridePathPostfix
+    );
+
+    const processedChildResource: IProcessResource = await config.processor.processStages(
+        compiledResource,
+        config,
+        [ 'writer' ]
+    );
+    return processedChildResource;
+}
 export class DirWriter implements IResourceProcessor {
 
     public id: string = 'dir.writer';
@@ -30,26 +56,12 @@ export class DirWriter implements IResourceProcessor {
 
         await ensureDir(dirDocumentTarget);
 
-        const writeResourcePromises: Promise<IProcessResource>[] = dirCompiledResources.map(async (compiledResource: IProcessResource) => {
-
-            const compiledSubResourceDoc: IResourceDoc = getResourceDoc(compiledResource);
-
-            let overridePathPostfix: string | undefined = undefined;
-            if (compiledSubResourceDoc.outputFormat === 'dir') {
-                overridePathPostfix = '/';
-            }
-            setTargetFromFormat(
-                compiledSubResourceDoc,
-                undefined,
-                dirDocumentTarget,
-                overridePathPostfix
+        const writeResourcePromises: Promise<IProcessResource>[] = [];
+        for (const dirFile of dirCompiledResources) {
+            writeResourcePromises.push(
+                writeDirChildResourceAt(documentSrc, dirFile, config)
             );
-
-
-
-            const processedChildResource: IProcessResource = await config.processor.processStages(compiledResource, config, [ 'writer' ]);
-            return processedChildResource;
-        });
+        }
 
         //Inefficient to wait for the sub promises to finish --> optimize later
         //All descendant components are compiled in memory, before everything is collected and written to disk

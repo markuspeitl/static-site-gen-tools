@@ -99,7 +99,14 @@ export async function loadProcessingTreeConfig(processingTreeConfigPath: string)
     const processingTreeConfig: IProcessingNodeConfig = await loadOrCallConfigFile({}, processingTreeConfigPath);
     //const processingTreeConfig: IProcessingNodeConfig = processingTreeModule.default;
     //The root path in the config should resolve like it would from the config origin file
-    processingTreeConfig.srcDirs = processingTreeConfig?.srcDirs?.map((topLevelDirPath: string) => path.resolve(processingTreeConfigDir, topLevelDirPath));
+
+    if (!processingTreeConfig.srcDirs) {
+        processingTreeConfig.srcDirs = [];
+    }
+
+    for (let i = 0; i < processingTreeConfig.srcDirs.length; i++) {
+        processingTreeConfig.srcDirs[ i ] = path.resolve(processingTreeConfigDir, processingTreeConfig.srcDirs[ i ]);
+    }
     return processingTreeConfig;
 }
 
