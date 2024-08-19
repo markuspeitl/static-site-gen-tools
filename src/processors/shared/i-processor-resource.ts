@@ -1,5 +1,5 @@
 import type { IInternalComponent } from "../../components/base/i-component";
-import type { DeferCompileArgs } from "../../components/compile-placeholders";
+import type { IFragmentCompile } from "../../components/compile-fragments";
 import type { IGenericControl, IGenericResource, IProcessor } from "../../processing-tree/i-processor";
 
 export type MergeExcludeKeys = string[];
@@ -12,7 +12,7 @@ export interface IResourceDoc {
 }
 
 export interface IResourceControl extends IGenericControl {
-    pendingChildren?: DeferCompileArgs[];
+    pendingFragments?: IFragmentCompile[];
     importScope?: Record<string, IInternalComponent | IProcessor>;
 }
 

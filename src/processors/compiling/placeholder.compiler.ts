@@ -4,12 +4,12 @@ import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/
 import type { IInternalComponent } from '../../components/base/i-component';
 
 import { HtmlCompiler } from './html.compiler';
-import { replaceHtmlComponentsPlaceholders } from '../../components/replace-components';
+import { replaceHtmlFragments } from '../../components/replace-fragments';
 
 export class PlaceholderCompiler implements IResourceProcessor {
     id: string = 'placeholder.compiler';
 
-    protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
+    //protected htmlCompilerSubject: IProcessingNode = new HtmlCompiler();
     //public canHandle = this.htmlCompilerSubject.canHandle;
     /*/*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
         return this.htmlCompilerSubject.canHandle(resource, config);
@@ -21,7 +21,7 @@ export class PlaceholderCompiler implements IResourceProcessor {
             return resource;
         }
         resource.content = resourceContent;
-        const subComponentsReplacedResource: IProcessResource = await replaceHtmlComponentsPlaceholders(resource, config);
+        const subComponentsReplacedResource: IProcessResource = await replaceHtmlFragments(resource, config);
         return subComponentsReplacedResource;
     }
 }

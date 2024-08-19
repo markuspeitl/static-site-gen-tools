@@ -62,19 +62,25 @@ export class NunjucksCompiler implements IResourceProcessor {
         }
         //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
 
+        console.log(`Compiling ${this.id}: `);
+
         resource.content = resourceContent;
 
 
         const nunjucks: Environment = await getLibInstance('nunjucks', config);
-        const compiledString: string = nunjucks.renderString(resource.content, resource?.data || {});
-        const dataResource: IProcessResource = {
+        const compiledString: string = nunjucks.renderString(resource.content, resource || {});
+        /*const dataResource: IProcessResource = {
             content: compiledString,
             data: resource
-        };
+        };*/
 
         //resource = setHtmlOutputFormat(resource);
-        setKeyInDict(dataResource, 'document.outputFormat', 'html');
-        return dataResource;
+        setKeyInDict(resource, 'document.outputFormat', 'html');
+
+        resource.content = compiledString;
+
+        return resource;
+        //return dataResource;
         //return addHandlerId(dataResource, 'compiler', this);
     }
 }

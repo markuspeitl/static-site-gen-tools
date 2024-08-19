@@ -30,6 +30,7 @@ export function initShallowConfigNode(
         postProcess: nodeConfig.postProcess,
         processors: [],
         srcDirs: nodeConfig.srcDirs,
+        strategy: nodeConfig.strategy
     };
 
     if (nodeConfig.process) {

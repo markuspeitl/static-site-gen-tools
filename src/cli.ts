@@ -64,12 +64,17 @@ export async function run(config: SsgConfig, resource?: IProcessResource): Promi
 
     //console.time('full_processing');
     //const processedResource: IProcessResource = await config.processor.processDocumentTo(sourcePath, targetPath, config);
+
+    /*for (let i = 0; i < 5; i++) {
+        const processedResource: IProcessResource = await config.processor.process(resource, config);
+    }*/
     const processedResource: IProcessResource = await config.processor.process(resource, config);
     //console.timeEnd('full_processing');
 
     //printProcessedDocuments(processedResource, config)
     //serveProcessedResults(processedResource, config);
     console.timeEnd('run_compile_time');
+    //const processedResource: IProcessResource = await config.processor.process(resource, config);
 
     return processedResource;
 }

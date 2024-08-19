@@ -13,14 +13,16 @@ async function compileMarkdownResource(resource: IProcessResource, config: SsgCo
         breaks: true,
     });
 
-    const compiledOutput: IProcessResource = {
+    const content = markdownRendererInstance.render(resource.content);
+
+    /*const compiledOutput: IProcessResource = {
         content: markdownRendererInstance.render(resource.content),
 
         //If any from outside accessible data properties or functions get defined within the component evaluated from 
         //fileContent, then these are added into the dataCtx (might be necessary to somehow scope them though to prevent collisions)
-        data: resource
-    };
-    return compiledOutput;
+    };*/
+    resource.content = content;
+    return resource;
 }
 
 export class MarkdownCompiler implements IResourceProcessor {

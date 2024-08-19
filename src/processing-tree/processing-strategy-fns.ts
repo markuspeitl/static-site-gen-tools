@@ -123,13 +123,22 @@ export async function processNode(
         selectStrategy = 'default';
     }
 
-    registerNodeInResource(node, resource);
+    if (node.preProcess) {
+        resource = await node.preProcess(resource, config);
+    }
 
-    return processStrategyFns[ selectStrategy ](
+    resource = await processStrategyFns[ selectStrategy ](
         subProcessors,
         resource,
         config
     );
+    registerNodeInResource(node, resource);
+
+    if (node.postProcess) {
+        resource = await node.postProcess(resource, config);
+    }
+
+    return resource;
 }
 
 

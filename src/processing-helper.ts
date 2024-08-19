@@ -1,10 +1,9 @@
 import type { SsgConfig } from "./config/ssg-config";
-import type { IProcessingNode, IProcessor } from "./processing-tree/i-processor";
+import type { IGenericResource, IProcessingNode, IProcessor, ProcessFunction } from "./processing-tree/i-processor";
 import type { FalseAbleVal } from "@markus/ts-node-util-mk1";
 import type { IProcessResource } from "./processors/shared/i-processor-resource";
-
-import { forkFromResource } from "./data-merge/manage-scopes";
 import * as lodash from 'lodash';
+import { IRuntimeConfig, processNode } from "./processing-tree/processing-strategy-fns";
 
 
 export function registerProcessedDocument(
@@ -40,9 +39,24 @@ export function extractSubChainNode(
         srcProcessorCopy.processors = selectedSubProcessorSubset;
     }
 
+    //Set the 'process' fn newly as first processNode still points to the old (full processing node) node reference
+    srcProcessorCopy.process = (
+        resource: IGenericResource,
+        config: any,
+    ) => processNode(
+        srcProcessorCopy as IProcessingNode,
+        resource,
+        config,
+        (srcProcessorCopy as IProcessingNode).strategy
+    );
+    //nodeConfig.strategy);
+    //srcProcessorCopy.process = processNodeFn;
+
     if (cache) {
         cache[ stageChainId ] = srcProcessorCopy;
     }
+
+
 
     return srcProcessorCopy;
 }
@@ -69,6 +83,12 @@ async function processStagesOnResource(
         config.subTreePathCache
     );
 
+    /*const processedResource: IProcessResource = await processNode(
+        selectedSubChainNode,
+        resource,
+        config as IRuntimeConfig,
+    );*/
+
     const processedResource: IProcessResource = await selectedSubChainNode.process(
         resource,
         config
@@ -92,7 +112,15 @@ async function forkSubResourceProcessStages(
     const childProps: any = {
         id: parentResource.id + '->' + processRunnerId
     };
-    const childForkedResource: IProcessResource = forkFromResource(parentResource, childProps);
+    const childForkedResource: IProcessResource = config.scopes.forkFromResource(
+        parentResource,
+        childProps,
+        [
+            'control',
+            //'document'
+            //'parent'
+        ]
+    );
 
     return processStagesOnResource(childForkedResource, config, stagesToProcess);
 }

@@ -59,6 +59,16 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
 
         const componentResourceProcFn: ProcessFunction = component[ componentProcessingFnKey ];
         let processedResource: IProcessResource = await componentResourceProcFn(resource, config);
+
+        setKeyInDict(resource, 'document.outputFormat', outputFormat);
+        //setKeyInDict(resource, 'control.parent', resource.control?.parent);
+
+        if (componentProcessingFnKey === 'data') {
+            //As the component 'data' fn might return a completely new data dict
+            Object.assign(resource, processedResource);
+            return resource;
+        }
+
         /*if (typeof dataResource === 'string') {
             dataResource = Object.assign(forkResourceScope(resource), { content: dataResource });
         }*/
@@ -70,10 +80,14 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
                 content: processedResource
             };
         }*/
-        Object.assign(resource, processedResource);
+        //Object.assign(resource, processedResource);
 
-        setKeyInDict(resource, 'document.outputFormat', outputFormat);
-        return resource;
+        /*if (componentProcessingFnKey === 'render') {
+            resource.content = processedResource.content;
+            return resource;
+        }*/
+
+        return processedResource;
         //return processedResource;
     }
 }

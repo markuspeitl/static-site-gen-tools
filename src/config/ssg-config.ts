@@ -30,7 +30,8 @@ export interface SsgConfig {
     defaultImportSymbolPaths: Record<string, string>;
     defaultImportSymbolsInitialized?: boolean;
 
-    scopeManager: IScopeManager;
+    //scopeManager: IScopeManager;
+    scopes: IScopeManager;
 
     libConstructors: Record<string, any | (() => any)>;
     modulesCache: ModulesCache;

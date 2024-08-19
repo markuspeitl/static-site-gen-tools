@@ -1,14 +1,14 @@
 import type { SsgConfig } from "./ssg-config";
+import type { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
+import type { IScopeManager } from "../data-merge/scope-manager";
 import { ArgumentParser } from 'argparse';
 import { FalsyString, getFsNodeStat, resolveRelativePaths } from "@markus/ts-node-util-mk1";
 import { initDefaultImportSymbols } from "../components/resolve-imports";
-import { defaultScopeManager } from "../data-merge/scope-manager";
 import { defaultProcessingHelper } from "../processing-helper";
 import { initProcessingTreeFromConf } from "../processing-tree/init-processing-node";
 
 import path from "path";
 import * as lodash from 'lodash';
-import { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
 
 export function addCliConfigOptions(parser: ArgumentParser): void {
 
@@ -134,7 +134,9 @@ export async function setUpDefaultConfig(config: SsgConfig): Promise<SsgConfig> 
 
     const pipelinePath: string = path.join(__dirname, './ssg-pipeline-conf.ts');
 
-    const configDefaults: any = {
+    const scopesManager: IScopeManager = await import("../data-merge/scope-manager");
+
+    const configDefaults: Partial<SsgConfig> = {
         processingTreeConfig: await loadProcessingTreeConfig(pipelinePath),
         //processingTree:
         /*defaultResourceProcessorDirs: [
@@ -142,7 +144,7 @@ export async function setUpDefaultConfig(config: SsgConfig): Promise<SsgConfig> 
         ],*/
         processor: defaultProcessingHelper,
         defaultImportsDirs: getDefaultImportDirs(),
-        scopeManager: defaultScopeManager,
+        scopes: scopesManager,
         processedDocuments: [],
         fragmentCacheDisabled: true,
         outDir: './dist',

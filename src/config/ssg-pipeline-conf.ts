@@ -1,4 +1,6 @@
+import type { IGenericResource } from "../processing-tree/i-processor";
 import type { IProcessingNodeConfig } from "./../processing-tree/i-processor-config";
+import type { SsgConfig } from "./ssg-config";
 
 export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
@@ -54,6 +56,17 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 inputGuard: {
                     matchProp: 'document.inputFormat',
                     matchCondition: true,
+                },
+
+                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                    const forkedResource: IGenericResource = config.scopes.forkFromResource(resource, {
+                        //id: 'extract__' + resource.document.src
+                        id: this.id + "_" + resource.document.src
+                    });
+                    return forkedResource;
+                },
+                postProcess: async (resource: IGenericResource, config: SsgConfig) => {
+                    return config.scopes.mergeToParent(resource);
                 },
 
                 srcDirs: [ './extracting' ],

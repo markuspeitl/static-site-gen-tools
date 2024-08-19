@@ -11,11 +11,9 @@ import { getOrCreateCacheItem, syncCachesValue } from "@markus/ts-node-util-mk1"
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { anchorAndGlob } from "@markus/ts-node-util-mk1";
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
-import { getResourceDoc } from "../processors/shared/document-helpers";
-import { resolveDataRefs } from "./resolve-component-path-refs";
 
 import path from 'path';
-
+import { resolveDocPathsFromSourceDir } from "./resolve-resource-paths";
 
 export type IImportInstance = IProcessor | IInternalComponent;
 export type PathOrNameSpace = string | Record<string, string>;
@@ -132,7 +130,7 @@ export async function evaluateLocalImportSymbols(
     const localImportSymbolPaths: ImportSymbolsToPaths = {};
 
     //Make any path in data fully qualified
-    await resolveDataRefPathsFromDocDir(resource, config);
+    await resolveDocPathsFromSourceDir(resource, config);
 
     const importRefs: ImportReference[] = resource.import;
 
@@ -210,7 +208,7 @@ export async function getFlatResourceImportSymbols(resource: IProcessResource, c
 }
 
 
-export async function getImportInstance(
+export async function getImportTargetInstance(
     symbol: string,
     resource: IProcessResource,
     config: SsgConfig
@@ -254,21 +252,6 @@ export async function loadImportInstanceFromPath(importFilePath: string, cache: 
     //TODO handle all the different importable file types
 }
 
-export async function resolveDataRefPathsFromDocDir(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-    if (!resource) {
-        return resource;
-    }
-    let currentDocumentDir: string = "";
-
-    const document: IResourceDoc = getResourceDoc(resource);
-
-    if (document.src) {
-        currentDocumentDir = path.parse(document.src).dir;
-    }
-
-    resource = resolveDataRefs(currentDocumentDir, resource, config);
-    return resource;
-}
 
 //export async function loadDefaultImportSymbols
 

@@ -1,13 +1,7 @@
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import type { IProcessResource } from '../processors/shared/i-processor-resource';
-
-export function calcHash(content: any): string {
-
-    const serializedContent = JSON.stringify(content);
-    //return crypto.createHash('sha256').update(serializedContent, 'utf-8').digest('hex');
-    return crypto.createHash('sha256').update(serializedContent, 'utf-8').digest('base64');
-}
+import { calcHashBase64 } from '@markus/ts-node-util-mk1';
 
 /*export interface IProcessResource {
     content: string;
@@ -52,11 +46,11 @@ export function calcPropHashes(dict: Record<string, any>, addFullHash: boolean =
     const subKeyHashes: string[] = [];
     for (const key in dict) {
         const currentValue = dict[ key ];
-        hashes[ key ] = calcHash(currentValue);
+        hashes[ key ] = calcHashBase64(currentValue);
     }
 
     //if (addFullHash) {
-    hashes.hash = calcHash(subKeyHashes.join(''));
+    hashes.hash = calcHashBase64(subKeyHashes.join(''));
     //}
 
     return hashes as HashesDict;

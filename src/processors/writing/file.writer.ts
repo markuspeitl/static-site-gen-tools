@@ -38,11 +38,11 @@ export class FileWriter implements IResourceProcessor {
         }*/
         const document: IResourceDoc = getResourceDoc(resource);
 
-        setTargetFromFormat(document);
-        const targetDir = path.dirname(document.target);
-
         console.log(`Writing ${this.id}: resource: ${document.src} ---> n-th: ${FileWriter.fileWriteCounter} to path ${document.target}`);
         console.log('file://' + makeAbsolute(document.target));
+
+        setTargetFromFormat(document);
+        const targetDir = path.dirname(document.target);
 
         FileWriter.fileWriteCounter++;
 

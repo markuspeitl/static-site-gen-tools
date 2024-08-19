@@ -46,6 +46,8 @@ export interface IProcessingNode extends IProcessor, IPrePostProcessing {
     parent?: IProcessingNode;
     processors?: Array<IProcessingNode | IProcessor>;
 
+    strategy?: string,
+
     //Not really needed after init (necessary for file processor init)
     srcDirs?: string[],
 }

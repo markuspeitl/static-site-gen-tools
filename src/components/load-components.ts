@@ -22,7 +22,7 @@ export function addPostProcessingNormalization(componentInstance: BaseComponent)
     //Convert to resource in postprocessing if the component render returns a string
     const origRenderFn: any = componentInstance.render;
     componentInstance.render = async (...args: any[]) => {
-        const resource: any = await origRenderFn(...args);
+        const resource: any = await origRenderFn.call(componentInstance, ...args);
         if (typeof resource === 'string') {
             return {
                 content: resource

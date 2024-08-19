@@ -36,6 +36,7 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             # Markdown test
                     
             - lets
+            - title: -- {{title}} -- in md
             - try
             - some
             - bulletpoints

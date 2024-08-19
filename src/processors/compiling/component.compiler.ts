@@ -3,7 +3,7 @@ import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-p
 import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { HtmlCompiler } from './html.compiler';
-import { compilePendingChildren } from '../../components/compile-placeholders';
+import { compilePendingFragmentsOf } from '../../components/compile-fragments';
 
 export class ComponentCompiler implements IResourceProcessor {
     id: string = 'component.compiler';
@@ -24,6 +24,8 @@ export class ComponentCompiler implements IResourceProcessor {
             return resource;
         }
         //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
-        return compilePendingChildren(resource, config);
+
+        //Fork the resource from which it is originating (but no merging back of the sub scopes)
+        return compilePendingFragmentsOf(resource, config);
     }
 }
