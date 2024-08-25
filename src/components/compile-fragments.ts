@@ -28,15 +28,15 @@ export function getFragmentResource(
     config: SsgConfig
 ): IProcessResource {
 
-    let resource: any = {};
+    //let resource: any = {};
 
     /*if (!config.scopeManager) {
         return {};
     }*/
 
     //As this is a child resource it should not inherit getting written to disk (unless specified through its own properties)
-    setKeyInDict(resource, 'document.outputFormat', undefined);
-    setKeyInDict(resource, 'document.target', undefined);
+    //setKeyInDict(resource, '.outputFormat', undefined);
+    //setKeyInDict(resource, '.target', undefined);
 
     const placeHolderInfo: IProcessResource = {
         placeholder: pendingArgs.placeholder,
@@ -47,7 +47,7 @@ export function getFragmentResource(
 
     //const deferInfoResource: IProcessResource = Object.assign({}, placeHolderInfo);
 
-    return Object.assign(resource, placeHolderInfo, resource, pendingArgs.attrs);
+    return Object.assign({}, placeHolderInfo, pendingArgs.attrs);
     //resource = config.scopeManager.combineResources(resource, deferInfoResource);
     //Object.assign(resource, deferInfoResource);
 
@@ -64,26 +64,33 @@ export function getFragmentResourceWith(
         return {};
     }*/
 
-    const fragmentResource: IProcessResource = getFragmentResource(pendingArgs, config);
-    fragmentResource.id = pendingArgs.id + '__' + pendingArgs.name;
 
-    let parentForkedResource: IProcessResource | null = null;
-    if (config.scopes) {
+
+    //let parentForkedResource: IProcessResource | null = null;
+    /*if (config.scopes) {
         parentForkedResource = config.scopes.forkFromResource(
             parentResource,
             fragmentResource,
-            defaultForkMergeExcludedKeys.concat([ 'control.handledProcIds' ])
+            //defaultForkMergeExcludedKeys.concat([ 'control.handledProcIds' ])
         );
     }
     else {
         parentForkedResource = Object.assign({}, parentForkedResource, fragmentResource);
-    }
+    }*/
+    const parentResourceData = config.scopes.dataFromResource(parentResource);
+    const fragmentHtmlResource: IProcessResource = getFragmentResource(pendingArgs, config);
+    fragmentHtmlResource.id = pendingArgs.id + '__' + pendingArgs.name;
+    const fragmentResource: IProcessResource = Object.assign(parentResourceData, fragmentHtmlResource);
 
-    return resolveDocPathsFromParent(
+    //setKeyInDict(fragmentResource, 'control.parent')
+
+    const pathsResolvedResource: IProcessResource = resolveDocPathsFromParent(
         parentResource,
-        parentForkedResource,
+        fragmentResource,
         config
     );
+
+    return pathsResolvedResource;
 }
 
 export async function compileFragment(
@@ -198,12 +205,12 @@ export async function compilePendingFragmentsOf(
 
     //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
 
-    if (!resource.control?.pendingFragments) {
+    if (!resource.pendingFragments) {
         return resource;
     }
 
     const childrenCompilePromises: Promise<IProcessResource>[] = [];
-    for (const pendingCompileArgs of resource.control.pendingFragments) {
+    for (const pendingCompileArgs of resource.pendingFragments) {
         const compilePromise = compileFromFragmentArgs(
             resource,
             pendingCompileArgs,

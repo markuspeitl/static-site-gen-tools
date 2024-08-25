@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getFsNodeStat } from "@markus/ts-node-util-mk1";
@@ -44,11 +44,11 @@ export class WatchReader implements IResourceProcessor {
         return false;
 }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
-        }
-        console.log(`Reading ${this.id}: ${resource.document?.src}`);
+        }*/
+        console.log(`Reading ${this.id}: ${resource.src}`);
 
         // track files or dirs passed to this and reread/recompile/rewrite if necessary
         //https://www.npmjs.com/package/chokidar

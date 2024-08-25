@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from "../processors/shared/i-processor-resource";
+import type { IProcessResource } from "../processors/shared/i-processor-resource";
 
 import { resolveRelativePaths } from "@markus/ts-node-util-mk1";
 import { arrayify } from "@markus/ts-node-util-mk1";
@@ -68,10 +68,10 @@ export function resolveDocPathsFromParent(
     config: SsgConfig
 ): IProcessResource {
 
-    if (!parentResource || !parentResource.document?.src) {
+    if (!parentResource || !parentResource.src) {
         return resource;
     }
-    return resolveDocPathsFromParentFile(parentResource.document?.src, resource, config);
+    return resolveDocPathsFromParentFile(parentResource.src, resource, config);
 }
 
 
@@ -80,15 +80,15 @@ export async function resolveDocPathsFromSrc(
     config: SsgConfig
 ): Promise<IProcessResource> {
 
-    if (!resource.document?.src) {
+    if (!resource.src) {
         return resource;
     }
 
-    if (!resource.document?.src) {
+    if (!resource.src) {
         return resource;
     }
 
-    const currentDocumentDir: string = path.dirname(resource.document.src);
+    const currentDocumentDir: string = path.dirname(resource.src);
     const dataResolvedResource: IProcessResource = resolveDocPathsFrom(currentDocumentDir, resource, config);
 
     return dataResolvedResource;
@@ -104,10 +104,10 @@ export async function resolveDocPathsFromSourceDir(
     }
     let currentDocumentDir: string = "";
 
-    const document: IResourceDoc = getResourceDoc(resource);
 
-    if (document.src) {
-        currentDocumentDir = path.parse(document.src).dir;
+
+    if (resource.src) {
+        currentDocumentDir = path.parse(resource.src).dir;
     }
 
     resource = resolveDocPathsFrom(currentDocumentDir, resource, config);

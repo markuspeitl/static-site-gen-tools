@@ -1,12 +1,13 @@
 import path from "path";
-import { IProcessResource, IResourceDoc } from "../../processors/shared/i-processor-resource";
+import { IProcessResource } from "../../processors/shared/i-processor-resource";
+import { getCleanExt } from "@markus/ts-node-util-mk1";
 
 export function getDocumentTargetPath(resource: IProcessResource): string | null {
-    if (!resource.document?.target) {
+    if (!resource.target) {
         return null;
     }
 
-    return path.resolve(resource.document.target);
+    return path.resolve(resource.target);
 }
 export function getDocumentTargetSubPath(resource: IProcessResource, relativePath: string): string | null {
 
@@ -18,19 +19,16 @@ export function getDocumentTargetSubPath(resource: IProcessResource, relativePat
     return path.join(targetDirPath, relativePath);
 }
 
-export function getResourceDoc(resource: IProcessResource): IResourceDoc {
+export function getResourceDoc(resource: IProcessResource): IProcessResource {
     if (!resource) {
         resource = {};
     }
-    if (!resource.document) {
-        resource.document = {} as IResourceDoc;
-    }
-    return resource.document as IResourceDoc;
+    return resource as IProcessResource;
 }
 
 export function getTargetFromFormat(
     srcPath: string,
-    outputFormat?: string,
+    targetFormat?: string,
     targetDirPath?: string,
     overridePostFix?: string,
 ): string {
@@ -41,40 +39,43 @@ export function getTargetFromFormat(
     const parsedSrcPath: path.ParsedPath = path.parse(srcPath);
 
     if (!overridePostFix) {
-        overridePostFix = '.' + outputFormat;
+        overridePostFix = '.' + targetFormat;
     }
 
     const targetPath: string = path.join(targetDirPath, parsedSrcPath.name + overridePostFix);
     return targetPath;
 }
 
-export function getTargetFromDocFormat(
-    document: IResourceDoc,
-    outputFormat?: string,
+export function getTargetFromResourceFormat(
+    resource: IProcessResource,
+    targetFormat?: string,
     targetDirPath?: string,
     overridePostFix?: string,
 ) {
-    if (document.target) {
-        return document.target;
+    if (resource.target) {
+        return resource.target;
     }
-    if (!outputFormat) {
-        outputFormat = document.inputFormat;
+    if (resource.targetFormat) {
+        targetFormat = resource.targetFormat;
     }
-    if (document.outputFormat) {
-        outputFormat = document.outputFormat;
+    if (!targetFormat) {
+        targetFormat = resource.srcFormat;
+    }
+    if (!resource.src) {
+        return;
     }
 
     return getTargetFromFormat(
-        document.src,
-        outputFormat,
+        resource.src,
+        targetFormat,
         targetDirPath,
         overridePostFix
     );
 }
 
 export function setTargetFromFormat(
-    document: IResourceDoc,
-    outputFormat?: string,
+    resource: IProcessResource,
+    targetFormat?: string,
     targetDirPath?: string,
     overridePostFix?: string,
 ): void {
@@ -83,14 +84,70 @@ export function setTargetFromFormat(
         return;
     }
 
-    document.target = getTargetFromDocFormat(
-        document,
-        outputFormat,
+    resource.target = getTargetFromResourceFormat(
+        resource,
+        targetFormat,
         targetDirPath,
         overridePostFix
     );
 
-    if (document.src === document.target) {
-        throw Error("Document src and target paths are identical --> not allowed to prevent data loss");
+    if (resource.src === resource.target) {
+        throw Error(`Document src and target paths ${resource.src} are identical --> not allowed to prevent data loss`);
     }
+}
+
+export interface IWriteAbleResource extends IProcessResource {
+    target: string;
+    targetFormat: string;
+    targetParent: string;
+}
+
+export function toWriteableResource(
+    resource: IProcessResource,
+): IWriteAbleResource | null {
+
+    if (resource.srcFormat && !resource.targetFormat) {
+        resource.targetFormat = resource.srcFormat;
+    }
+
+    if (!resource.targetFormat && resource.target) {
+        resource.targetFormat = getCleanExt(resource.target);
+    }
+
+    if (!resource.target) {
+        if (!resource.src) {
+            return null;
+        }
+
+        if (!resource.target) {
+            resource.target = getTargetFromFormat(resource.src, resource.targetFormat);
+        }
+    }
+
+    if (!resource.target) {
+        return null;
+    }
+
+    resource.targetParent = path.dirname(resource.target);
+
+    return resource as IWriteAbleResource;
+}
+
+
+export interface IReadResource extends IProcessResource {
+    src: string;
+    srcFormat: string;
+}
+
+export function getReadableResource(
+    resource: IProcessResource,
+): IReadResource | null {
+
+    if (resource.src && !resource.srcFormat) {
+        resource.srcFormat = getCleanExt(resource.src);
+    }
+    if (!resource.src) {
+        return null;
+    }
+    return resource as IReadResource;
 }

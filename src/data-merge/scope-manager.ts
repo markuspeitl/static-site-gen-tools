@@ -1,60 +1,6 @@
 import path from "path";
 import { IProcessResource } from "../processors/shared/i-processor-resource";
 import * as lodash from 'lodash';
-
-/*export interface IScopeManager {
-    combineResources(resource1: IProcessResource, resource2: IProcessResource): IProcessResource;
-    combineAllResources(...resources: IProcessResource[]): IProcessResource;
-    forkResource(resource: IProcessResource): IProcessResource;
-    forkResourceResetControl(resource: IProcessResource): IProcessResource;
-    forkChildResource(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource;
-}
-
-export function mergeData(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {
-    return resource1;
-}
-
-export class DefaultScopeManager implements IScopeManager {
-
-    combineResources(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {
-        return lodash.merge({}, resource1, resource2);
-    }
-    combineAllResources(...resources: IProcessResource[]): IProcessResource {
-        return lodash.merge({}, ...resources);
-    }
-    forkResource(resource: IProcessResource): IProcessResource {
-        return lodash.cloneDeep(resource);
-    }
-    forkResourceResetControl(resource: IProcessResource): IProcessResource {
-
-        const forkedResource: IProcessResource = this.forkResource(resource);
-
-        forkedResource.control = {
-            parent: resource,
-            handledProcIds: [],
-            pendingFragments: undefined,
-        };
-
-        return forkedResource;
-    }
-
-    forkChildResource(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource {
-        const childForkedResource: IProcessResource = {
-            id: childResourceId || resource.id,
-            content: childResourceContent,
-            control: {
-                parent: resource,
-                handledProcIds: [],
-                pendingFragments: undefined,
-            },
-            data: lodash.cloneDeep(resource),
-        };
-        return childForkedResource;
-    }
-}
-
-export const defaultScopeManager: IScopeManager = new DefaultScopeManager();*/
-
 export interface IScopeManager {
     recursiveDictMerge: Function,
 
@@ -78,29 +24,47 @@ export interface IScopeManager {
         forkedResourceProps?: Record<string, any>,
         forkExcludeKeys?: string[]
     ) => IProcessResource;
+
+    dataFromResource: (
+        baseResource: IProcessResource,
+        excludeKeys?: string[]
+    ) => IProcessResource;
 }
+
+export const controlFlowExcludes = [
+    'parent',
+    'pendingFragments',
+    'importScope'
+];
+export const documentExcludes = [
+    'src',
+    'inputFormat',
+    'outputFormat',
+    'target',
+];
 
 export const defaultForkMergeExcludedKeys = [
     'id',
     //'document',
     //'content',
     'exclude',
-    'control.parent',
-    'control.pendingFragments',
-];
+].concat(controlFlowExcludes);
 
 export const defaultMergeExcludedKeys = [
     'id',
     //'document',
     //'content',
     'exclude',
-    'control.parent'
-];
+].concat(controlFlowExcludes);
+
+export const dataExcludeKeys = [
+    'id',
+    'content',
+    'exclude',
+].concat(controlFlowExcludes);
 
 const defaultResourceTemplate: IProcessResource = {
     id: undefined,
-    control: {},
-    document: {},
     exclude: defaultMergeExcludedKeys
 };
 
@@ -136,15 +100,22 @@ export function recursiveDictMerge(
         const srcVal: any = src[ key ];
         const targetVal = target[ key ];
 
-        const srcValueResult = recursiveDictMerge(
-            targetVal,
-            srcVal,
-            excludeKeys,
-            branchPath
-        );
+        if (typeof srcVal !== 'function') {
+            const srcValueResult = recursiveDictMerge(
+                targetVal,
+                srcVal,
+                excludeKeys,
+                branchPath
+            );
 
-        if (srcValueResult !== undefined && target[ key ] !== srcValueResult) {
-            target[ key ] = srcValueResult;
+            if (srcValueResult !== undefined && target[ key ] !== srcValueResult) {
+
+                if (typeof (target) !== 'object') {
+                    target = {};
+                }
+
+                target[ key ] = srcValueResult;
+            }
         }
     }
     return target;
@@ -155,6 +126,10 @@ export function mergeToResource(
     srcResource: IProcessResource,
     mergeExcludedKeys: string[]
 ): IProcessResource {
+
+    if (srcResource === targetResource) {
+        return targetResource;
+    }
 
     //const mergeExcludedKeys: string[] = srcResource.exclude || defaultMergeExcludedKeys;
 
@@ -187,7 +162,7 @@ export function mergeToParent(
     mergeExcludeKeys?: string[]
 ) {
 
-    if (!resource.control?.parent) {
+    if (!resource.parent) {
         return resource;
     }
 
@@ -197,7 +172,7 @@ export function mergeToParent(
         mergeExcludeKeys
     );
 
-    const targetResource: IProcessResource = resource.control?.parent;
+    const targetResource: IProcessResource = resource.parent;
     if (!targetResource) {
         return resource;
     }
@@ -227,10 +202,10 @@ export function forkResourceData(
         forkExcludeKeys
     );
 
-    if (!resourceTemplate.control) {
-        resourceTemplate.control = {};
+    if (!resourceTemplate) {
+        resourceTemplate = {};
     }
-    resourceTemplate.control.parent = resource;
+    resourceTemplate.parent = resource;
 
     return resourceTemplate;
 }
@@ -253,6 +228,25 @@ export function forkFromResource(
     const subResource: IProcessResource = Object.assign(resourceTemplate, forkedResourceProps);
     return subResource;
 }
+
+export function dataFromResource(
+    resource: IProcessResource,
+    excludeKeys?: string[]
+): IProcessResource {
+
+    if (!excludeKeys) {
+        excludeKeys = dataExcludeKeys;
+    }
+    const dataScope = {};
+
+    for (const key in resource) {
+        if (!excludeKeys || !excludeKeys.includes(key)) {
+            dataScope[ key ] = resource[ key ];
+        }
+    }
+    return dataScope;
+}
+
 
 
 
@@ -290,7 +284,7 @@ export function forkResourceChild(resource: IProcessResource, childResourceConte
     const childForkedResource: IProcessResource = lodash.cloneDeep(resource);
     childForkedResource.id = childResourceId || resource.id;
     childForkedResource.content = childResourceContent;
-    childForkedResource.control = {
+    childForkedResource = {
         parent: resource,
         handledProcIds: [],
     };
@@ -306,10 +300,63 @@ export function forkResourceChild(resource: IProcessResource, childResourceConte
 //data.compileAfter: Needs to be scoped + shadowed
 
 //data.src ??? (maybe give sub scopes access to some parent scope info but through different props) 
-//data.src-- > document.src;
-//data.target-- > document.target;
+//data.src-- > .src;
+//data.target-- > .target;
 
 //data.compileRunner: should be scoped and shadowed (sub components should have to define their own compile chain/ format)
 //data.extractRunner: should be scoped and shadowed (sub components should have to define their own data extract chain/ format)
 //When to fork??
 
+
+/*export interface IScopeManager {
+    combineResources(resource1: IProcessResource, resource2: IProcessResource): IProcessResource;
+    combineAllResources(...resources: IProcessResource[]): IProcessResource;
+    forkResource(resource: IProcessResource): IProcessResource;
+    forkResourceResetControl(resource: IProcessResource): IProcessResource;
+    forkChildResource(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource;
+}
+
+export function mergeData(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {
+    return resource1;
+}
+
+export class DefaultScopeManager implements IScopeManager {
+
+    combineResources(resource1: IProcessResource, resource2: IProcessResource): IProcessResource {
+        return lodash.merge({}, resource1, resource2);
+    }
+    combineAllResources(...resources: IProcessResource[]): IProcessResource {
+        return lodash.merge({}, ...resources);
+    }
+    forkResource(resource: IProcessResource): IProcessResource {
+        return lodash.cloneDeep(resource);
+    }
+    forkResourceResetControl(resource: IProcessResource): IProcessResource {
+
+        const forkedResource: IProcessResource = this.forkResource(resource);
+
+        forkedResource = {
+            parent: resource,
+            handledProcIds: [],
+            pendingFragments: undefined,
+        };
+
+        return forkedResource;
+    }
+
+    forkChildResource(resource: IProcessResource, childResourceContent?: string, childResourceId?: string): IProcessResource {
+        const childForkedResource: IProcessResource = {
+            id: childResourceId || resource.id,
+            content: childResourceContent,
+            control: {
+                parent: resource,
+                handledProcIds: [],
+                pendingFragments: undefined,
+            },
+            data: lodash.cloneDeep(resource),
+        };
+        return childForkedResource;
+    }
+}
+
+export const defaultScopeManager: IScopeManager = new DefaultScopeManager();*/

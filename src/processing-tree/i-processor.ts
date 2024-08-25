@@ -1,9 +1,9 @@
 export interface IGenericControl {
     parent?: IGenericResource,
-    handledProcIds?: string[];
+    //handledProcIds?: string[];
 }
-export interface IGenericResource extends DataProps {
-    control?: IGenericControl;
+export interface IGenericResource extends DataProps, IGenericControl {
+    //control?: IGenericControl;
 }
 export interface DataProps {
     [ key: string ]: any;

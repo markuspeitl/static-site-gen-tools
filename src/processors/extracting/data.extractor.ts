@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 import type { IInternalComponent } from '../../components/base/i-component';
 import { getResourceDoc } from "../shared/document-helpers";
@@ -23,21 +23,19 @@ export abstract class DataExtractor implements IResourceProcessor {
         //componentProcessingFnKey: string = 'render',
         //outputFormat: string = 'html'
     ): Promise<IProcessResource> {
-        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);
 
-        const document: IResourceDoc = getResourceDoc(resource);
-        const documentSrc: string = document.src;
-
-        const parsedData: any = await loadDataAsync(documentSrc);
-
-        if (!resource) {
-            resource = {};
+        if (!resource.src) {
+            return resource;
         }
+
+        const parsedData: any = await loadDataAsync(resource.src);
 
         Object.assign(resource, parsedData);
 
-        setKeyInDict(resource, 'document.inputFormat', undefined);
-        setKeyInDict(resource, 'document.outputFormat', undefined);
+        //setKeyInDict(resource, 'resource.srcFormat', undefined);
+        //setKeyInDict(resource, 'resource.targetFormat', undefined);
+
         return resource;
     }
 }

@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { FalsyString, FalsyStringPromise, getCleanExt } from "@markus/ts-node-util-mk1";
@@ -10,6 +10,8 @@ import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 import * as fs from 'fs';
 import path from 'path';
+import { getReadableResource, getResourceDoc, IReadResource } from "../shared/document-helpers";
+import { PassPathReader } from "./pass-path.reader";
 
 export async function readFileAsString(filePath: string): FalsyStringPromise {
 
@@ -27,7 +29,7 @@ export async function readFileAsString(filePath: string): FalsyStringPromise {
     return docFileContent;
 }
 
-export class FileReader implements IResourceProcessor {
+export class FileReader extends PassPathReader {
 
     public id: string = 'file.reader';
 
@@ -62,21 +64,21 @@ export class FileReader implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
+        }*/
+
+        const readResource: IReadResource | null = getReadableResource(resource);
+        if (!readResource) {
+            return resource;
         }
-        console.log(`Reading ${this.id}: ${resource.document?.src}`);
 
-        const resolvedPath: string = path.resolve(resourceId);
-        const fileExtension: string = getCleanExt(resolvedPath);
-        setKeyInDict(resource, 'document.inputFormat', fileExtension);
-
-        const fileContents: FalsyString = await readFileAsString(resolvedPath);
-        resource.content = fileContents;
+        const fileContents: FalsyString = await readFileAsString(readResource.src);
+        readResource.content = fileContents;
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
         //resource.id = undefined;
-        return resource;
+        return readResource;
     }
 }

@@ -2,8 +2,6 @@ import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource } from "../../processors/shared/i-processor-resource";
 import type { IInternalComponent } from "../base/i-component";
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
-import { resetDocumentSetInputFormat } from "../../processors/shared/i-resource-processor";
-
 
 /*const cachedFileResources: Record<string, IProcessResource> = {};
 export async function getFileResource(documentPath: string, config: SsgConfig): Promise<FalsyAble<IProcessResource>> {
@@ -13,7 +11,7 @@ export async function getFileResource(documentPath: string, config: SsgConfig): 
     }
 
     const readResource: IProcessResource = await useReaderStageToRead(documentPath, config);
-    if (!readResource.content || !readresource.document?.inputFormat) {
+    if (!readResource.content || !readresource.inputFormat) {
         return null;
     }
 
@@ -61,7 +59,7 @@ export class FileComponent implements IInternalComponent {
 
         let readResource: IProcessResource = await config.processor.processDocument([ 'extractor', 'compiler' ], documentPath, config);
 
-        if (!readResource.content || !readresource.document?.inputFormat) {
+        if (!readResource.content || !readresource.inputFormat) {
             return null;
         }
 
@@ -94,7 +92,7 @@ export class FileComponent implements IInternalComponent {
         }*/
 
         //make sure the resource.document state is reset before establishing pre conditions for extraction
-        //resetDocumentSetInputFormat(resource, readresource.document?.inputFormat);
+        //resetDocumentSetInputFormat(resource, readresource.inputFormat);
 
         //resource.content = readResource.content;
         this.dataExtractedResource = await config.processor.processStages(readResource, config, [ 'extractor' ]);
@@ -113,7 +111,7 @@ export class FileComponent implements IInternalComponent {
 
         const resourceToCompile: IProcessResource = this.dataExtractedResource || resource;
 
-        resourceToCompile.content = resource.content;
+        //resourceToCompile.content = resource.content;
 
         return await config.processor.processStages(resourceToCompile, config, [ 'compiler' ]);
     }

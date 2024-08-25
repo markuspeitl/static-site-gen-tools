@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { isDirPathOrDirectory } from "@markus/ts-node-util-mk1";
@@ -7,7 +7,7 @@ import { setKeyInDict } from "@markus/ts-node-util-mk1";
 
 import * as fs from 'fs';
 import path from 'path';
-import { getResourceDoc } from "../shared/document-helpers";
+import { getReadableResource, getResourceDoc, IReadResource } from "../shared/document-helpers";
 
 export class DirReader implements IResourceProcessor {
 
@@ -21,20 +21,23 @@ export class DirReader implements IResourceProcessor {
         return isDirPathOrDirectory(resourceId);
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
+        }*/
+        const readResource: IReadResource | null = getReadableResource(resource);
+        if (!readResource) {
+            return resource;
         }
-        if (!resource) {
-            resource = {};
+        if (!isDirPathOrDirectory(readResource.src)) {
+            return resource;
         }
-        const document: IResourceDoc = getResourceDoc(resource);
 
-        console.log(`Reading ${this.id}: ${document.src}`);
+        console.log(`Reading ${this.id}: ${readResource.src}`);
+        //const resolvedPath: string = path.resolve(readResource.src);
+        const dirFiles: string[] = await fs.promises.readdir(readResource.src);
 
-        const resolvedPath: string = path.resolve(resourceId);
-        const dirFiles: string[] = await fs.promises.readdir(resolvedPath);
-        setKeyInDict(resource, 'document.inputFormat', 'dir');
+        resource.srcFormat = 'dir';
         resource.content = dirFiles;
 
         return resource;
@@ -50,7 +53,7 @@ export class DirReader implements IResourceProcessor {
             const processedResource: IProcessResource = await config.processor.processDocumentTo(fsNodePath, getDocumentTargetSubPath(resource, dirFile), config);
 
 
-            setKeyInDict(resource, 'document.processed', dirFile);
+            setKeyInDict(resource, '.processed', dirFile);
             return processedResource;
             //processResource();
         });

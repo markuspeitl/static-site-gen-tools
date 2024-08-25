@@ -1,8 +1,8 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from "../../processors/shared/i-processor-resource";
+import type { IProcessResource } from "../../processors/shared/i-processor-resource";
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
-import { getResourceDoc, setTargetFromFormat } from "../shared/document-helpers";
+import { getResourceDoc, IWriteAbleResource, setTargetFromFormat, toWriteableResource } from "../shared/document-helpers";
 import { ensureDir, getFsNodeStat, makeAbsolute, setKeyInDict, settleValueOrNull, filterFalsy } from '@markus/ts-node-util-mk1';
 
 import path from "path";
@@ -13,14 +13,12 @@ export async function writeDirChildResourceAt(
     config: SsgConfig
 ): Promise<IProcessResource> {
 
-    const compiledSubResourceDoc: IResourceDoc = getResourceDoc(compiledResource);
-
     let overridePathPostfix: string | undefined = undefined;
-    if (compiledSubResourceDoc.outputFormat === 'dir') {
+    if (compiledResource.targetFormat === 'dir') {
         overridePathPostfix = '/';
     }
     setTargetFromFormat(
-        compiledSubResourceDoc,
+        compiledResource,
         undefined,
         targetDirPath,
         overridePathPostfix
@@ -42,24 +40,26 @@ export class DirWriter implements IResourceProcessor {
         return true;
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
-        }
-        const document: IResourceDoc = getResourceDoc(resource);
-        const documentSrc: string = document.src;
-        //const documentTarget: string = makeAbsolute(document.target);
-        const dirDocumentTarget: string = document.target;
+        }*/
 
-        console.log(`Writing ${this.id}: ${documentSrc} --> ${dirDocumentTarget}`);
+        const writeResource: IWriteAbleResource | null = toWriteableResource(resource);
+        if (!writeResource) {
+            return resource;
+        }
+
+        console.log(`Writing ${this.id}: ${writeResource.src} --> ${writeResource.target}`);
+
         const dirCompiledResources: IProcessResource[] = resource.content;
 
-        await ensureDir(dirDocumentTarget);
+        await ensureDir(writeResource.target);
 
         const writeResourcePromises: Promise<IProcessResource>[] = [];
         for (const dirFile of dirCompiledResources) {
             writeResourcePromises.push(
-                writeDirChildResourceAt(documentSrc, dirFile, config)
+                writeDirChildResourceAt(writeResource.target, dirFile, config)
             );
         }
 

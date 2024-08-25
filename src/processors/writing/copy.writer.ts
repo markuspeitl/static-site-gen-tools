@@ -1,9 +1,9 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { ensureFileDir, type FalsyStringPromise } from "@markus/ts-node-util-mk1";
-import { getResourceDoc } from "../shared/document-helpers";
+import { getResourceDoc, IWriteAbleResource, toWriteableResource } from "../shared/document-helpers";
 
 import * as fs from 'fs';
 import path from 'path';
@@ -31,40 +31,38 @@ export class CopyWriter implements IResourceProcessor {
 
     /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
-        const document: IResourceDoc = getResourceDoc(resource);
-        if (document.target && document.src) {
+        
+        if (resource.target && .src) {
             return true;
         }
         return false;
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
+            return resource;
+        }*/
+
+        const writeResource: IWriteAbleResource | null = toWriteableResource(resource);
+        if (!writeResource || !writeResource.src) {
             return resource;
         }
 
-        const document: IResourceDoc = getResourceDoc(resource);
-        console.log(`Writing ${this.id}: ${document.src} --> ${document.target}`);
+        console.log(`Writing ${this.id}: ${writeResource.src} --> ${writeResource.target}`);
         //resource = addHandlerId(resource, 'writer', this);
 
-        const targetPath: string | null = document.target;
-        const srcPath: string | null = document.src;
+        const resolvedTarget: string = path.resolve(writeResource.target);
+        const cwd: string = process.cwd();
 
-        if (srcPath && targetPath) {
-
-            const resolvedTarget: string = path.resolve(targetPath);
-            const cwd: string = process.cwd();
-
-            if (!resolvedTarget.startsWith(cwd)) {
-                console.error("Asset write target is not a subdirectory of process.cwd --> skipping write to prevent accidental overwrites");
-                return resource;
-            }
-
-            ensureFileDir(resolvedTarget);
-
-            //https://stackoverflow.com/questions/13786160/copy-folder-recursively-in-node-js
-            await fs.promises.cp(srcPath, resolvedTarget);
+        if (!resolvedTarget.startsWith(cwd)) {
+            console.error("Asset write target is not a subdirectory of process.cwd --> skipping write to prevent accidental overwrites");
+            return resource;
         }
+
+        ensureFileDir(resolvedTarget);
+
+        //https://stackoverflow.com/questions/13786160/copy-folder-recursively-in-node-js
+        await fs.promises.cp(writeResource.src, resolvedTarget);
 
         return resource;
     }

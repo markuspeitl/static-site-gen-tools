@@ -1,6 +1,5 @@
 import type { FalsyAble } from "@markus/ts-node-util-mk1";
 import type { SsgConfig } from '../config/ssg-config';
-import type { IResourceDoc } from '../processors/shared/i-processor-resource';
 import type { IInternalComponent } from './base/i-component';
 import type { IProcessor } from "../processing-tree/i-processor";
 import type { IProcessResource } from "../processors/shared/i-processor-resource";
@@ -149,13 +148,18 @@ export async function initDefaultImportSymbols(config: SsgConfig): Promise<Impor
     if (!config.defaultImportSymbolPaths) {
         config.defaultImportSymbolPaths = {};
     }
-
     if (!config.defaultImportsDirs) {
         config.defaultImportsDirs = [];
     }
+
+    console.time('init_default_import_paths');
+
     await registerImportDirs(config.defaultImportsDirs, config.defaultImportSymbolPaths);
 
     config.defaultImportSymbolsInitialized = true;
+
+    console.timeEnd('init_default_import_paths');
+
     return config.defaultImportSymbolPaths;
 }
 
@@ -394,14 +398,14 @@ export async function getCurrentScopeImportSymbols(resource: IProcessResource, c
     if (!resource.imports || resource.imports.length === 0) {
         return config.defaultImportSymbols || [];
     }
-    if (resource.control?.importScope) {
-        return Object.keys(resource.control.importScope);
+    if (resource.importScope) {
+        return Object.keys(resource.importScope);
     }
     if (!config.importLoadersCache) {
         config.importLoadersCache = {};
     }
-    if (!resource.control) {
-        resource.control = {};
+    if (!resource) {
+        resource = {};
     }
 
     const importPaths: string[] = resource.imports;
@@ -415,7 +419,7 @@ export async function getImportInstancesFromSymbols(importSymbols: string[], res
         config.importLoadersCache = {};
     }
 
-    const importInstancesCaches: any[] = [ resource.control?.importScope, config.importInstancesCache ];
+    const importInstancesCaches: any[] = [ resource.importScope, config.importInstancesCache ];
     const importLoadersCache: Record<string, IImportLoader> = config.importLoadersCache;
     const loadedImportInstances: Record<string, IImportInstance> = {};
 

@@ -1,14 +1,15 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
 import { setKeyInDict } from "@markus/ts-node-util-mk1";
-import { getResourceDoc } from "../shared/document-helpers";
+import { getReadableResource, getResourceDoc, IReadResource } from "../shared/document-helpers";
 
 import * as fs from 'fs';
 import path from 'path';
-export class AssetReader implements IResourceProcessor {
+import { PassPathReader } from "./pass-path.reader";
+export class AssetReader extends PassPathReader {
 
     public id: string = 'asset.reader';
 
@@ -27,22 +28,31 @@ export class AssetReader implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
+        }*/
+
+        const readResource: IReadResource | null = getReadableResource(resource);
+        if (!readResource) {
+            return resource;
         }
-        const document: IResourceDoc = getResourceDoc(resource);
-        console.log(`Reading ${this.id}: ${document.src}`);
+        readResource.srcFormat = 'asset';
+
+        /*
+        console.log(`Reading ${this.id}: ${.src}`);
         //const resolvedPath: string = path.resolve(resourceId);
         //const parsedPath: path.ParsedPath = path.parse(resolvedPath);
 
-        setKeyInDict(resource, 'document.inputFormat', 'asset');
-        //setKeyInDict(resource, 'document.outputFormat', 'asset');
-        setKeyInDict(resource, 'document.outputFormat', getCleanExt(document.src));
+        setKeyInDict(resource, '.inputFormat', 'asset');
+        resource.targetFormat = getCleanExt(resource.src);
+        resource.targetFormat = getCleanExt(resource.src);
+        //setKeyInDict(resource, '.targetFormat', 'asset');
+        setKeyInDict(resource, '.targetFormat', getCleanExt(resource.src));*/
 
         //resource = addHandlerId(resource, 'reader', this);
         //Mark resource as read --> resource is not processed by the 'reader' stage anymore
         //resource.id = undefined;
-        return resource;
+        return readResource;
     }
 }

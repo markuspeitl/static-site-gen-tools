@@ -1,13 +1,7 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
-
-import { getCleanExt, getFsNodeStat } from "@markus/ts-node-util-mk1";
-import { setKeyInDict } from "@markus/ts-node-util-mk1";
-
-import * as fs from 'fs';
-import path from 'path';
-import { getResourceDoc } from "../shared/document-helpers";
+import { getReadableResource, IReadResource } from "../shared/document-helpers";
 export class PassPathReader implements IResourceProcessor {
 
     public id: string = 'pass-path.reader';
@@ -30,15 +24,13 @@ export class PassPathReader implements IResourceProcessor {
         if (!resourceId) {
             return resource;
         }*/
-
-        const document: IResourceDoc = getResourceDoc(resource);
-        console.log(`Reading ${this.id}: ${document.src}`);
-
-        const resolvedPath: string = path.resolve(document.src);
-        const fileExtension: string = getCleanExt(resolvedPath);
-        setKeyInDict(resource, 'document.inputFormat', fileExtension);
-        //setKeyInDict(resource, 'document.inputFormat', 'pass-path');
-        resource.content = document.src;
-        return resource;
+        const readResource: IReadResource | null = getReadableResource(resource);
+        if (!readResource) {
+            return resource;
+        }
+        console.log(`Reading ${this.id}: ${readResource.src}`);
+        //const resolvedPath: string = path.resolve(readResource.src);
+        readResource.content = readResource.src;
+        return readResource;
     }
 }

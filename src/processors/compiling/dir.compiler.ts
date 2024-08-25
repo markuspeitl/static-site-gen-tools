@@ -1,11 +1,12 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getResourceDoc } from "../shared/document-helpers";
-import { filterFalsy, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
+import { filterFalsy, isDirPathOrDirectory, setKeyInDict, settleValueOrNull } from "@markus/ts-node-util-mk1";
 
 import path from "path";
+import * as fs from 'fs';
 
 export async function processDirChildResourceAt(
     dirPath: string,
@@ -13,8 +14,12 @@ export async function processDirChildResourceAt(
     config: SsgConfig
 ): Promise<IProcessResource> {
 
-    const srcSubDocPath: string = path.join(dirPath, dirNode);
+    let srcSubDocPath: string = path.join(dirPath, dirNode);
     //const targetSubDocPath: string = path.join(documentTarget, dirFile);
+
+    if (await isDirPathOrDirectory(srcSubDocPath)) {
+        srcSubDocPath += '/';
+    }
 
     const processedChildResource: IProcessResource = await config.processor.processDocument(
         srcSubDocPath,
@@ -26,7 +31,7 @@ export async function processDirChildResourceAt(
             'compiler'
         ]
     );
-    //setKeyInDict(resource, 'document.processed', dirFile);
+    //setKeyInDict(resource, '.processed', dirFile);
     return processedChildResource;
 }
 export class DirCompiler implements IResourceProcessor {
@@ -38,22 +43,23 @@ export class DirCompiler implements IResourceProcessor {
         return true;
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
-        }
-        const document: IResourceDoc = getResourceDoc(resource);
-        const documentSrc: string = document.src;
-        const documentTarget: string = document.target;
+        }*/
 
-        console.log(`Reading ${this.id}: ${documentSrc}`);
+        if (!resource.src) {
+            return resource;
+        }
+
+        console.log(`Compiling ${this.id}: ${resource.src}`);
         const dirFiles: string[] = resource.content;
         const resourceData: any = resource;
 
         const subDocProcessPromises: Promise<IProcessResource>[] = [];
         for (const dirFile of dirFiles) {
             subDocProcessPromises.push(
-                processDirChildResourceAt(documentSrc, dirFile, config)
+                processDirChildResourceAt(resource.src, dirFile, config)
             );
         }
 
@@ -62,7 +68,7 @@ export class DirCompiler implements IResourceProcessor {
 
         resource.content = filterFalsy(processedResources);
 
-        setKeyInDict(resource, 'document.outputFormat', 'dir');
+        resource.targetFormat = 'dir';
 
         //Currently workaround for writing
         resource.id = 'dir';

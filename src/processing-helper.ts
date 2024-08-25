@@ -10,7 +10,7 @@ export function registerProcessedDocument(
     resource: IProcessResource,
     config: SsgConfig,
 ): void {
-    if (resource.document?.src) {
+    if (resource.src) {
         if (!config.processedDocuments) {
             config.processedDocuments = [];
         }
@@ -99,6 +99,38 @@ async function processStagesOnResource(
     return processedResource;
 }
 
+async function forkProcessMergeBack(
+    resource: IProcessResource,
+    config: SsgConfig,
+    stagesToProcess?: string[],
+    propOverrides?: Record<string, any>,
+    mergeBackExcludes?: string[]
+): Promise<IProcessResource> {
+
+    if (!propOverrides) {
+        propOverrides = {
+            //id: 'extract__' + resource.src
+            id: this.id + "_" + resource.src
+        };
+    }
+
+    const forkedResource: IGenericResource = config.scopes.forkFromResource(
+        resource,
+        propOverrides
+    );
+
+    const compiledSubResource: IProcessResource = await config.processor.processStages(
+        forkedResource,
+        config,
+        stagesToProcess
+    );
+
+    return config.scopes.mergeToParent(
+        compiledSubResource,
+        mergeBackExcludes
+    );
+}
+
 async function forkSubResourceProcessStages(
     parentResource: IProcessResource,
     config: SsgConfig,
@@ -116,9 +148,12 @@ async function forkSubResourceProcessStages(
         parentResource,
         childProps,
         [
-            'control',
-            //'document'
-            //'parent'
+            'parent',
+            'pendingFragments',
+            'exclude',
+            'content',
+            'id'
+            //'importScope'
         ]
     );
 
@@ -130,10 +165,8 @@ async function processStagesOnInputPath(documentPath: string, config: SsgConfig,
 
     const toReadResource = {
         id: documentPath,
-        data: {
-            document: {
-                src: documentPath
-            }
+        document: {
+            src: documentPath
         }
     };
 
@@ -220,6 +253,14 @@ export interface ProcessingHelper {
         config: SsgConfig,
         stagesToProcess?: string[]
     ) => Promise<IProcessResource>;
+
+    forkProcessMergeBack: (
+        resource: IProcessResource,
+        config: SsgConfig,
+        stagesToProcess?: string[],
+        propOverrides?: Record<string, any>,
+        mergeBackExcludes?: string[],
+    ) => Promise<IProcessResource>;
 }
 
 export const defaultProcessingHelper: ProcessingHelper = {
@@ -228,7 +269,8 @@ export const defaultProcessingHelper: ProcessingHelper = {
     processDocument: processStagesOnInputPath,
     processDocumentTo: processStagesFromToPath,
     processStages: processStagesOnResource,
-    process: processStagesOnResource
+    process: processStagesOnResource,
+    forkProcessMergeBack: forkProcessMergeBack
 };
 
 /*export async function processRegisterDocument(

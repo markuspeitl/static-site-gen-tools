@@ -4,23 +4,20 @@ import type { IGenericControl, IGenericResource, IProcessor } from "../../proces
 
 export type MergeExcludeKeys = string[];
 
-export interface IResourceDoc {
-    inputFormat: string,
-    outputFormat: string,
-    src: string,
-    target: string;
-}
-
 export interface IResourceControl extends IGenericControl {
     pendingFragments?: IFragmentCompile[];
     importScope?: Record<string, IInternalComponent | IProcessor>;
 }
 
-export interface IProcessResource extends IGenericResource {
+export interface IProcessResource extends IGenericResource, IGenericControl {
     id?: string,
     content?: any,
-    control?: IResourceControl;
     exclude?: MergeExcludeKeys;
-    document?: Partial<IResourceDoc>;
+    //document?: Partial<IResourceDoc>;
+    //Resource props
+    src?: string,
+    srcFormat?: string,
+    targetFormat?: string,
+    target?: string,
 }
 

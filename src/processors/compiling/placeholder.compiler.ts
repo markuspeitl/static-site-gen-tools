@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
 import type { IInternalComponent } from '../../components/base/i-component';
 

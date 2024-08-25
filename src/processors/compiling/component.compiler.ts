@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IProcessingNode, IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { HtmlCompiler } from './html.compiler';
@@ -23,7 +23,7 @@ export class ComponentCompiler implements IResourceProcessor {
         if (!resource) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.src}`);
 
         //Fork the resource from which it is originating (but no merging back of the sub scopes)
         return compilePendingFragmentsOf(resource, config);

@@ -227,7 +227,7 @@ export async function loadUserConfig(defaultConfig: SsgConfig, configPath?: Fals
 
 export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
 
-    console.time('init');
+    console.time('init_runtime_state');
 
     /*if (!config.idCompileRunnersDict) {
         config.idCompileRunnersDict = {};
@@ -250,7 +250,19 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
     //config = resolveRelativePaths(config, path.join('..', __dirname));
     //config = resolveRelativePaths(config, process.cwd());
 
-    if (config.processingTreeConfig) {
+    async function initConfigProcessTree() {
+        config.processingTree = await initProcessingTreeFromConf(config.processingTreeConfig, undefined);
+        return;
+    }
+
+    const initStatePromises = [
+        initConfigProcessTree(),
+        initDefaultImportSymbols(config)
+    ];
+
+    await Promise.all(initStatePromises);
+
+    /*if (config.processingTreeConfig) {
         console.time('init_processing_tree');
         config.processingTree = await initProcessingTreeFromConf(config.processingTreeConfig, undefined);
         console.timeEnd('init_processing_tree');
@@ -258,15 +270,15 @@ export async function initializeConfig(config: SsgConfig): Promise<SsgConfig> {
 
     console.time('init_loading_default_components');
 
-    console.log("Loading default components");
+    console.log("Loading default components")
     //await loadDefaultComponents(config);
     await initDefaultImportSymbols(config);
     //const initializedConfig = await loadUserRuntimeConfig(config);
 
-    console.timeEnd('init_loading_default_components');
+    console.timeEnd('init_loading_default_components');;*/
 
 
-    console.timeEnd('init');
+    console.timeEnd('init_runtime_state');
 
     return config;
 }

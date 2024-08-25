@@ -151,24 +151,22 @@ export async function getComponentFromResource(
     config: SsgConfig
 ): Promise<FalsyAble<IInternalComponent>> {
 
-    if (resource.document?.inputFormat !== 'ts' && resource.document?.inputFormat !== 'js') {
+    if (resource.src?.endsWith('.ts') || resource.srcFormat == 'ts' || resource.src?.endsWith('.js') || resource.srcFormat == 'js') {
+        const inputPath: string | undefined = resource.src;
+        if (inputPath) {
+            const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
+            return filePathComponent;
+        }
+
+        if (resource.content) {
+            const bufferComponent: FalsyAble<IInternalComponent> = await getComponentFromBuffer(resource.content, config);
+            if (bufferComponent) {
+                return bufferComponent;
+            }
+        }
+
         return null;
     }
-
-    const inputPath: string | undefined = resource.document?.src;
-    if (inputPath) {
-        const filePathComponent: FalsyAble<IInternalComponent> = await getComponentFromPath(inputPath, config);
-        return filePathComponent;
-    }
-
-    if (resource.content) {
-        const bufferComponent: FalsyAble<IInternalComponent> = await getComponentFromBuffer(resource.content, config);
-        if (bufferComponent) {
-            return bufferComponent;
-        }
-    }
-
-    return null;
 }
 
 /*export async function getTsComponentFrom(componentPath: FalsyAble<string>, config: SsgConfig, moduleBuffer: FalsyAble<string>): Promise<FalsyAble<IInternalComponent>> {

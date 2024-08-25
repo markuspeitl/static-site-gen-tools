@@ -48,9 +48,9 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         resource: IProcessResource,
         config: SsgConfig,
         componentProcessingFnKey: string = 'render',
-        outputFormat: string = 'html'
+        targetFormat: string = 'html'
     ): Promise<IProcessResource> {
-        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);
 
         const component: FalsyAble<IInternalComponent> = await this.getComponentCompiler(resource, config);
         if (!component) {
@@ -60,13 +60,15 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         const componentResourceProcFn: ProcessFunction = component[ componentProcessingFnKey ];
         let processedResource: IProcessResource = await componentResourceProcFn(resource, config);
 
-        setKeyInDict(resource, 'document.outputFormat', outputFormat);
-        //setKeyInDict(resource, 'control.parent', resource.control?.parent);
+        resource.targetFormat = 'html';
 
         if (componentProcessingFnKey === 'data') {
+
+            //processedResource.parent = 
+
             //As the component 'data' fn might return a completely new data dict
-            Object.assign(resource, processedResource);
-            return resource;
+            //Object.assign(resource, processedResource);
+            return processedResource;
         }
 
         /*if (typeof dataResource === 'string') {

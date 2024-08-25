@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 import type { Environment } from 'nunjucks';
 
@@ -60,7 +60,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
+        //console.log(`LOG: Compiling '${this.id}': ${resource.src}`);
 
         console.log(`Compiling ${this.id}: `);
 
@@ -75,7 +75,7 @@ export class NunjucksCompiler implements IResourceProcessor {
         };*/
 
         //resource = setHtmlOutputFormat(resource);
-        setKeyInDict(resource, 'document.outputFormat', 'html');
+        resource.targetFormat = 'html';
 
         resource.content = compiledString;
 

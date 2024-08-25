@@ -1,9 +1,9 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
-import type { IResourceProcessor } from "../../processing-tree/i-processor";
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
+import type { IGenericResource, IResourceProcessor } from "../../processing-tree/i-processor";
 
-import { mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
-import { getResourceDoc } from "../shared/document-helpers";
+import { isDirPathOrDirectory, mapFilterRegexMatches } from "@markus/ts-node-util-mk1";
+import { getReadableResource, getResourceDoc, IReadResource } from "../shared/document-helpers";
 import path from 'path';
 
 const dataFilePathRegexes: RegExp[] = [
@@ -21,15 +21,21 @@ export class DirReader implements IResourceProcessor {
         return true;
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceId: string | undefined = resource.id;
+        /*const resourceId: string | undefined = resource.id;
         if (!resourceId) {
             return resource;
-        }
-        const document: IResourceDoc = getResourceDoc(resource);
-        const documentSrc: string = document.src;
+        }*/
 
-        console.log(`Extracting ${this.id}: ${documentSrc}`);
-        const dirFiles: string[] = resource.content;
+        const readResource: IReadResource | null = getReadableResource(resource);
+        if (!readResource) {
+            return resource;
+        }
+        /*if (!isDirPathOrDirectory(readResource.src)) {
+            return resource;
+        }*/
+
+        console.log(`Extracting ${this.id}: ${readResource.src}`);
+        const dirFiles: string[] = readResource.content;
         //const dirFiles: string[] = [];
         const dirDataFiles: string[] = mapFilterRegexMatches(
             dirFiles,
@@ -37,23 +43,32 @@ export class DirReader implements IResourceProcessor {
             (dirPath: string) => path.basename(dirPath)
         );
 
-        const resourceData: any = resource;
+
+        const extractDataPromises: Promise<IProcessResource>[] = [];
 
         for (let dirDataFile of dirDataFiles) {
             if (!path.isAbsolute(dirDataFile)) {
-                dirDataFile = path.join(documentSrc, dirDataFile);
+                dirDataFile = path.join(readResource.src, dirDataFile);
             }
 
-            //TODO this should fork a sub resource from the current dir context data instead (these fns should also be on the config itself)
-            //When cleaning the types it should be possible to write a processor without importing any external functionality
-            const dataFileResource: IProcessResource = await config.processor.processDocument(dirDataFile, config, [ 'reader', 'extractor' ]);
-            //Merge this or is assign enough
-            delete dataFileResource.document;
-            Object.assign(resourceData, dataFileResource.data);
+            const extractSubResourcePromise: Promise<IProcessResource> = config.processor.forkProcessMergeBack(
+                resource,
+                config,
+                [
+                    'reader',
+                    'extractor'
+                ],
+                {
+                    id: 'dir-child__' + dirDataFile
+                },
+                //dataMergeExcludes
+            );
+            extractDataPromises.push(extractSubResourcePromise);
         }
 
-        return resource;
+        await Promise.all(extractDataPromises);
 
-        //setKeyInDict(resource, 'document.outputFormat', 'dir');
+        return resource;
+        //setKeyInDict(resource, '.targetFormat', 'dir');
     }
 }

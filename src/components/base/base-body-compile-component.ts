@@ -1,6 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
 import type { IProcessResource } from "../../processors/shared/i-processor-resource";
-import { resetDocumentSetInputFormat } from "../../processors/shared/i-resource-processor";
 import type { IInternalComponent } from "./i-component";
 
 export abstract class BaseCompileContentFormatComponent implements IInternalComponent {
@@ -11,15 +10,15 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
 
     public async data(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
-        resource = resetDocumentSetInputFormat(resource, this.contentFormat);
-        resource.id = undefined;
+        //resource = resetDocumentSetInputFormat(resource, this.contentFormat);
+        //resource.id = undefined;
 
         //TODO: right now the `processResource` call using a document with only `inputFormat` set will result in the
         //data extraction stage being processed, followed by the compiling stage --> should not be the case when doing 'data'
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('extractor', resource, config);
 
-        const dataExtractedResource: IProcessResource = await config.processor.processFork(
+        const dataExtractedResource: IProcessResource = await config.processor.process(
             resource,
             config,
             [ 'extractor' ]
@@ -28,13 +27,13 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
     }
     public async render(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
 
-        resource = resetDocumentSetInputFormat(resource, this.contentFormat);
-        resource.id = undefined;
+        //resource = resetDocumentSetInputFormat(resource, this.contentFormat);
+        //resource.id = undefined;
 
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('compiler', resource, config);
 
-        const compiledResource: IProcessResource = await config.processor.processFork(
+        const compiledResource: IProcessResource = await config.processor.process(
             resource,
             config,
             [ 'compiler' ]

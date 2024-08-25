@@ -9,7 +9,7 @@ title: Sample markdown test usage compilation
 trueval: true
 
 #compileRunner: md njk ehtml
-compileRunner: html
+#compileRunner: html
 
 tags:
 - test

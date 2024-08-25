@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getLibInstance } from "../../dependencies/lib-module-instances";
@@ -51,7 +51,7 @@ export class MarkdownExtractor implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Extracting '${this.id}': ${resource.document?.src}`);
+        //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);
 
         const dataResource: IProcessResource = await parseMarkdownData(resource, config);
         //The data is different here, as it only contains parsed data,

@@ -18,14 +18,14 @@ export function registerPendingFragmentInResource(
     if (!resource) {
         resource = {};
     }
-    if (!resource.control) {
-        resource.control = {};
+    if (!resource) {
+        resource = {};
     }
-    if (!resource.control?.pendingFragments) {
-        resource.control.pendingFragments = [];
+    if (!resource.pendingFragments) {
+        resource.pendingFragments = [];
     }
 
-    resource.control.pendingFragments.push(fragmentCompileArgs);
+    resource.pendingFragments.push(fragmentCompileArgs);
 }
 
 export function getFragmentCompileArgs(

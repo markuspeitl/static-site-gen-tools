@@ -20,7 +20,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'reader',
                 inputGuard: {
-                    matchProp: 'document.src',
+                    matchProp: 'src',
                     matchCondition: true
                     //matchProp: 'id',
                     //matchCondition: true,
@@ -30,20 +30,23 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
                 preProcess: async function (resource: IGenericResource, config: SsgConfig) {
 
-                    const docSrc: string = resource.document.src;
-                    let extension: string = getCleanExt(docSrc);
-                    if (docSrc.endsWith('/')) {
-                        extension = '/';
+                    const docSrc: string = resource.src;
+
+                    if (docSrc) {
+                        let srcFormat: string = getCleanExt(docSrc);
+                        if (docSrc.endsWith('/')) {
+                            srcFormat = 'dir';
+                        }
+                        resource.srcFormat = srcFormat;
                     }
 
-                    setKeyInDict(resource, 'document.inputFormat', extension);
                     return resource;
                 },
 
                 srcDirs: [ './reading' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'document.inputFormat',
+                    matchProp: 'srcFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.reader',
                     processors: {
@@ -55,11 +58,11 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'yml': [ 'file' ],
                         'json': [ 'file' ],
                         //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        'jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        'jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         'scss': [ 'file' ],
                         'png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
                         //'.+\/': [ 'dir', 'watch' ],
-                        '/': [ 'dir' ],
+                        'dir': [ 'dir' ],
                         //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
                     }
                 }
@@ -67,14 +70,14 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'extractor',
                 inputGuard: {
-                    matchProp: 'document.inputFormat',
+                    matchProp: 'srcFormat',
                     matchCondition: true,
                 },
 
                 preProcess: async function (resource: IGenericResource, config: SsgConfig) {
                     const forkedResource: IGenericResource = config.scopes.forkFromResource(resource, {
-                        //id: 'extract__' + resource.document.src
-                        id: this.id + "_" + resource.document.src
+                        //id: 'extract__' + resource.src
+                        id: this.id + "_" + resource.src
                     });
                     return forkedResource;
                 },
@@ -85,7 +88,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 srcDirs: [ './extracting' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'document.inputFormat',
+                    matchProp: 'srcFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.extractor',
                     processors: {
@@ -104,14 +107,14 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'compiler',
                 inputGuard: {
-                    matchProp: 'document.inputFormat',
+                    matchProp: 'srcFormat',
                     matchCondition: true,
                 },
 
                 srcDirs: [ './compiling' ],
                 strategy: 'firstMatch',
                 fileProcessorChains: {
-                    matchProp: 'document.inputFormat',
+                    matchProp: 'srcFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.compiler',
                     processors: {
@@ -151,7 +154,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
             {
                 id: 'writer',
                 inputGuard: {
-                    matchProp: 'document.outputFormat',
+                    matchProp: 'targetFormat',
                     matchCondition: true,
                 },
                 srcDirs: [ './writing' ],
@@ -159,7 +162,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
                 fileProcessorChains: {
                     //matchProp: 'id',
-                    matchProp: 'document.outputFormat',
+                    matchProp: 'targetFormat',
                     strategy: 'serial',
                     fileIdPostfix: '.writer',
                     processors: {
@@ -168,7 +171,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'md': [ 'file' ],
                         'njk': [ 'file' ],
                         'ts': [ 'file' ],
-                        'jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        'jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         'scss': [ 'file' ],
                         'png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
 
@@ -177,7 +180,7 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         // '.+\.njk': [ 'file' ],
                         // '.+\.ts': [ 'file' ],
                         // //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        // '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set document.target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                        // '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
                         // //'.+\.scss': [ 'file' ],
                         // //'.+\/': [ 'dir' ],
                         // //'.+': [ 'dir' ],

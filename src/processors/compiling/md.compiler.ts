@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getLibInstance } from "../../dependencies/lib-module-instances";
@@ -45,12 +45,13 @@ export class MarkdownCompiler implements IResourceProcessor {
         if (!resourceContent) {
             return resource;
         }
-        //console.log(`LOG: Compiling '${this.id}': ${resource.document?.src}`);
+        console.log(`Compiling '${this.id}': ${resource.src} ${resource.fragmentId} ${resource.fragmentTag}`);
 
         resource.content = resourceContent;
         const dataResource: IProcessResource = await compileMarkdownResource(resource, config);
 
-        setKeyInDict(dataResource, 'document.outputFormat', 'html');
+        resource.targetFormat = 'html';
+
         return dataResource;
         //resource = setHtmlOutputFormat(resource);
         //return addHandlerId(dataResource, 'compiler', this);

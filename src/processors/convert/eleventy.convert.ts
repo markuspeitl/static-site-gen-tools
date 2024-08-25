@@ -1,5 +1,5 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from '../../processors/shared/i-processor-resource';
+import type { IProcessResource } from '../../processors/shared/i-processor-resource';
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { getLibInstance } from "../../dependencies/lib-module-instances";
@@ -87,7 +87,7 @@ export class EleventyConvert implements IResourceProcessor {
 
     /*public async canHandle(resource: IProcessResource, config: SsgConfig): Promise<boolean> {
 
-        const inputFormat = getKeyFromDict(resource, 'document.inputFormat');
+        const inputFormat = getKeyFromDict(resource, '.inputFormat');
         const inputFormats = [
             '.md',
             '.njk',
@@ -104,12 +104,12 @@ export class EleventyConvert implements IResourceProcessor {
             return resource;
         }
 
-        const inputPath = getKeyFromDict(resource, 'document.src');
+        const inputPath = getKeyFromDict(resource, '.src');
         if (!inputPath) {
             return resource;
         }
 
-        const inputDir = getKeyFromDict(resource, 'document.dir');
+        const inputDir = getKeyFromDict(resource, '.dir');
 
         const ancestorData = loadInheritedDataFor(inputPath, inputDir, config.data.globalData);
 

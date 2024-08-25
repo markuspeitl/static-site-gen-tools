@@ -1,16 +1,12 @@
 import type { SsgConfig } from "../../config/ssg-config";
-import type { IProcessResource, IResourceDoc } from "./i-processor-resource";
+import type { IProcessResource } from "./i-processor-resource";
 import type { IResourceProcessor } from "../../processing-tree/i-processor";
 
 import { ensureKeyAtDict } from "@markus/ts-node-util-mk1";
 
-
-export function addResourceDocProp(resource: IProcessResource, newValuesDict: any): IProcessResource {
+/*export function addResourceDocProp(resource: IProcessResource, newValuesDict: any): IProcessResource {
     if (!resource) {
         resource = {};
-    }
-    if (!resource.document) {
-        resource.document = {} as IResourceDoc;
     }
     Object.assign(resource.document, newValuesDict);
     return resource;
@@ -58,4 +54,4 @@ export function setOutputFormat(resource: IProcessResource, format: string): IPr
 
 export function setHtmlOutputFormat(resource: IProcessResource): IProcessResource {
     return setOutputFormat(resource, 'html');
-}
+}*/

@@ -6,6 +6,6 @@ title: Subdir content
 
 Work in progress  
 Here the site   
-{{ title }} @ {{ document.target }}
+{{ title }} @ {{ target }}
 {{ title }} @ {{ permalink }}
 will be created

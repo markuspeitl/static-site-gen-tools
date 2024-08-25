@@ -2,6 +2,7 @@ import type { SsgConfig } from './config/ssg-config';
 import type { IProcessResource } from './processors/shared/i-processor-resource';
 import { parseArgsSetupInitializeConfig } from './config/setup-config';
 import { printProcessedDocuments, serveProcessedResults } from './serve/results-explore';
+import * as lodash from 'lodash';
 
 //Startup is about 1.3 seconds
 //800msec compiling the processing tree
@@ -52,11 +53,8 @@ export async function run(config: SsgConfig, resource?: IProcessResource): Promi
 
     if (!resource) {
         resource = {
-            content: null,
-            document: {
-                src: sourcePath,
-                target: targetPath
-            }
+            src: sourcePath,
+            target: targetPath
         };
     }
 
@@ -65,8 +63,9 @@ export async function run(config: SsgConfig, resource?: IProcessResource): Promi
     //console.time('full_processing');
     //const processedResource: IProcessResource = await config.processor.processDocumentTo(sourcePath, targetPath, config);
 
-    /*for (let i = 0; i < 5; i++) {
-        const processedResource: IProcessResource = await config.processor.process(resource, config);
+    /*for (let i = 0; i < 10; i++) {
+        let newResource = lodash.cloneDeep(resource);
+        const processedResource: IProcessResource = await config.processor.process(newResource, config);
     }*/
     const processedResource: IProcessResource = await config.processor.process(resource, config);
     //console.timeEnd('full_processing');

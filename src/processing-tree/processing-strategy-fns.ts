@@ -136,7 +136,7 @@ export async function processNode(
         resource,
         config
     );
-    registerNodeInResource(node, resource);
+    //registerNodeInResource(node, resource);
 
     if (node.postProcess) {
         resource = await node.postProcess(resource, config);
@@ -219,16 +219,17 @@ export function canNodeProcess(
 }*/
 
 export function registerNodeInResource(node: IProcessingNode, resource: IGenericResource): void {
-    ensureKeyAtDict(resource, 'control.handledProcIds', []);
-    ((resource.control as IGenericControl).handledProcIds as string[]).push(node.id);
+    //ensureKeyAtDict(resource, 'handledProcIds', []);
+    //((resource as IGenericControl).handledProcIds as string[]).push(node.id);
 }
 
 export function isNodeRegisteredInResource(node: IProcessingNode, resource: IGenericResource): boolean {
     //Oneshot check
-    const previousHandlers: string[] | undefined = resource.control?.handledProcIds;
+    /*const previousHandlers: string[] | undefined = resource.handledProcIds;
     if (previousHandlers && previousHandlers.includes(node.id)) {
         return true;
     }
+    return false;*/
     return false;
 }
 
