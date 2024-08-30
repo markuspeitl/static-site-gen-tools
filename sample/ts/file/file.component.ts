@@ -1,6 +1,6 @@
 import { StaticAssembledFileComponent } from "../../../src/components/base/common-components";
 
-export class FileComponent extends StaticAssembledFileComponent {
+export class StaticFileComponent extends StaticAssembledFileComponent {
     public files: Record<string, string> = {
         data: './file.json',
         style: './file.css',
@@ -9,6 +9,6 @@ export class FileComponent extends StaticAssembledFileComponent {
     };
 }
 
-const fileComponent: FileComponent = new FileComponent();
+const fileComponent: StaticFileComponent = new StaticFileComponent();
 
 export default fileComponent;

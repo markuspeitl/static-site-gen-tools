@@ -77,10 +77,14 @@ export function getFragmentResourceWith(
     else {
         parentForkedResource = Object.assign({}, parentForkedResource, fragmentResource);
     }*/
-    const parentResourceData = config.scopes.dataFromResource(parentResource);
+    const parentResourceData = config.scopes.dataFromResource(
+        parentResource
+    );
     const fragmentHtmlResource: IProcessResource = getFragmentResource(pendingArgs, config);
     fragmentHtmlResource.id = pendingArgs.id + '__' + pendingArgs.name;
     const fragmentResource: IProcessResource = Object.assign(parentResourceData, fragmentHtmlResource);
+
+    //fragmentResource.parent = parentResourceData
 
     //setKeyInDict(fragmentResource, 'control.parent')
 
@@ -89,6 +93,8 @@ export function getFragmentResourceWith(
         fragmentResource,
         config
     );
+
+    pathsResolvedResource.content = removeBaseBlockIndent(pathsResolvedResource.content);
 
     return pathsResolvedResource;
 }
@@ -111,9 +117,24 @@ export async function compileFragment(
         return resource;
     }
 
-    resource.content = removeBaseBlockIndent(resource.content);
+    resource.srcFormat = 'component';
+    resource.targetFormat = 'html';
 
-    const toProcessResourceFunctions: ProcessFunction[] = [];
+    (resource as any).componentInstance = selectedImportedInstance;
+
+    resource.input = resource.content;
+    const renderedComponentInstance: IProcessResource = await config.processor.process(
+        resource,
+        config,
+        [
+            'extractor',
+            'compiler'
+        ]
+    );
+
+    return renderedComponentInstance;
+
+    /*const toProcessResourceFunctions: ProcessFunction[] = [];
 
     if ((selectedImportedInstance as IInternalComponent).data) {
         toProcessResourceFunctions.push((selectedImportedInstance as IInternalComponent).data);
@@ -130,7 +151,7 @@ export async function compileFragment(
         resource,
         selectedImportedInstance,
         config
-    );
+    );*/
 
 
     //const selectedSubComponent: IInternalComponent = availableComponentsCache[ resource.fragmentTag ];
@@ -195,7 +216,11 @@ export async function compileFromFragmentArgs(
         parentResource,
         config
     );
-    return compileFragment(resourceToCompile, config);
+    const compiledFragmentResource: IProcessResource = await compileFragment(resourceToCompile, config);
+    if (compiledFragmentResource !== resourceToCompile) {
+        resourceToCompile.content = compiledFragmentResource.content;
+    }
+    return resourceToCompile;
 }
 
 export async function compilePendingFragmentsOf(
@@ -204,12 +229,13 @@ export async function compilePendingFragmentsOf(
 ): Promise<IProcessResource> {
 
     //let selectedDependencies: Record<string, IInternalComponent> = getResourceImportsCache(resource, config);
-
     if (!resource.pendingFragments) {
         return resource;
     }
 
     const childrenCompilePromises: Promise<IProcessResource>[] = [];
+
+    //const startedPendingCompileArgs: IFragmentCompile[] = [];
     for (const pendingCompileArgs of resource.pendingFragments) {
         const compilePromise = compileFromFragmentArgs(
             resource,
@@ -217,7 +243,9 @@ export async function compilePendingFragmentsOf(
             config
         );
         childrenCompilePromises.push(compilePromise);
+        //startedPendingCompileArgs.push(pendingCompileArgs);
     }
+    resource.pendingFragments = [];
 
     const compiledComponentResources: Array<any | null> = await settleValueOrNull(childrenCompilePromises);
 

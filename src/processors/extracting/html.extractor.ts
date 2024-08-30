@@ -108,8 +108,12 @@ export class HtmlExtractor implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
-        if (!resourceContent) {
+        resource.content = resource.content?.trim();
+        if (!resource.content) {
+            return resource;
+        }
+        //if (!resource.content.split('\n')[ 0 ].includes('data')) {
+        if (!resource.content.startsWith('<data')) {
             return resource;
         }
         //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);

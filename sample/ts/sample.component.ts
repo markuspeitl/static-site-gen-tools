@@ -1,3 +1,4 @@
+import { html } from "@markus/ts-node-util-mk1";
 
 
 
@@ -41,16 +42,18 @@ export function style() {
 }
 
 export function render(data: any) {
-    return `
+    return html`
         <h1>{{data.text}}</h1>
         <p>{{data.topClass}}</p>
 
+        <md>
         # Markdown test
         
         - lets
         - try
         - some
         - bulletpoints
+        </md>
     `;
 }
 

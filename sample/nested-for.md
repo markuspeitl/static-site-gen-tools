@@ -12,6 +12,10 @@ tags:
 somevalue: hello from somevalue
 ---
 
+<data>
+    <testprop>My value</testprop>
+</data>
+
 <if cond="false">
     Non Truthy if - before anything else --> if this shows there is something wrong
 </if>
@@ -40,12 +44,21 @@ somevalue: hello from somevalue
     </if>
 
     <if cond="false">
-        <data>
-            <somevalue>Trying to shadow somevalue --> does not work as placeholder would need to be replaced before doing data extraction</somevalue>
-        </data>
-        IF CONDITION MATCHED: This should not be shown (falsy value test)
-        {{somevalue}}
+        <ehtml>
+            <data>
+                <somevalue>Trying to shadow somevalue --> does not work as placeholder would need to be replaced before doing data extraction</somevalue>
+            </data>
+            IF CONDITION MATCHED: This should not be shown (falsy value test)
+            {{somevalue}}
+        </ehtml>
     </if>
+
+    <ehtml>
+        <data>
+            <somevalue>Shadow somevalue for sub component</somevalue>
+        </data>
+        SOMEVALUE: {{somevalue}}
+    </ehtml>
 
     <if cond="this.tag === 'peach'">
         IF CONDITION MATCHED: I am a fruit: PEACH

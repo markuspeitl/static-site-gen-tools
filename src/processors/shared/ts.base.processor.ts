@@ -50,7 +50,7 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         componentProcessingFnKey: string = 'render',
         targetFormat: string = 'html'
     ): Promise<IProcessResource> {
-        //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);
+        console.log(`Apply ts processor '${componentProcessingFnKey}' on -- '${this.id}': ${resource.src}`);
 
         const component: FalsyAble<IInternalComponent> = await this.getComponentCompiler(resource, config);
         if (!component) {

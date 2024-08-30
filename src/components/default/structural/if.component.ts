@@ -32,10 +32,9 @@ export abstract class IfComponent implements BaseComponent, IInternalComponent {
             return resource;
         }
 
-        const data: any = resource;
-        const conditionExpression: string = data.cond;
+        const conditionExpression: string = resource.cond;
 
-        const conditionFn = getScopedEvalFn(data, conditionExpression);
+        const conditionFn = getScopedEvalFn(resource, conditionExpression);
         const truthyValue: boolean = Boolean(conditionFn());
 
         if (truthyValue) {

@@ -31,6 +31,13 @@ export interface IProcessor {
     canProcess?: CanProcessEvaluator;
 }
 
+export function isProcessor(processor): processor is IProcessor {
+    if (processor.process) {
+        return true;
+    }
+    return false;
+}
+
 export interface IResourceProcessor extends IProcessor {
     id: string;
     //canHandle: CanHandleFunction;

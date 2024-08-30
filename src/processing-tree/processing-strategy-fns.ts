@@ -33,7 +33,7 @@ export async function processSerial(
 
     let resultResource: IGenericResource = resource;
     for (const processor of chainToProcess) {
-        resultResource = await processor.process(resource, config, ...args);
+        resultResource = await processor.process(resultResource, config, ...args);
     }
     return resultResource;
 }
@@ -119,6 +119,17 @@ export async function processNode(
     selectStrategy?: string
 ): Promise<IGenericResource> {
 
+    const canProcess: boolean = await evaluateNodeCanProcess(
+        node,
+        resource,
+        config
+    );
+    if (!canProcess) {
+        return resource;
+    }
+
+    console.log(`Processing '${node.id}': <res-id> '${resource.id}' <src> ${resource.src} <fragment> ${resource.fragmentId} ${resource.fragmentTag}`);
+
     const subProcessors: IProcessor[] = getNodeProcessors(node);
     if ((node as any).strategy) {
         selectStrategy = (node as any).strategy;
@@ -127,22 +138,33 @@ export async function processNode(
         selectStrategy = 'default';
     }
 
+    let inputResource: IGenericResource = resource;
     if (node.preProcess) {
-        resource = await node.preProcess(resource, config);
+        inputResource = await node.preProcess(resource, config);
+    }
+    if (!inputResource) {
+        return resource;
     }
 
-    resource = await processStrategyFns[ selectStrategy ](
+    let processedResource: IGenericResource = await processStrategyFns[ selectStrategy ](
         subProcessors,
         resource,
         config
     );
+    if (processedResource !== resource && !processedResource.parent) {
+        processedResource.parent = resource;
+    }
+    if (!processedResource) {
+        return inputResource;
+    }
+
     //registerNodeInResource(node, resource);
 
     if (node.postProcess) {
-        resource = await node.postProcess(resource, config);
+        processedResource = await node.postProcess(processedResource, config);
     }
 
-    return resource;
+    return processedResource;
 }
 
 

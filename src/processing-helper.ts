@@ -136,25 +136,39 @@ async function forkSubResourceProcessStages(
     config: SsgConfig,
     stagesToProcess: string[] | undefined,
     processRunnerId?: string, //appended to resource id to track changes, not required
+    overrideProps?: Record<string, any>
 ): Promise<IProcessResource> {
 
     if (!processRunnerId) {
         processRunnerId = 'child';
     }
-    const childProps: any = {
+
+    if (!overrideProps) {
+        overrideProps = {};
+    }
+    Object.assign(
+        overrideProps,
+        {
+            id: parentResource.id + '->' + processRunnerId
+        }
+    );
+
+    /*const childProps: any = {
         id: parentResource.id + '->' + processRunnerId
-    };
+    };*/
     const childForkedResource: IProcessResource = config.scopes.forkFromResource(
         parentResource,
-        childProps,
-        [
+        overrideProps,
+        undefined,
+        true
+        /*[
             'parent',
             'pendingFragments',
             'exclude',
             'content',
             'id'
             //'importScope'
-        ]
+        ]*/
     );
 
     return processStagesOnResource(childForkedResource, config, stagesToProcess);
@@ -165,9 +179,7 @@ async function processStagesOnInputPath(documentPath: string, config: SsgConfig,
 
     const toReadResource = {
         id: documentPath,
-        document: {
-            src: documentPath
-        }
+        src: documentPath
     };
 
     return processStagesOnResource(toReadResource, config, stagesToProcess);
@@ -199,19 +211,38 @@ async function processStagesFromToPath(
 async function renderComponentBodyContent(
     resource: IProcessResource,
     config: SsgConfig,
-    processRunId?: string
+    processRunId?: string,
+    overrideProps?: Record<string, any>,
+    stages?: string[]
 ): Promise<IProcessResource> {
+
+    if (!overrideProps) {
+        overrideProps = {};
+    }
+
+    overrideProps = Object.assign(
+        {
+            srcFormat: 'html',
+            targetFormat: 'html'
+        },
+        overrideProps
+    );
+
+    if (!stages) {
+        stages = [
+            'extractor',
+            'compiler'
+        ];
+    }
 
     //forkedResource.id = forkedResource.id + processRunId;
     //const stagesRunId: string = processRunId;
     return forkSubResourceProcessStages(
         resource,
         config,
-        [
-            'extractor',
-            'compiler'
-        ],
-        processRunId
+        stages,
+        processRunId,
+        overrideProps
     );
 };
 
@@ -219,14 +250,17 @@ export interface ProcessingHelper {
     renderFork: (
         parentResource: IProcessResource,
         config: SsgConfig,
-        processRunId?: string
+        processRunId?: string,
+        overrideProps?: Record<string, any>,
+        stages?: string[]
     ) => Promise<IProcessResource>;
 
     processFork: (
         parentResource: IProcessResource,
         config: SsgConfig,
         stagesToProcess?: string[],
-        processRunId?: string
+        processRunId?: string,
+        overrideProps?: Record<string, any>,
     ) => Promise<IProcessResource>;
 
     processDocument: (

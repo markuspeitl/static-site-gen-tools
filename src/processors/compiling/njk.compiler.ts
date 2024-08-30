@@ -56,19 +56,16 @@ export class NunjucksCompiler implements IResourceProcessor {
     }*/
 
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
-        if (!resourceContent) {
+        resource.content = resource.content?.trim();
+        if (!resource.content) {
             return resource;
         }
         //console.log(`LOG: Compiling '${this.id}': ${resource.src}`);
 
-        console.log(`Compiling ${this.id}: `);
-
-        resource.content = resourceContent;
-
+        console.log(`Compiling '${this.id}': <src> ${resource.src} <fragment> ${resource.fragmentId} ${resource.fragmentTag}`);
 
         const nunjucks: Environment = await getLibInstance('nunjucks', config);
-        const compiledString: string = nunjucks.renderString(resource.content, resource || {});
+        const compiledString: string = nunjucks.renderString(resource.content, resource);
         /*const dataResource: IProcessResource = {
             content: compiledString,
             data: resource

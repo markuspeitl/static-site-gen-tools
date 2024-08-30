@@ -47,10 +47,14 @@ export class MarkdownExtractor implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
-        if (!resourceContent) {
+        resource.content = resource.content?.trim();
+        if (!resource.content) {
             return resource;
         }
+        if (!resource.content.startsWith('---')) {
+            return resource;
+        }
+
         //console.log(`LOG: Extracting '${this.id}': ${resource.src}`);
 
         const dataResource: IProcessResource = await parseMarkdownData(resource, config);

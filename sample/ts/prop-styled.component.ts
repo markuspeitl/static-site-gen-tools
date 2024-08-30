@@ -31,7 +31,7 @@ export class PropStyleComponent implements ExtensiveComponent {
         <h1><data-title /></h1>
         <p>{{ description }}</p>
         <div>
-            {{ content }}
+            {{ inner }}
         </div>
     `;
 }

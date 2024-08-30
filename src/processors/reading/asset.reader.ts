@@ -38,6 +38,7 @@ export class AssetReader extends PassPathReader {
             return resource;
         }
         readResource.srcFormat = 'asset';
+        readResource.targetFormat = getCleanExt(readResource.src);
 
         /*
         console.log(`Reading ${this.id}: ${.src}`);

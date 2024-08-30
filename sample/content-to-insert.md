@@ -22,14 +22,18 @@ import: './frame-to-wrap.html'
 
 <frame-to-wrap>
 
-### Hello Content
+    <md>
+    ### Hello Content
 
-Hello world from content
-to be inserted into 
-'./frame-to-wrap.html'
+    Hello world from content
+    to be inserted into 
+    './frame-to-wrap.html'
 
-- One
-- Two
-- Three
+    - One
+    - Two
+    - Three
+    </md>
 
 </frame-to-wrap>
+
+<p>After frame wrap</p>

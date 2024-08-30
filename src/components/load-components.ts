@@ -22,13 +22,14 @@ export function addPostProcessingNormalization(componentInstance: BaseComponent)
     //Convert to resource in postprocessing if the component render returns a string
     const origRenderFn: any = componentInstance.render;
     componentInstance.render = async (...args: any[]) => {
-        const resource: any = await origRenderFn.call(componentInstance, ...args);
-        if (typeof resource === 'string') {
-            return {
-                content: resource
-            };
+        const processedResource: any = await origRenderFn.call(componentInstance, ...args);
+        if (typeof processedResource === 'string') {
+            const resource = args[ 0 ];
+            resource.content = processedResource;
+
+            return resource;
         }
-        return resource;
+        return processedResource;
     };
 }
 
@@ -80,8 +81,11 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     if (componentInstance.render && typeof componentInstance.render === 'string') {
 
         const renderContent: string = componentInstance.render;
-        componentInstance.render = async (resource: IProcessResource, config: SsgConfig) => {
-            return renderContent;
+        componentInstance.render = function (resource: IProcessResource, config: SsgConfig) {
+
+            resource.content = renderContent;
+
+            return resource;
             /*return {
                 content: renderContent,
                 data: dataCtx,
@@ -91,7 +95,7 @@ export function moduleToComponentInstance(module: IExternalComponentModule): Fal
     if (componentInstance.data && typeof componentInstance.data === 'object') {
 
         const staticData: Object = componentInstance.data;
-        componentInstance.data = (resource: IProcessResource, config: SsgConfig) => {
+        componentInstance.data = function (resource: IProcessResource, config: SsgConfig) {
             return staticData;
             /*return {
                 content: '',

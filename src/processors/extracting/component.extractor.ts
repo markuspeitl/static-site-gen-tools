@@ -1,10 +1,9 @@
 import type { SsgConfig } from "../../config/ssg-config";
 import type { IImportInstance } from "../../components/resolve-imports";
 import { isComponentResource, type IProcessResource } from '../../processors/shared/i-processor-resource';
-import { isProcessor } from "../../processing-tree/i-processor";
-import { isRenderComponent } from "../../components/base/i-component";
+import { isDataComponent, type IInternalComponent } from '../../components/base/i-component';
 
-export const id: string = 'component.compiler';
+export const id: string = 'component.extractor';
 
 export async function process(
     resource: IProcessResource,
@@ -18,12 +17,9 @@ export async function process(
 
     const component: IImportInstance = resource.componentInstance;
 
-    if (isProcessor(component)) {
-        return component.process(resource, config);
-    }
-    else if (isRenderComponent(component)) {
-        return component.render(resource, config);
+    if (!isDataComponent(component)) {
+        return resource;
     }
 
-    return resource;
+    return component.data(resource, config);
 }

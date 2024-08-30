@@ -80,10 +80,6 @@ export function setTargetFromFormat(
     overridePostFix?: string,
 ): void {
 
-    if (!document) {
-        return;
-    }
-
     resource.target = getTargetFromResourceFormat(
         resource,
         targetFormat,
@@ -144,7 +140,13 @@ export function getReadableResource(
 ): IReadResource | null {
 
     if (resource.src && !resource.srcFormat) {
-        resource.srcFormat = getCleanExt(resource.src);
+
+        if (resource.src.endsWith('/')) {
+            resource.srcFormat = 'dir';
+        }
+        else {
+            resource.srcFormat = getCleanExt(resource.src);
+        }
     }
     if (!resource.src) {
         return null;

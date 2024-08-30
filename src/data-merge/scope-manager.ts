@@ -22,7 +22,8 @@ export interface IScopeManager {
     forkFromResource: (
         baseResource: IProcessResource,
         forkedResourceProps?: Record<string, any>,
-        forkExcludeKeys?: string[]
+        forkExcludeKeys?: string[],
+        noParentSet?: boolean
     ) => IProcessResource;
 
     dataFromResource: (
@@ -38,34 +39,48 @@ export const controlFlowExcludes = [
 ];
 export const documentExcludes = [
     'src',
-    'inputFormat',
-    'outputFormat',
+    'srcFormat',
+    'targetFormat',
     'target',
 ];
 
-export const defaultForkMergeExcludedKeys = [
-    'id',
-    //'document',
-    //'content',
-    'exclude',
-].concat(controlFlowExcludes);
+export const fragmentExcludes = [
+    'componentInstance',
+    'fragmentId',
+    'fragmentTag',
+    'placeholder',
+    'import',
+    //'currentImportSymbols'
+];
 
-export const defaultMergeExcludedKeys = [
+export const defaultForkControlExcludeKeys = [
     'id',
-    //'document',
-    //'content',
     'exclude',
-].concat(controlFlowExcludes);
+    ...controlFlowExcludes
+];
+
+export const defaultForkMergeExcludedKeys = [
+    ...defaultForkControlExcludeKeys,
+    ...documentExcludes,
+    ...fragmentExcludes
+];
+export const defaultMergeExcludedKeys = [
+    ...defaultForkControlExcludeKeys,
+    ...documentExcludes,
+    ...fragmentExcludes
+];
 
 export const dataExcludeKeys = [
-    'id',
     'content',
-    'exclude',
-].concat(controlFlowExcludes);
+    ...defaultForkControlExcludeKeys,
+    ...documentExcludes,
+    ...fragmentExcludes
+];
+
 
 const defaultResourceTemplate: IProcessResource = {
     id: undefined,
-    exclude: defaultMergeExcludedKeys
+    //exclude: defaultMergeExcludedKeys
 };
 
 
@@ -183,7 +198,8 @@ export function mergeToParent(
 
 export function forkResourceData(
     resource: IProcessResource,
-    forkExcludeKeys?: string[]
+    forkExcludeKeys?: string[],
+    noParentSet: boolean = false
 ): IProcessResource {
 
     let resourceTemplate: IProcessResource = lodash.cloneDeep(defaultResourceTemplate);
@@ -205,8 +221,12 @@ export function forkResourceData(
     if (!resourceTemplate) {
         resourceTemplate = {};
     }
-    resourceTemplate.parent = resource;
 
+    if (noParentSet) {
+        return resourceTemplate;
+    }
+
+    resourceTemplate.parent = resource;
     return resourceTemplate;
 }
 
@@ -214,7 +234,8 @@ export function forkResourceData(
 export function forkFromResource(
     baseResource: IProcessResource,
     forkedResourceProps?: Record<string, any>,
-    forkExcludeKeys?: string[]
+    forkExcludeKeys?: string[],
+    noParentSet: boolean = false
 ): IProcessResource {
 
     if (!forkedResourceProps) {
@@ -223,7 +244,8 @@ export function forkFromResource(
 
     const resourceTemplate: IProcessResource = forkResourceData(
         baseResource,
-        forkExcludeKeys
+        forkExcludeKeys,
+        noParentSet
     );
     const subResource: IProcessResource = Object.assign(resourceTemplate, forkedResourceProps);
     return subResource;

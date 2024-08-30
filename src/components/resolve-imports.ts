@@ -108,7 +108,14 @@ export async function registerImportReferenceSymbol(
     await settleValueOrNull(registerSymbolPromises);
 }
 
-export async function registerImportDirs(dirsToImport: string[], targetSymbolPathsMapper: ImportSymbolsToPaths): Promise<void> {
+export async function registerImportDirs(dirsToImport: string[], targetSymbolPathsMapper: ImportSymbolsToPaths): Promise<ImportSymbolsToPaths | null> {
+    if (!dirsToImport) {
+        return targetSymbolPathsMapper;
+    }
+    if (!targetSymbolPathsMapper) {
+        return null;
+    }
+
     for (const importDirPath of dirsToImport) {
         /*const importDirFilesRef: ImportReference = {
             path: path.join(importDirPath, '*'),
@@ -119,12 +126,16 @@ export async function registerImportDirs(dirsToImport: string[], targetSymbolPat
         //await registerImportReferenceSymbol(importDirFilesRef, targetSymbolPathsMapper);
         await registerImportReferenceSymbol(importDirDescendantsRef, targetSymbolPathsMapper);
     }
+    return targetSymbolPathsMapper;
 }
 
 export async function evaluateLocalImportSymbols(
     resource: IProcessResource,
     config: SsgConfig
-): Promise<ImportSymbolsToPaths> {
+): Promise<ImportSymbolsToPaths | null> {
+    if (!resource.import) {
+        return null;
+    }
 
     const localImportSymbolPaths: ImportSymbolsToPaths = {};
 
@@ -140,48 +151,70 @@ export async function evaluateLocalImportSymbols(
     return localImportSymbolPaths;
 }
 
-export async function initDefaultImportSymbols(config: SsgConfig): Promise<ImportSymbolsToPaths> {
+export async function initDefaultImportSymbols(config: SsgConfig): Promise<ImportSymbolsToPaths | null> {
 
     if (config.defaultImportSymbolsInitialized) {
         return config.defaultImportSymbolPaths;
     }
-    if (!config.defaultImportSymbolPaths) {
+
+    if (!config.defaultImportSymbolPaths && !config.defaultImportsDirs) {
+        return null;
+    }
+
+    /*if (!config.defaultImportSymbolPaths) {
         config.defaultImportSymbolPaths = {};
     }
     if (!config.defaultImportsDirs) {
         config.defaultImportsDirs = [];
-    }
+    }*/
 
     console.time('init_default_import_paths');
 
-    await registerImportDirs(config.defaultImportsDirs, config.defaultImportSymbolPaths);
-
+    const loadedDefaultImportSymbolPaths: ImportSymbolsToPaths | null = await registerImportDirs(config.defaultImportsDirs, config.defaultImportSymbolPaths);
     config.defaultImportSymbolsInitialized = true;
+
+    if (loadedDefaultImportSymbolPaths) {
+        config.defaultImportSymbolPaths = loadedDefaultImportSymbolPaths as any;
+    }
 
     console.timeEnd('init_default_import_paths');
 
-    return config.defaultImportSymbolPaths;
+    return loadedDefaultImportSymbolPaths;
 }
 
 export async function initLocalImportSymbols(
     resource: IProcessResource,
     config: SsgConfig
-): Promise<ImportSymbolsToPaths> {
+): Promise<ImportSymbolsToPaths | null> {
 
     if (resource.localImportSymbols) {
         return resource.localImportSymbols;
     }
-    const localImportSymbolPaths: ImportSymbolsToPaths = await evaluateLocalImportSymbols(resource, config);
+    const localImportSymbolPaths: ImportSymbolsToPaths | null = await evaluateLocalImportSymbols(resource, config);
+    if (!localImportSymbolPaths) {
+        return null;
+    }
+
     resource.localImportSymbols = localImportSymbolPaths;
     return resource.localImportSymbols;
 }
 
-export async function initResourceImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<ImportSymbolsToPaths> {
+export async function initResourceImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<ImportSymbolsToPaths | null> {
 
-    const defaultImportSymbolPaths: ImportSymbolsToPaths = await initDefaultImportSymbols(config);
-    const localImportSymbolPaths: ImportSymbolsToPaths = await initLocalImportSymbols(resource, config);
+    const defaultImportSymbolPaths: ImportSymbolsToPaths | null = await initDefaultImportSymbols(config);
+    const localImportSymbolPaths: ImportSymbolsToPaths | null = await initLocalImportSymbols(resource, config);
+    if (!defaultImportSymbolPaths && !localImportSymbolPaths) {
+        return null;
+    }
 
-    const currentImportSymbolsToPaths: ImportSymbolsToPaths = Object.assign({}, defaultImportSymbolPaths, localImportSymbolPaths);
+    const currentImportSymbolsToPaths: ImportSymbolsToPaths = {};
+    if (defaultImportSymbolPaths) {
+        Object.assign(currentImportSymbolsToPaths, defaultImportSymbolPaths);
+    }
+    if (defaultImportSymbolPaths) {
+        Object.assign(currentImportSymbolsToPaths, localImportSymbolPaths);
+    }
+
     resource.currentImportSymbols = currentImportSymbolsToPaths;
     return currentImportSymbolsToPaths;
 }
@@ -190,7 +223,10 @@ export async function initResourceImportSymbols(resource: IProcessResource, conf
 // like 'for' or 'mynamespace.for'
 export async function getFlatResourceImportSymbols(resource: IProcessResource, config: SsgConfig): Promise<string[]> {
 
-    const currentImportSymbolsToPaths: ImportSymbolsToPaths = await initResourceImportSymbols(resource, config);
+    const currentImportSymbolsToPaths: ImportSymbolsToPaths | null = await initResourceImportSymbols(resource, config);
+    if (!currentImportSymbolsToPaths) {
+        return [];
+    }
 
     const symbolIds: string[] = [];
 

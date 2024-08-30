@@ -27,18 +27,16 @@ export class HtmlCompiler implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
-        if (!resourceContent) {
+        resource.content = resource.content?.trim();
+        if (!resource.content) {
             return resource;
         }
-
-        resource.content = resourceContent;
-        const dataResource: IProcessResource = resource;
+        //const dataResource: IProcessResource = resource;
 
         //resource = setHtmlOutputFormat(resource);
         resource.targetFormat = 'html';
 
-        return dataResource;
+        return resource;
         //return addHandlerId(dataResource, 'compiler', this);
     }
 }

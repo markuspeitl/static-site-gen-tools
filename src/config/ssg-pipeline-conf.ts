@@ -2,6 +2,8 @@ import { getCleanExt, setKeyInDict } from "@markus/ts-node-util-mk1";
 import type { IGenericResource } from "../processing-tree/i-processor";
 import type { IProcessingNodeConfig } from "./../processing-tree/i-processor-config";
 import type { SsgConfig } from "./ssg-config";
+import { defaultForkControlExcludeKeys } from "../data-merge/scope-manager";
+import { getReadableResource, IReadResource } from "../processors/shared/document-helpers";
 
 export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
@@ -30,17 +32,8 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
 
                 preProcess: async function (resource: IGenericResource, config: SsgConfig) {
 
-                    const docSrc: string = resource.src;
-
-                    if (docSrc) {
-                        let srcFormat: string = getCleanExt(docSrc);
-                        if (docSrc.endsWith('/')) {
-                            srcFormat = 'dir';
-                        }
-                        resource.srcFormat = srcFormat;
-                    }
-
-                    return resource;
+                    const readResource: IReadResource | null = getReadableResource(resource);
+                    return readResource as IGenericResource;
                 },
 
                 srcDirs: [ './reading' ],
@@ -75,14 +68,19 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 },
 
                 preProcess: async function (resource: IGenericResource, config: SsgConfig) {
-                    const forkedResource: IGenericResource = config.scopes.forkFromResource(resource, {
-                        //id: 'extract__' + resource.src
-                        id: this.id + "_" + resource.src
-                    });
+                    const forkedResource: IGenericResource = config.scopes.forkFromResource(
+                        resource,
+                        {
+                            //id: 'extract__' + resource.src
+                            id: this.id + "_" + resource.src
+                        },
+                        defaultForkControlExcludeKeys
+                    );
                     return forkedResource;
                 },
                 postProcess: async (resource: IGenericResource, config: SsgConfig) => {
-                    return config.scopes.mergeToParent(resource);
+                    const mergedResource: IGenericResource = config.scopes.mergeToParent(resource);
+                    return mergedResource;
                 },
 
                 srcDirs: [ './extracting' ],
@@ -96,11 +94,11 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         'html': [ 'html' ],
                         'md': [ 'md', 'html' ],
                         'njk': [ 'md', 'html' ],
-                        'ts': [ 'md', 'ts' ],
-
+                        'ts': [ /*'md',*/ 'ts' ],
                         'js': [ 'data' ],
                         'json': [ 'data' ],
                         'yml': [ 'data' ],
+                        'component': [ 'component' ]
                     },
                 }
             },
@@ -109,6 +107,13 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                 inputGuard: {
                     matchProp: 'srcFormat',
                     matchCondition: true,
+                },
+
+                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                    return resource;
+                },
+                postProcess: async (resource: IGenericResource, config: SsgConfig) => {
+                    return resource;
                 },
 
                 srcDirs: [ './compiling' ],
@@ -123,28 +128,34 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
                         ],
                         'html': [
                             'placeholder',
-                            'component',
+                            'html',
+                            'fragments',
                             'njk'
                         ], // or 'placeholder', 'component' instead of component
                         'md': [
                             'placeholder',
                             'md',
-                            'component',
+                            'fragments',
                             'njk'
                         ],
                         'njk': [
                             'placeholder',
                             'njk',
-                            'component',
-                            'placeholder',
-                            'component',
+                            'fragments',
+                            //'placeholder',
+                            //'fragments',
                         ],
                         'ts': [
                             'ts',
                             'placeholder',
+                            'fragments',
+                            'html',
+                            'njk'
+                        ],
+                        'component': [
                             'component',
                             'html'
-                        ],
+                        ]
                         /*'scss': [
                             'scss'
                         ],*/

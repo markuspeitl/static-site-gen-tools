@@ -41,18 +41,17 @@ export class MarkdownCompiler implements IResourceProcessor {
 
     }*/
     public async process(resource: IProcessResource, config: SsgConfig): Promise<IProcessResource> {
-        const resourceContent: string | undefined = resource.content?.trim();
-        if (!resourceContent) {
+        resource.content = resource.content?.trim();
+        if (!resource.content) {
             return resource;
         }
-        console.log(`Compiling '${this.id}': ${resource.src} ${resource.fragmentId} ${resource.fragmentTag}`);
 
-        resource.content = resourceContent;
-        const dataResource: IProcessResource = await compileMarkdownResource(resource, config);
+        console.log(`Compiling '${this.id}': <src> ${resource.src} <fragment> ${resource.fragmentId} ${resource.fragmentTag}`);
+        const mdCompiledResource: IProcessResource = await compileMarkdownResource(resource, config);
 
         resource.targetFormat = 'html';
 
-        return dataResource;
+        return mdCompiledResource;
         //resource = setHtmlOutputFormat(resource);
         //return addHandlerId(dataResource, 'compiler', this);
     }

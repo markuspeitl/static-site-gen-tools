@@ -18,10 +18,13 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('extractor', resource, config);
 
-        const dataExtractedResource: IProcessResource = await config.processor.process(
+        const dataExtractedResource: IProcessResource = await config.processor.forkProcessMergeBack(
             resource,
             config,
-            [ 'extractor' ]
+            [ 'extractor' ],
+            {
+                'srcFormat': this.contentFormat,
+            }
         );
         return dataExtractedResource;
     }
@@ -33,10 +36,13 @@ export abstract class BaseCompileContentFormatComponent implements IInternalComp
         //return deferContentCompile(resource, config, this.contentFormat);
         //return processConfStage('compiler', resource, config);
 
-        const compiledResource: IProcessResource = await config.processor.process(
+        const compiledResource: IProcessResource = await config.processor.forkProcessMergeBack(
             resource,
             config,
-            [ 'compiler' ]
+            [ 'compiler' ],
+            {
+                'srcFormat': this.contentFormat,
+            }
         );
         return compiledResource;
     }

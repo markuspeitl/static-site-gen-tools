@@ -50,7 +50,10 @@ export function dataTemplateFn(templateString: string): DataToParsedDocumentOrSt
             return templateString;
         }
 
-        return curvyTemplate(templateString, resource);
+        resource.content = curvyTemplate(templateString, resource);
+
+        return resource;
+        //return curvyTemplate(templateString, resource);
     };
     return renderTemplateFn;
 }

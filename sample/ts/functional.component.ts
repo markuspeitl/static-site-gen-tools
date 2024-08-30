@@ -25,7 +25,7 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             </div>
         `;*/
 
-        let htmlContent: string = curvyTemplate(html`
+        /*let htmlContent: string = curvyTemplate(html`
             <h1>{{title}}</h1>
             <p>{{description}}</p>
             <div>
@@ -33,16 +33,42 @@ class FunctionStyleDynamicComponent implements BaseComponent {
             </div>
 
             <md>
+            ---
+            testDataProp: "testDataProp content string"
+            ---
             # Markdown test
                     
             - lets
-            - title: -- {{title}} -- in md
+            - TITLE: "{{title}}"
+            - TESTMD_DATA: {{testDataProp}}
             - try
             - some
             - bulletpoints
             </md>
 
-        `, resource);
+        `, resource);*/
+
+        let htmlContent: string = html`
+            <h1>{{title}}</h1>
+            <p>{{description}}</p>
+            <div>
+                ${resource.content}
+            </div>
+
+            <md>
+            ---
+            testDataProp: "testDataProp content string"
+            ---
+            # Markdown test
+                    
+            - lets
+            - TITLE: "{{title}}"
+            - TESTMD_DATA: {{testDataProp}}
+            - try
+            - some
+            - bulletpoints
+            </md>
+        `;
 
         htmlContent = htmlContent + "\n\n Try njk compile:";
         htmlContent = htmlContent + `\n\n beforenjk <njk> TITLE: {{ title }} -- DESC: {{ description }} </njk> afternjk`;

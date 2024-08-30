@@ -28,6 +28,20 @@ export interface IInternalComponent {
     render: (resource: IProcessResource, config: SsgConfig) => Promise<IProcessResource>;
 }
 
+export function isRenderComponent(component): component is IInternalComponent {
+    if (component.render) {
+        return true;
+    }
+    return false;
+}
+
+export function isDataComponent(component): component is IInternalComponent {
+    if (component.data) {
+        return true;
+    }
+    return false;
+}
+
 /*export interface FnBaseComponent {
     data(dataCtx?: DocumentData | null, config: SsgConfig): Promise<IProcessResource | DocumentData>;
     render(dataCtx?: DocumentData | null, config: SsgConfig): Promise<IProcessResource | string>;
