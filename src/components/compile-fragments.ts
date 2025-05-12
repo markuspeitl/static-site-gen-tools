@@ -112,7 +112,12 @@ export async function compileFragment(
     }
     const componentRefSymbol: string = resource.fragmentTag;
 
-    const selectedImportedInstance: FalsyAble<IImportInstance> = await getImportTargetInstance(componentRefSymbol, resource, config);
+    const selectedImportedInstance: FalsyAble<IImportInstance> = await getImportTargetInstance(
+        componentRefSymbol,
+        resource,
+        config
+    );
+
     if (!selectedImportedInstance) {
         return resource;
     }

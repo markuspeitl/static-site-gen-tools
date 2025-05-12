@@ -14,193 +14,207 @@ export function getDefaultProcessingRootNodeConfig(): IProcessingNodeConfig {
     //Is a serializeable data structure (can be simply written in a .json file)
     const ssgProcessorConfiguration: IProcessingNodeConfig = {
         id: 'ssg-process',
-        inputGuard: undefined,
-
-        srcDirs: [ '../processors' ], //where to load shorthand processors from
         strategy: 'serial', //Default strategy == serial
-        processors: [
-            {
-                id: 'reader',
-                inputGuard: {
-                    matchProp: 'src',
-                    matchCondition: true
+        children: {
+            fileSrcDirs: [ '../processors' ], //where to load shorthand processors from
+            strategy: 'serial',
+            inputMatchCondition: true,
+            processors: [
+                {
+                    id: 'reader',
+                    inputMatchProp: 'src',
+                    //inputMatchCondition: true
                     //matchProp: 'id',
                     //matchCondition: true,
                     //matchCondition: '.+\.html'
                     //matchCondition: (id: string) => id.match(/.+\.html/) //Alternative notation
-                },
 
-                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                    preProcess: async function (resource: IGenericResource, config: SsgConfig) {
 
-                    const readResource: IReadResource | null = getReadableResource(resource);
-                    return readResource as IGenericResource;
-                },
+                        const readResource: IReadResource | null = getReadableResource(resource);
+                        return readResource as IGenericResource;
+                    },
 
-                srcDirs: [ './reading' ],
-                strategy: 'firstMatch',
-                fileProcessorChains: {
-                    matchProp: 'srcFormat',
-                    strategy: 'serial',
-                    fileIdPostfix: '.reader',
-                    processors: {
-                        'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
-                        'md': [ 'file' ],
-                        'njk': [ 'file' ],
-                        'ts': [ 'pass-path' ],
-                        'js': [ 'file' ],
-                        'yml': [ 'file' ],
-                        'json': [ 'file' ],
-                        //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        'jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                        'scss': [ 'file' ],
-                        'png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
-                        //'.+\/': [ 'dir', 'watch' ],
-                        'dir': [ 'dir' ],
-                        //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
-                    }
-                }
-            },
-            {
-                id: 'extractor',
-                inputGuard: {
-                    matchProp: 'srcFormat',
-                    matchCondition: true,
-                },
+                    children: {
+                        type: 'file',
+                        fileSrcDirs: [ './reading' ],
+                        filePostfix: '.reader',
+                        fileChainStrategy: 'serial',
+                        strategy: 'serial',
+                        inputMatchProp: 'srcFormat',
+                        processors: {
+                            'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                            'md': [ 'file' ],
+                            'njk': [ 'file' ],
+                            'ts': [ 'pass-path' ],
+                            'js': [ 'file' ],
+                            'yml': [ 'file' ],
+                            'json': [ 'file' ],
+                            //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
+                            'jpg': [ 'asset' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                            'scss': [ 'file' ],
+                            'png': [ 'asset'/* { p: 'asset', t: 'image' } */ ],
+                            //'.+\/': [ 'dir', 'watch' ],
+                            'dir': [ 'dir' ],
+                            //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
+                        }
+                    },
 
-                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
-                    const forkedResource: IGenericResource = config.scopes.forkFromResource(
-                        resource,
-                        {
-                            //id: 'extract__' + resource.src
-                            id: this.id + "_" + resource.src
-                        },
-                        defaultForkControlExcludeKeys
-                    );
-                    return forkedResource;
-                },
-                postProcess: async (resource: IGenericResource, config: SsgConfig) => {
-                    const mergedResource: IGenericResource = config.scopes.mergeToParent(resource);
-                    return mergedResource;
-                },
 
-                srcDirs: [ './extracting' ],
-                strategy: 'firstMatch',
-                fileProcessorChains: {
-                    matchProp: 'srcFormat',
-                    strategy: 'serial',
-                    fileIdPostfix: '.extractor',
-                    processors: {
-                        'dir': [ 'dir' ],
-                        'html': [ 'html' ],
-                        'md': [ 'md', 'html' ],
-                        'njk': [ 'md', 'html' ],
-                        'ts': [ /*'md',*/ 'ts' ],
-                        'js': [ 'data' ],
-                        'json': [ 'data' ],
-                        'yml': [ 'data' ],
-                        'component': [ 'component' ]
+                },
+                {
+                    id: 'extractor',
+                    inputMatchProp: 'srcFormat',
+
+                    preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                        const forkedResource: IGenericResource = config.scopes.forkFromResource(
+                            resource,
+                            {
+                                //id: 'extract__' + resource.src
+                                id: this.id + "_" + resource.src
+                            },
+                            defaultForkControlExcludeKeys
+                        );
+                        return forkedResource;
+                    },
+                    postProcess: async (resource: IGenericResource, config: SsgConfig) => {
+                        const mergedResource: IGenericResource = config.scopes.mergeToParent(resource);
+                        return mergedResource;
+                    },
+
+                    children: {
+                        type: 'file',
+                        fileSrcDirs: [ './extracting' ],
+                        filePostfix: '.extractor',
+                        fileChainStrategy: 'serial',
+                        strategy: 'serial',
+                        inputMatchProp: 'srcFormat',
+                        processors: {
+                            'dir': [ 'dir' ],
+                            'html': [ 'html' ],
+                            'md': [ 'md', 'html' ],
+                            'njk': [ 'md', 'html' ],
+                            'ts': [ /*'md',*/ 'ts' ],
+                            'js': [ 'data' ],
+                            'json': [ 'data' ],
+                            'yml': [ 'data' ],
+                            'component': [ 'component' ]
+                        }
+                    },
+
+                    merge: (originalResource: IGenericResource, processedResource: IGenericResource, config: SsgConfig) => {
+                        processedResource.parent = originalResource;
+                        const mergedResource: IGenericResource = config.scopes.mergeToParent(processedResource);
+                        return mergedResource;
+                    },
+                },
+                {
+                    id: 'compiler',
+                    inputMatchProp: 'srcFormat',
+
+                    preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                        return resource;
+                    },
+                    postProcess: async (resource: IGenericResource, config: SsgConfig) => {
+                        return resource;
+                    },
+
+                    children: {
+                        type: 'file',
+                        fileSrcDirs: [ './compiling' ],
+                        filePostfix: '.compiler',
+                        fileChainStrategy: 'serial',
+                        strategy: 'serial',
+                        inputMatchProp: 'srcFormat',
+                        /*merge: (originalResource: IGenericResource, processedResource: IGenericResource, config: SsgConfig) => {
+                            processedResource.parent = originalResource;
+                            const mergedResource: IGenericResource = config.scopes.mergeToParent(processedResource);
+                            return mergedResource;
+                        },*/
+                        processors: {
+                            'dir': [
+                                'dir'
+                            ],
+                            'html': [
+                                'placeholder',
+                                'html',
+                                'fragments',
+                                'njk'
+                            ], // or 'placeholder', 'component' instead of component
+                            'md': [
+                                'placeholder',
+                                'md',
+                                'fragments',
+                                'njk'
+                            ],
+                            'njk': [
+                                'placeholder',
+                                'njk',
+                                'fragments',
+                                //'placeholder',
+                                //'fragments',
+                            ],
+                            'ts': [
+                                'ts',
+                                'placeholder',
+                                'fragments',
+                                'html',
+                                'njk'
+                            ],
+                            'component': [
+                                'component',
+                                'html'
+                            ]
+                            /*'scss': [
+                                'scss'
+                            ],*/
+                        }
+                    },
+                },
+                {
+                    id: 'writer',
+                    inputMatchProp: 'targetFormat',
+
+                    preProcess: async function (resource: IGenericResource, config: SsgConfig) {
+                        return resource;
+                    },
+                    postProcess: async (resource: IGenericResource, config: SsgConfig) => {
+                        return resource;
+                    },
+
+                    children: {
+                        type: 'file',
+                        fileSrcDirs: [ './writing' ],
+                        filePostfix: '.writer',
+                        fileChainStrategy: 'serial',
+                        strategy: 'serial',
+                        inputMatchProp: 'targetFormat',
+                        processors: {
+                            'dir': [ 'dir' ],
+                            'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                            'md': [ 'file' ],
+                            'njk': [ 'file' ],
+                            'ts': [ 'file' ],
+                            'jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                            'scss': [ 'file' ],
+                            'png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
+
+                            // '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
+                            // '.+\.md': [ 'file' ],
+                            // '.+\.njk': [ 'file' ],
+                            // '.+\.ts': [ 'file' ],
+                            // //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
+                            // '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
+                            // //'.+\.scss': [ 'file' ],
+                            // //'.+\/': [ 'dir' ],
+                            // //'.+': [ 'dir' ],
+                            // '.+.png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
+                            // //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
+                        }
                     },
                 }
-            },
-            {
-                id: 'compiler',
-                inputGuard: {
-                    matchProp: 'srcFormat',
-                    matchCondition: true,
-                },
-
-                preProcess: async function (resource: IGenericResource, config: SsgConfig) {
-                    return resource;
-                },
-                postProcess: async (resource: IGenericResource, config: SsgConfig) => {
-                    return resource;
-                },
-
-                srcDirs: [ './compiling' ],
-                strategy: 'firstMatch',
-                fileProcessorChains: {
-                    matchProp: 'srcFormat',
-                    strategy: 'serial',
-                    fileIdPostfix: '.compiler',
-                    processors: {
-                        'dir': [
-                            'dir'
-                        ],
-                        'html': [
-                            'placeholder',
-                            'html',
-                            'fragments',
-                            'njk'
-                        ], // or 'placeholder', 'component' instead of component
-                        'md': [
-                            'placeholder',
-                            'md',
-                            'fragments',
-                            'njk'
-                        ],
-                        'njk': [
-                            'placeholder',
-                            'njk',
-                            'fragments',
-                            //'placeholder',
-                            //'fragments',
-                        ],
-                        'ts': [
-                            'ts',
-                            'placeholder',
-                            'fragments',
-                            'html',
-                            'njk'
-                        ],
-                        'component': [
-                            'component',
-                            'html'
-                        ]
-                        /*'scss': [
-                            'scss'
-                        ],*/
-                    }
-                }
-            },
-            {
-                id: 'writer',
-                inputGuard: {
-                    matchProp: 'targetFormat',
-                    matchCondition: true,
-                },
-                srcDirs: [ './writing' ],
-                strategy: 'firstMatch',
-
-                fileProcessorChains: {
-                    //matchProp: 'id',
-                    matchProp: 'targetFormat',
-                    strategy: 'serial',
-                    fileIdPostfix: '.writer',
-                    processors: {
-                        'dir': [ 'dir' ],
-                        'html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
-                        'md': [ 'file' ],
-                        'njk': [ 'file' ],
-                        'ts': [ 'file' ],
-                        'jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                        'scss': [ 'file' ],
-                        'png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
-
-                        // '.+\.html': [ 'file' ], //Shorthand spec for guard: '.+\.html', processStrategy: 'serial', matchProperty: undefined
-                        // '.+\.md': [ 'file' ],
-                        // '.+\.njk': [ 'file' ],
-                        // '.+\.ts': [ 'file' ],
-                        // //'network/[a-zA-Z0-9\.\-\_]+/[a-zA-Z0-9\.\-\_/]+\.[a-zA-Z0-9\.]+': [ 'network' ],
-                        // '.+\.jpg': [ 'copy' ], //Checks if file exists, tags outputFormat as 'asset' and set .target to calculated target path (does not set inputFormat --> skips 'extractor' and 'compiler' stage)
-                        // //'.+\.scss': [ 'file' ],
-                        // //'.+\/': [ 'dir' ],
-                        // //'.+': [ 'dir' ],
-                        // '.+.png': [ 'copy'/* { p: 'asset', t: 'image' } */ ],
-                        // //'\*+': [ 'glob' ], //Can match files and dirs and then, send back to reader stage for more specific handling
-                    }
-                }
-            }
-        ]
+            ]
+        },
     };
 
     return ssgProcessorConfiguration;

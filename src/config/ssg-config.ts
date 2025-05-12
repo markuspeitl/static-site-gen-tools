@@ -4,8 +4,9 @@ import type { ProcessingHelper } from "../processing-helper";
 import type { ModulesCache } from "@markus/ts-node-util-mk1";
 import type { IProcessingNodeConfig } from "../processing-tree/i-processor-config";
 import type { IProcessingNode, IResourceProcessor } from "../processing-tree/i-processor";
+import { IRuntimeConfig } from "../processing-tree/processing-strategy-fns";
 
-export interface SsgConfig {
+export interface SsgConfig extends IRuntimeConfig {
     //sourcePath?: string;
     //targetPath?: string;
 

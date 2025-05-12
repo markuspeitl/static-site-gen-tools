@@ -1,3 +1,5 @@
+import { FalsyAble } from '@markus/ts-node-util-mk1';
+import { IProcessingNodeConfig } from './i-processor-config';
 export interface IGenericControl {
     parent?: IGenericResource,
     //handledProcIds?: string[];
@@ -13,7 +15,7 @@ export type ProcessFunction = (
     resource: IGenericResource,
     config: any,
     ...args: any[]
-) => Promise<IGenericResource>;
+) => Promise<FalsyAble<IGenericResource>>;
 
 export type CanProcessFn = (
     resource: IGenericResource,
@@ -26,8 +28,8 @@ export type CanProcessEvaluator = CanProcessFn | boolean;
 export type ProcessStrategy = string; // = 'serial' | 'parallel' | 'firstMatch' | 'lastMatch'
 
 export interface IProcessor {
-    id: string;
-    process: ProcessFunction;
+    id?: string;
+    process?: ProcessFunction;
     canProcess?: CanProcessEvaluator;
 }
 
@@ -43,20 +45,32 @@ export interface IResourceProcessor extends IProcessor {
     //canHandle: CanHandleFunction;
 }
 
-export interface IPrePostProcessing {
+/*export interface IPrePostProcessing {
     postProcess?: (resource: IGenericResource, config: any) => Promise<IGenericResource>;
     preProcess?: (resource: IGenericResource, config: any) => Promise<IGenericResource>;
+}*/
+
+export type IResourceTransactionFn = (resource: IGenericResource, config: any) => Promise<IGenericResource> | IGenericResource;
+export type IResourceMergeFn = (originalResource: IGenericResource, processedResource: IGenericResource, config: any) => Promise<IGenericResource> | IGenericResource;
+
+
+export interface INodeOperations extends IProcessor {
+    postProcess?: IResourceTransactionFn;
+    preProcess?: IResourceTransactionFn;
+    merge?: IResourceMergeFn;
 }
 
 
-export interface IProcessingNode extends IProcessor, IPrePostProcessing {
+export type IChildProcessor = IProcessingNode | IProcessor;
+
+export interface IProcessingNode extends IProcessor, INodeOperations {
     parent?: IProcessingNode;
-    processors?: Array<IProcessingNode | IProcessor>;
-
-    strategy?: string,
-
+    processors?: Array<IChildProcessor>;
+    config?: IProcessingNodeConfig;
+    strategy?: string;
+    //strategy?: string,
     //Not really needed after init (necessary for file processor init)
-    srcDirs?: string[],
+    //srcDirs?: string[],
 }
 
 

@@ -84,8 +84,8 @@ async function main() {
 }
 
 if (require.main?.filename === __filename) {
-    const testRender = main();
-    console.log(testRender);
+    main();
+    //console.log(testRender);
 }
 
 //npx ts-node cli.ts sample/sample-markdown.md sample/dist/sample-markdown.html

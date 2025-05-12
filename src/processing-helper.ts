@@ -35,12 +35,12 @@ export function extractSubChainNode(
     const srcProcessorCopy: IProcessingNode = lodash.cloneDeep(srcProcessorNode);
 
     if (chainStages) {
-        const selectedSubProcessorSubset: IProcessor[] | undefined = srcProcessorNode.processors?.filter((processor) => chainStages.includes(processor.id));
+        const selectedSubProcessorSubset: IProcessor[] | undefined = srcProcessorNode.processors?.filter((processor) => processor.id && chainStages.includes(processor.id));
         srcProcessorCopy.processors = selectedSubProcessorSubset;
     }
 
     //Set the 'process' fn newly as first processNode still points to the old (full processing node) node reference
-    srcProcessorCopy.process = (
+    /*srcProcessorCopy.process = (
         resource: IGenericResource,
         config: any,
     ) => processNode(
@@ -48,15 +48,13 @@ export function extractSubChainNode(
         resource,
         config,
         (srcProcessorCopy as IProcessingNode).strategy
-    );
+    );*/
     //nodeConfig.strategy);
     //srcProcessorCopy.process = processNodeFn;
 
     if (cache) {
         cache[ stageChainId ] = srcProcessorCopy;
     }
-
-
 
     return srcProcessorCopy;
 }
@@ -89,10 +87,15 @@ async function processStagesOnResource(
         config as IRuntimeConfig,
     );*/
 
-    const processedResource: IProcessResource = await selectedSubChainNode.process(
+    const processedResource: IProcessResource = await processNode(
+        config.processingTree,
         resource,
         config
     );
+    /*const processedResource: IProcessResource = await selectedSubChainNode.process(
+        resource,
+        config
+    );*/
 
     registerProcessedDocument(processedResource, config);
 

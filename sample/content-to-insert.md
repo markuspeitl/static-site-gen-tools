@@ -16,9 +16,24 @@ parents:
 
 import: './frame-to-wrap.html'
 
+testprop: Hello world
+
 ---
 
 <p>Before frame wrap</p>
+
+<frame-to-wrap root='div' compile-first>
+    ### Hello Content
+
+    Hello world from content
+    to be inserted into 
+    './frame-to-wrap.html'
+
+    - One
+    - Two
+    - Three
+
+</frame-to-wrap>
 
 <frame-to-wrap>
 

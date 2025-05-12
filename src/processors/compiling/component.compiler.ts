@@ -3,6 +3,7 @@ import type { IImportInstance } from "../../components/resolve-imports";
 import { isComponentResource, type IProcessResource } from '../../processors/shared/i-processor-resource';
 import { isProcessor } from "../../processing-tree/i-processor";
 import { isRenderComponent } from "../../components/base/i-component";
+import { FalsyAble } from "@markus/ts-node-util-mk1";
 
 export const id: string = 'component.compiler';
 
@@ -18,10 +19,13 @@ export async function process(
 
     const component: IImportInstance = resource.componentInstance;
 
-    if (isProcessor(component)) {
-        return component.process(resource, config);
+    if (isProcessor(component) && component.process) {
+        const processedResource: FalsyAble<IProcessResource> = await component.process(resource, config);
+        if (!processedResource) {
+            return resource;
+        }
     }
-    else if (isRenderComponent(component)) {
+    else if (isRenderComponent(component) && component.render) {
         return component.render(resource, config);
     }
 

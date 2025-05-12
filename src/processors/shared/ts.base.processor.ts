@@ -58,7 +58,10 @@ export abstract class TsBaseProcessor implements IResourceProcessor {
         }
 
         const componentResourceProcFn: ProcessFunction = component[ componentProcessingFnKey ];
-        let processedResource: IProcessResource = await componentResourceProcFn(resource, config);
+        let processedResource: FalsyAble<IProcessResource> = await componentResourceProcFn(resource, config);
+        if (!processedResource) {
+            return resource;
+        }
 
         resource.targetFormat = 'html';
 

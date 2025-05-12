@@ -1,5 +1,5 @@
 import type { IProcessingNode } from "./i-processor";
-import type { FileChainProcessorConfig } from "./i-processor-config";
+//import type { FileChainProcessorConfig } from "./i-processor-config";
 import path from "path";
 import { collectParentPermutations } from "@markus/ts-node-util-mk1";
 
@@ -31,7 +31,7 @@ export function collectNestedPathPermutations(
     return permutedJoinedPathOptions;
 }
 
-export function calculateProcessorFileSearchOpts(
+/*export function calculateProcessorFileSearchOpts(
     fileProcessorChainsConfig: FileChainProcessorConfig,
     currentNode: IProcessingNode
 ): FileSearchOptions {
@@ -40,15 +40,9 @@ export function calculateProcessorFileSearchOpts(
         postfix: fileProcessorChainsConfig.fileIdPostfix
     };
 
-    //TODO: filter absolute paths and add to search options
-    /*if (currentNode?.srcDirs) {
-        for (const dir of currentNode?.srcDirs) {
-        }
-    }*/
-
     //Wrong place to recompute this each time, if many deeply nested paths are to be expected
     const selectedTargetDirs: string[] = collectNestedPathPermutations(currentNode, 'srcDirs');
     fileSearchConfig.dirs = selectedTargetDirs;
 
     return fileSearchConfig;
-}
+}*/

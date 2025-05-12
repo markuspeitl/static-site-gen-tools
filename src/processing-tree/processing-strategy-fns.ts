@@ -1,6 +1,6 @@
-import type { IProcessingNode, IResourceProcessor, IGenericResource, IProcessor, IGenericControl } from "./i-processor";
+import type { IProcessingNode, IResourceProcessor, IGenericResource, IProcessor, IGenericControl, ProcessFunction, CanProcessFn } from "./i-processor";
 import type { InputGuardConfig } from "./i-processor-config";
-import { ensureKeyAtDict, getKeyFromDict } from "@markus/ts-node-util-mk1";
+import { ensureKeyAtDict, filterFalsy, getKeyFromDict, FalsyAble, processChainReturnLastDefined } from '@markus/ts-node-util-mk1';
 import { settleValueOrNull } from "@markus/ts-node-util-mk1";
 //export type SubProcessorsDict = { [ processorId: string ]: IProcessingNode; };
 
@@ -8,24 +8,44 @@ export interface IRuntimeConfig {
     parrallelMergeFn?: any;
 }
 
-export function evaluateNodeCanProcess(
-    node: IProcessingNode,
+export type ProcessProcessorChainFn = (
+    processors: IProcessor[],
     resource: IGenericResource,
     config: IRuntimeConfig
+) => Promise<IGenericResource>;
+
+
+export function isGuardOpen(
+    guardPropValue: any,
+    defaultValue: boolean = true,
+    ...args: any[]
 ): Promise<boolean> | boolean {
-    if (typeof node.canProcess == 'boolean') {
-        return node.canProcess;
+    if (typeof guardPropValue == 'boolean') {
+        return guardPropValue;
     }
 
-    if (typeof node.canProcess == 'function') {
-        return node.canProcess(resource, config);
+    if (typeof guardPropValue == 'function') {
+        return guardPropValue(...args);
     }
-    //return false;
-    return true;
+    return defaultValue;
+}
+
+export function isNodeGuardOpen(
+    node: IProcessingNode,
+    //defaultValue: boolean = true,
+    ...args: any[]
+): Promise<boolean> | boolean {
+
+    return isGuardOpen(
+        node.canProcess,
+        true,
+        //defaultValue,
+        ...args
+    );
 }
 
 export async function processSerial(
-    chainToProcess: IResourceProcessor[],
+    chainToProcess: IProcessor[],
     resource: IGenericResource,
     config: IRuntimeConfig,
     ...args: any[]
@@ -33,7 +53,7 @@ export async function processSerial(
 
     let resultResource: IGenericResource = resource;
     for (const processor of chainToProcess) {
-        resultResource = await processor.process(resultResource, config, ...args);
+        resultResource = await processNode(processor, resource, config);
     }
     return resultResource;
 }
@@ -46,7 +66,7 @@ export async function processParallel(
 
     const promises: Promise<IGenericResource>[] = [];
     for (const processor of processors) {
-        promises.push(processor.process(resource, config));
+        promises.push(processNode(processor, resource, config));
 
     }
     const resultResources: Array<IGenericResource | null> = await settleValueOrNull(promises);
@@ -66,13 +86,10 @@ export async function processFirstCanHandleMatch(
 
     for (const processor of processors) {
 
-        const canProcess: boolean = await evaluateNodeCanProcess(
-            processor,
-            resource,
-            config
-        );
-        if (canProcess) {
-            return processor.process(resource, config);
+        const processedResource: IGenericResource = await processNode(processor, resource, config);
+
+        if (processedResource !== resource) {
+            return processedResource;
         }
     }
     return resource;
@@ -83,20 +100,16 @@ export async function processLastCanHandleMatch(
     config: IRuntimeConfig
 ): Promise<IGenericResource> {
 
+    const processorsShallowCopy: IProcessor[] = [ ...processors ];
+
     return processFirstCanHandleMatch(
-        processors.reverse(),
+        processorsShallowCopy.reverse(),
         resource,
         config
     );
 }
 
-export type ProcessWithProcessorsFn = (
-    processors: IProcessor[],
-    resource: IGenericResource,
-    config: IRuntimeConfig
-) => Promise<IGenericResource>;
-
-export const processStrategyFns: Record<string, ProcessWithProcessorsFn> = {
+export const processStrategyFns: Record<string, ProcessProcessorChainFn> = {
     'serial': processSerial,
     'parallel': processParallel,
     'firstMatch': processFirstCanHandleMatch,
@@ -112,14 +125,53 @@ export function getNodeProcessors(processingNode: IProcessingNode): IProcessor[]
     return subProcessors;
 }
 
+export async function processNodeChildren(
+    node: IProcessingNode,
+    resource: IGenericResource,
+    config: IRuntimeConfig,
+    childrenSelectStrategy?: string
+): Promise<IGenericResource> {
+
+    if ((node as any).strategy) {
+        childrenSelectStrategy = (node as any).strategy;
+    }
+    if (!childrenSelectStrategy) {
+        childrenSelectStrategy = 'default';
+    }
+
+    const subProcessors: FalsyAble<IProcessor[]> = node.processors;
+
+    if (!subProcessors || subProcessors.length <= 0) {
+        return resource;
+    }
+
+    console.log(`Processing Children of '${node.id}': <res-id> '${resource.id}' <src> ${resource.src} <fragment> ${resource.fragmentId} ${resource.fragmentTag}`);
+
+    const childrenStrategyProcessFn = processStrategyFns[ childrenSelectStrategy ];
+
+    let childrenProcessedResource: IGenericResource = await childrenStrategyProcessFn(
+        subProcessors,
+        resource,
+        config
+    );
+    if (childrenProcessedResource !== resource && !childrenProcessedResource.parent) {
+        childrenProcessedResource.parent = resource;
+    }
+    if (!childrenProcessedResource) {
+        return resource;
+    }
+
+    return childrenProcessedResource;
+}
+
 export async function processNode(
     node: IProcessingNode,
     resource: IGenericResource,
     config: IRuntimeConfig,
-    selectStrategy?: string
+    //childrenSelectStrategy?: string
 ): Promise<IGenericResource> {
 
-    const canProcess: boolean = await evaluateNodeCanProcess(
+    const canProcess: boolean = await isNodeGuardOpen(
         node,
         resource,
         config
@@ -130,15 +182,33 @@ export async function processNode(
 
     console.log(`Processing '${node.id}': <res-id> '${resource.id}' <src> ${resource.src} <fragment> ${resource.fragmentId} ${resource.fragmentTag}`);
 
-    const subProcessors: IProcessor[] = getNodeProcessors(node);
-    if ((node as any).strategy) {
-        selectStrategy = (node as any).strategy;
-    }
-    if (!selectStrategy) {
-        selectStrategy = 'default';
+    const processingChain: ProcessFunction[] = filterFalsy([
+        node.preProcess,
+        node.process,
+        (resource: IGenericResource, config: IRuntimeConfig) => processNodeChildren(node, resource, config),
+        node.postProcess
+    ]);
+
+    const processedResource: IGenericResource = await processChainReturnLastDefined(
+        processingChain,
+        node,
+        resource,
+        config
+    );
+
+    if (!node.merge) {
+        return processedResource;
     }
 
-    let inputResource: IGenericResource = resource;
+    node.merge(
+        resource,
+        processedResource,
+        config
+    );
+
+    return resource;
+
+    /*let inputResource: IGenericResource = resource;
     if (node.preProcess) {
         inputResource = await node.preProcess(resource, config);
     }
@@ -146,69 +216,83 @@ export async function processNode(
         return resource;
     }
 
-    let processedResource: IGenericResource = await processStrategyFns[ selectStrategy ](
-        subProcessors,
+    let selfProcessedResource: IGenericResource = resource;
+    if (node.process) {
+        selfProcessedResource = node.process(selfProcessedResource, config);
+    }
+
+    let childrenProcessedResource: IGenericResource = await processNodeChildren(
+        node,
         resource,
         config
     );
-    if (processedResource !== resource && !processedResource.parent) {
-        processedResource.parent = resource;
-    }
-    if (!processedResource) {
-        return inputResource;
-    }
-
     //registerNodeInResource(node, resource);
 
     if (node.postProcess) {
-        processedResource = await node.postProcess(processedResource, config);
+        childrenProcessedResource = await node.postProcess(childrenProcessedResource, config);
     }
 
-    return processedResource;
+    return childrenProcessedResource;`*/
 }
 
 
 export const selfReferenceKey: string = '.';
 
 export function checkInputGuardMatch(
+    inputGuard: FalsyAble<InputGuardConfig>,
     resource: IGenericResource,
-    inputGuard?: InputGuardConfig
+    config: IRuntimeConfig
 ): boolean {
     if (!inputGuard) {
         return true;
     }
-    if (!inputGuard.matchProp) {
+    if (!inputGuard.inputMatchProp) {
         return true;
     }
-    if (!inputGuard.matchCondition) {
+    if (!inputGuard.inputMatchCondition) {
         return true;
     }
 
     let toMatchPropValue: any = null;
-    if (inputGuard.matchProp === selfReferenceKey) {
+    if (inputGuard.inputMatchProp === selfReferenceKey) {
         toMatchPropValue = resource;
     } else {
-        toMatchPropValue = getKeyFromDict(resource, inputGuard.matchProp);
+        toMatchPropValue = getKeyFromDict(resource, inputGuard.inputMatchProp);
     }
 
-    if (inputGuard.matchCondition === toMatchPropValue) {
+    if (inputGuard.inputMatchCondition === toMatchPropValue) {
         return true;
     }
-    if (typeof inputGuard.matchCondition === 'boolean' && inputGuard.matchCondition === Boolean(toMatchPropValue)) {
+    if (typeof inputGuard.inputMatchCondition === 'boolean' && inputGuard.inputMatchCondition === Boolean(toMatchPropValue)) {
         return true;
     }
-    else if (typeof inputGuard.matchCondition === 'string') {
-        const matchRegex = new RegExp(inputGuard.matchCondition);
+    else if (typeof inputGuard.inputMatchCondition === 'string') {
+        const matchRegex = new RegExp(inputGuard.inputMatchCondition);
         return matchRegex.test(toMatchPropValue);
     }
-    else if (typeof inputGuard.matchCondition === 'function') {
-        return inputGuard.matchCondition(toMatchPropValue);
+    else if (typeof inputGuard.inputMatchCondition === 'function') {
+        return inputGuard.inputMatchCondition(toMatchPropValue);
     }
 
     return false;
 }
 
-export function canNodeProcess(
+
+export function getResourceInputGuardFn(
+    inputGuard: FalsyAble<InputGuardConfig>
+): CanProcessFn {
+
+    return (
+        resource: IGenericResource,
+        config: any,
+    ) => checkInputGuardMatch(
+        inputGuard,
+        resource,
+        config
+    );
+}
+
+/*export function canNodeProcess(
     node: IProcessingNode,
     resource: IGenericResource,
     config: IRuntimeConfig,
@@ -219,21 +303,21 @@ export function canNodeProcess(
         return false;
     }
 
-    /*if (node.canProcess !== undefined) {
+    if (node.canProcess !== undefined) {
         return evaluateNodeCanProcess(
             node,
             resource,
             config
         );
-    }*/
+    }
 
     //console.log(`Check can handle resource with '${this.id}': ${resource.id}`);
     const isProcessingTarget: boolean = checkInputGuardMatch(resource, inputGuard);
 
     return isProcessingTarget;
-}
+}*/
 
-//Could be optimized (does a few unnecessary operations at runtime, like type checking of 'matchCondition')
+//Could be optimized (does a few unnecessary operations at runtime, like type checking of 'inputMatchCondition')
 /*export function compileDefaultCanProcessGuardFn(inputGuardConfig?: InputGuardConfig): CanHandleFunction {
     return async function (resource: IGenericResource, config: IRuntimeConfig): Promise<boolean> {
         return defaultCanProcess(resource, config, inputGuardConfig);

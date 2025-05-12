@@ -9,6 +9,8 @@ export async function loadNewProcessorFromPath<InstanceType extends IProcessor>(
 ): Promise<InstanceType> {
     const moduleId = getModuleId(modulePath, nameToIdPostfix);
 
+    console.time('import_' + modulePath);
+
     const importedModule: any = await import(modulePath);
 
     if (importedModule.process) {
@@ -32,6 +34,8 @@ export async function loadNewProcessorFromPath<InstanceType extends IProcessor>(
     if (!moduleInstance.id) {
         moduleInstance.id = moduleId;
     }
+
+    console.timeEnd('import_' + modulePath);
 
     return moduleInstance;
 }
